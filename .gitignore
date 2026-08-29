@@ -1,0 +1,8 @@
+# Regenerable dataset (downloaded by the notebook)
+ME1/mnist_data/
+**/mnist_data/
+# Python / Jupyter noise
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.env
