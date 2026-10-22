@@ -1,0 +1,142 @@
+{
+  "wake_word": "Destiny",
+  "model": "RobustWakeCNN-v2",
+  "parameters": 73410,
+  "sample_rate": 16000,
+  "window_seconds": 1.0,
+  "frames": 100,
+  "input_channels": [
+    "utterance_cmvn_logmel",
+    "temporal_delta"
+  ],
+  "deployment_threshold": 0.85,
+  "threshold_policy": "balanced point from deployment-matched start/center/end scoring",
+  "held_out": {
+    "checkpoint": "destiny_robust_v2.pt",
+    "threshold": 0.9472014904022217,
+    "target_combined_false_positive_rate": 0.005,
+    "clean_recall": 0.8596881959910914,
+    "clean_oos_false_positive_rate": 0.005875077303648732,
+    "stress_recall": 0.785,
+    "fan_false_positive_rate": 0.0,
+    "by_category": {
+      "command": {
+        "n": 668,
+        "false_positive_rate": 0.0
+      },
+      "fan_only": {
+        "n": 600,
+        "false_positive_rate": 0.0
+      },
+      "near_miss": {
+        "n": 205,
+        "false_positive_rate": 0.07804878048780488
+      },
+      "positive_close_clip": {
+        "n": 80,
+        "recall": 0.5625
+      },
+      "positive_far_fan": {
+        "n": 80,
+        "recall": 0.6625
+      },
+      "positive_high_pitch_prosody": {
+        "n": 80,
+        "recall": 0.875
+      },
+      "positive_low_pitch_prosody": {
+        "n": 80,
+        "recall": 0.9375
+      },
+      "positive_room_fan": {
+        "n": 80,
+        "recall": 0.8875
+      },
+      "random": {
+        "n": 2361,
+        "false_positive_rate": 0.0012706480304955528
+      }
+    },
+    "operating_points": {
+      "0.85": {
+        "clean_recall": 0.9465478841870824,
+        "clean_oos_false_positive_rate": 0.012368583797155226,
+        "stress_recall": 0.9175,
+        "fan_false_positive_rate": 0.0
+      },
+      "0.875": {
+        "clean_recall": 0.9398663697104677,
+        "clean_oos_false_positive_rate": 0.011131725417439703,
+        "stress_recall": 0.9,
+        "fan_false_positive_rate": 0.0
+      },
+      "0.9": {
+        "clean_recall": 0.9220489977728286,
+        "clean_oos_false_positive_rate": 0.008658008658008658,
+        "stress_recall": 0.8825,
+        "fan_false_positive_rate": 0.0
+      },
+      "0.925": {
+        "clean_recall": 0.8975501113585747,
+        "clean_oos_false_positive_rate": 0.007111935683364255,
+        "stress_recall": 0.8325,
+        "fan_false_positive_rate": 0.0
+      },
+      "0.95": {
+        "clean_recall": 0.8507795100222717,
+        "clean_oos_false_positive_rate": 0.005875077303648732,
+        "stress_recall": 0.78,
+        "fan_false_positive_rate": 0.0
+      }
+    },
+    "placement_policy": "maximum of VAD-cropped start/center/end windows"
+  },
+  "training_validation": {
+    "threshold": 0.9003970623016357,
+    "target_oos_fpr": 0.005,
+    "clean_auc": 0.9971137675560201,
+    "clean_recall": 0.9042316258351893,
+    "clean_oos_fpr": 0.005875077303648732,
+    "stress_recall": 0.8825,
+    "fan_false_positive_rate": 0.0,
+    "by_category": {
+      "destiny_clean": {
+        "n": 449,
+        "recall": 0.9042316258351893
+      },
+      "positive_close_clip": {
+        "n": 80,
+        "recall": 0.6375
+      },
+      "positive_far_fan": {
+        "n": 80,
+        "recall": 0.9125
+      },
+      "positive_high_pitch_prosody": {
+        "n": 80,
+        "recall": 0.95
+      },
+      "positive_low_pitch_prosody": {
+        "n": 80,
+        "recall": 0.9625
+      },
+      "positive_room_fan": {
+        "n": 80,
+        "recall": 0.95
+      }
+    }
+  },
+  "training": {
+    "source": "MLCommons Multilingual Spoken Words, speaker-disjoint split",
+    "user_recordings_required": false,
+    "augmentations": [
+      "whole-word pitch +/-3.5 semitones",
+      "speed 0.78x-1.24x",
+      "independent half-word timing warp",
+      "gain -22dB to +16dB",
+      "close-mic proximity, plosive, saturation and clipping",
+      "far-field room impulse responses",
+      "procedural fan/air-conditioner hum at 2-32dB SNR"
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+# Cross-platform Python runtime. setup.sh installs these inside ME2/.venv.
+# Platform-compatible releases are resolved at setup time.
+numpy>=1.24,<3
+onnxruntime>=1.16,<2
+sounddevice>=0.4.6,<1
+pygame>=2.5,<3
