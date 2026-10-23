@@ -122,7 +122,7 @@ def extract_features(audio, melbank):
     elif len(y) > WINDOW_SAMPLES:
         y = y[-WINDOW_SAMPLES:]
     # librosa.stft(center=True, pad_mode="constant") pads n_fft//2 on both
-    # sides. Training kept the first 80 of the resulting 81 frames.
+    # sides. A one-second clip produces 101 frames; training kept the first 100.
     padded = np.pad(y, (N_FFT // 2, N_FFT // 2))
     window = np.hanning(N_FFT + 1)[:-1].astype(np.float32)
     power = np.empty((N_FRAMES, N_FFT // 2 + 1), dtype=np.float32)

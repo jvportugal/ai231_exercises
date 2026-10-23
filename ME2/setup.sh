@@ -94,7 +94,7 @@ if [ "$IS_PI" = "1" ]; then
   # ---- install lgpio (REQUIRED on Raspberry Pi 5) -------------------------
   # gpiozero on a Pi 5 needs a pin backend that can actually talk to the
   # hardware. On modern Pi OS the RPi.GPIO backend is gone and gpiozero
-  # falls back to the 'lgpio' (libgpiod) backend -- which is a separate pip
+  # falls back to the 'lgpio' GPIO character-device backend -- a separate pip
   # package. WITHOUT it, gpiozero can import fine but cannot open a single
   # pin, so the driver silently drops to SIMULATED and the bulb never lights.
   # This is the one dependency that has been missing from every prior bundle.

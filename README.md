@@ -11,7 +11,7 @@ with `einops` / `torch.einsum` — no `nn.Conv2d`, `nn.Linear`, `nn.MaxPool2d`,
 
 | Item | Detail |
 |------|--------|
-| Architecture | Conv(32, 3×3) → MaxPool(2×2) → Conv(64, 3×3) → Flatten → Linear(10) |
+| Architecture | Conv(32, 3×3) → BatchNorm → ReLU → MaxPool(2×2) → Conv(64, 3×3) → BatchNorm → ReLU → Flatten → Linear(10) |
 | Ops | `einops` rearrange/unfold + `torch.einsum` throughout |
 | Training | Adam, lr=1e-3, batch=128, 5 epochs, CPU |
 | **Test accuracy** | **98.54%** |
@@ -37,7 +37,7 @@ predict one of 19 actions plus any required slot value.
 | Pipeline | Destiny wake word → endpointed command → intent/slot VCM → action |
 | Models | Bundled 73K-parameter wake CNN + 3,192,807-parameter RV90 CRNN |
 | Runtime | Local CPU inference with ONNX Runtime; no cloud speech recognition |
-| Actions | 19 intents covering media, weather, time, lighting, timers, reminders, communication, and climate |
+| Actions | 19 intents: local media/time/timer/weather/light controls plus simulated communication, reminder, alarm, and climate actions |
 | Hardware | Designed for Raspberry Pi 5; optional RGB LED on BCM 17/27/22 |
 | Interface | Game Boy-inspired GUI with a terminal fallback |
 
@@ -57,4 +57,5 @@ predict one of 19 actions plus any required slot value.
 > ME2 includes every project-specific asset required to run the pipeline.
 > Internet access is required during setup for standard dependencies and for
 > live weather; weather falls back to an explicitly labelled simulation when
-> offline.
+> offline. Calls, messages, alarms, reminders, and climate control are local
+> interface simulations; they do not connect to external services or devices.

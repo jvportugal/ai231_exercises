@@ -111,8 +111,8 @@ def warmup(sess, n=2):
 
 def load_model(model_path=DEFAULT_MODEL):
     import onnxruntime as ort
-    # Ship the model gzip-compressed to keep the bundle small. If the caller
-    # points at a .onnx.gz, decompress it once next to it and load the result.
+    # The bundle ships a raw .onnx file. For compatibility with compressed
+    # copies, accept .onnx.gz and decompress it once next to the archive.
     if model_path.endswith(".gz"):
         import gzip
         import shutil

@@ -5,12 +5,9 @@ Runs on macOS (and Linux/Windows) using the exact same model + mel features
 as the Pi tester. No ALSA involved, so the Pi's sample-rate quirks don't apply.
 
 Setup (one block):
-    cd vcm_pi_bundle
-    python3 -m venv .venv
+    cd ai231_exercises/ME2
+    ./setup.sh
     source .venv/bin/activate
-    pip install numpy sounddevice scipy onnxruntime
-    # macOS only -- install the PortAudio library sounddevice wraps:
-    brew install portaudio
 
 Run:
     python3 mac_check.py                 # live mic (SPACE or ENTER to start/stop)
@@ -229,14 +226,20 @@ def main():
     sess = V.load_model()
     labels = V.load_labels()
     print("  model loaded : %s" % V.DEFAULT_MODEL)
-    print("  labels       : %d intents / %d slot tokens" % (len(labels.get("intents",[])), len(labels.get("value_tokens",[]))))
+    print("  output heads : %d intent classes / %d slot classes" %
+          (len(labels.get("intents", [])), len(labels.get("value_tokens", []))))
     V.warmup(sess)
 
-    schema = V.intent_schema()
-    print("\n  Intents (%d):" % len(schema))
-    for name, kind, _var, slots in schema:
-        tag = "slotted" if kind == "Slotted" else "fixed  "
-        print("    - %-14s [%s]%s" % (name, tag, ("  slots=" + ",".join(slots)) if slots else ""))
+    schema = [name for name in V.intent_schema() if name != "REJECT"]
+    print("\n  Actions (%d):" % len(schema))
+    for name in schema:
+        prefix = V._SLOTTED_PREFIX.get(name)
+        slots = [V._SLOT_TEXT[token]
+                 for token in labels.get("value_tokens", [])
+                 if prefix and token.startswith(prefix)]
+        tag = "slotted" if prefix else "fixed  "
+        suffix = "  slots=" + ", ".join(slots) if slots else ""
+        print("    - %-16s [%s]%s" % (name, tag, suffix))
 
     if args.audio:
         x = load_wav(args.audio)

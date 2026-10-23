@@ -336,7 +336,8 @@ def main():
     V.warmup(sess)
 
     print_schema()
-    print("  model: %s  (%d classes)" % (os.path.basename(args.model), len(labels)))
+    print("  model: %s  (%d intent-head classes)" %
+          (os.path.basename(args.model), len(labels.get("intents", []))))
     print("  engine: onnxruntime CPU   sample rate: %d Hz   window: %.1f s"
           % (V.SAMPLE_RATE, V.WINDOW_SEC))
 

@@ -2,12 +2,15 @@
 """One-shot light diagnosis. Run ON THE PI:
     source .venv/bin/activate
     python3 vcm_action_runner/diagnose_light.py
-Prints exactly what is blocking the bulb, then STOPS (does not touch pins).
+Prints what is blocking the bulb, then stops without changing GPIO outputs.
 """
-import os, sys, stat, glob
+import glob
+import grp
+import os
+import stat
 
 print("=" * 62)
-print("  LIGHT DIAGNOSIS  (safe -- reads only, no pins touched)")
+print("  LIGHT DIAGNOSIS  (safe -- no GPIO outputs are changed)")
 print("=" * 62)
 
 # 1. Who are we?
@@ -18,23 +21,30 @@ except Exception:
 print("[1] user          : %s (uid=%d, gid=%d)" % (os.environ.get("USER","?"), os.getuid(), os.getgid()))
 groups = os.getgroups()
 print("    groups        : %s" % ", ".join(str(g) for g in groups))
-have_gpio_grp = 1001 in groups or 1002 in groups or 4 in groups
-print("    in gpio grp?  : %s" % ("YES" if have_gpio_grp else "NO  <- likely the problem"))
+try:
+    gpio_gid = grp.getgrnam("gpio").gr_gid
+    have_gpio_grp = gpio_gid in groups or os.getgid() == gpio_gid
+    print("    in gpio grp?  : %s (gid=%d)" %
+          ("YES" if have_gpio_grp else "NO  <- likely the problem", gpio_gid))
+except KeyError:
+    have_gpio_grp = False
+    print("    in gpio grp?  : NO (the gpio group does not exist)")
 
 # 2. GPIO node permissions
 print("\n[2] GPIO nodes:")
-for node in ("/dev/gpiomem", "/dev/gpiochip0"):
+gpio_nodes = (["/dev/gpiomem"] if os.path.exists("/dev/gpiomem") else [])
+gpio_nodes += sorted(glob.glob("/dev/gpiochip*"))
+if not gpio_nodes:
+    print("    (no /dev/gpiomem or /dev/gpiochip* nodes found)")
+for node in gpio_nodes:
     p = node
     if os.path.exists(p):
         st = os.stat(p)
         mode = stat.filemode(st.st_mode)
         uid, gid = st.st_uid, st.st_gid
-        # can current user read?
-        can = os.access(p, os.R_OK)
-        print("    %-16s EXISTS  mode=%s owner=%d:%d  readable_by_you=%s"
+        can = os.access(p, os.R_OK | os.W_OK)
+        print("    %-16s EXISTS  mode=%s owner=%d:%d  accessible_by_you=%s"
               % (p, mode, uid, gid, "YES" if can else "NO  <- PROBLEM"))
-    else:
-        print("    %-16s MISSING  <- big problem (kernel/overlay)" % p)
 
 # 3. Is this a Pi? (BCM peripheral base)
 print("\n[3] Pi detection:")
@@ -60,40 +70,42 @@ for mod, label in [("lgpio","lgpio"), ("RPi","RPi.GPIO"), ("pigpio","pigpio")]:
         m = __import__(mod)
         ok = "OK"
         extra = ""
-        if mod == "lgpio":
-            extra = " Chip=%s" % ("YES" if hasattr(m,"Chip") else "NO  <- empty/broken build")
         if mod == "RPi":
             extra = " version=%s" % getattr(m,"__version__","?")
         print("    %-10s %s%s" % (label, ok, extra))
     except Exception as e:
         print("    %-10s NOT IMPORTABLE (%s)" % (label, type(e).__name__))
 
-# 5. Try the EXACT native factory gpiozero would use, capture the real error
-print("\n[5] Direct native-factory probe (the one that must succeed):")
+# 5. Probe the lgpio factory installed by setup.sh for Raspberry Pi 5.
+print("\n[5] Direct Pi 5 lgpio-factory probe:")
+factory_ok = False
 try:
-    from gpiozero.pins.rpigpio import RPiGPIOPinFactory
-    pf = RPiGPIOPinFactory()
-    print("    RPiGPIOPinFactory OK -> native backend AVAILABLE")
+    from gpiozero.pins.lgpio import LGPIOFactory
+    pf = LGPIOFactory()
+    print("    LGPIOFactory OK -> Pi 5 backend AVAILABLE")
+    factory_ok = True
     pf.close()
 except Exception as e:
-    print("    RPiGPIOPinFactory FAILED: %s: %s" % (type(e).__name__, e))
+    print("    LGPIOFactory FAILED: %s: %s" % (type(e).__name__, e))
     print("    ^^^ THIS is the real blocker. Fix is below.")
 
 print("\n" + "=" * 62)
 print("  VERDICT / NEXT COMMAND")
 print("=" * 62)
-if not os.path.exists("/dev/gpiomem") and not os.path.exists("/dev/gpiochip0"):
-    print("  /dev/gpiomem & /dev/gpiochip0 BOTH MISSING -> kernel/overlay issue.")
-    print("  Fix:  sudo modprobe bcm2835-gpio   (or reboot). Then re-run.")
-elif os.path.exists("/dev/gpiomem") and not os.access("/dev/gpiomem", os.R_OK):
-    print("  /dev/gpiomem exists but you CANNOT read it -> PERMISSIONS.")
-    print("  Fix NOW:  sudo chmod 666 /dev/gpiomem")
-    print("  (one-time; if it resets on reboot, add to /etc/udev/rules.d/99-gpio.rules:)")
-    print("       KERNEL==\"gpiomem\", MODE=\"0666\"")
+if "Raspberry Pi" not in model:
+    print("  Raspberry Pi hardware was not detected. SIMULATED light mode is")
+    print("  expected here; run this diagnostic on the Pi to inspect real GPIO.")
+elif factory_ok:
+    print("  lgpio is usable. If the light still fails, verify common-cathode")
+    print("  wiring, resistors, and BCM pins 17/27/22.")
+elif not gpio_nodes:
+    print("  No GPIO character-device nodes were found. Reboot, then confirm")
+    print("  that the Raspberry Pi kernel and device-tree configuration are active.")
+elif not all(os.access(node, os.R_OK | os.W_OK) for node in gpio_nodes):
+    print("  At least one GPIO node is not readable/writable by this user.")
+    print("  Re-run ./setup.sh, then log out and back in for gpio-group changes.")
 else:
-    print("  Node readable. If [5] still failed, the blocker is the")
-    print("  peripheral-base lookup (Pi 5 / new kernel). Fix:")
-    print("    sudo apt-get install -y python3-rpi.gpio   # or")
-    print("    sudo apt-get install -y pigpio && sudo systemctl enable pigpio")
-    print("  Then re-run this script; [5] should say OK.")
+    print("  Device nodes are accessible, but gpiozero's lgpio factory failed.")
+    print("  Re-run ./setup.sh inside ME2 and confirm that its lgpio import check")
+    print("  succeeds; then re-run this diagnostic from the activated .venv.")
 print()

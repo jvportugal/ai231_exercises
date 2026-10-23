@@ -73,9 +73,11 @@ The ONNX models run on CPU; a GPU is not required.
 
 ### Development and demonstration platforms
 
-The software can also run on Linux, macOS, and Windows. GPIO automatically
-falls back to a clearly reported simulation when Raspberry Pi hardware is not
-available. Use terminal mode on machines without a graphical display.
+The core inference and action application is intended to run on Linux, macOS,
+and Windows. GPIO automatically falls back to a clearly reported simulation
+when Raspberry Pi hardware is not available. Use terminal mode on machines
+without a graphical display. The Space-key controls in the two standalone
+terminal testers are Unix-oriented; on Windows, Enter may be required.
 
 The provided setup script directly supports Raspberry Pi OS/Debian-family
 systems and macOS with Homebrew. Windows users must install Python, PortAudio,
@@ -127,7 +129,7 @@ Pi GPIO backend. Python packages are isolated inside **ME2/.venv**.
 
 Setup also:
 
-1. verifies microphone/PortAudio access;
+1. verifies that sounddevice/PortAudio can enumerate audio devices;
 2. checks Tk;
 3. compiles the main Python programs;
 4. verifies every required model asset; and
@@ -238,6 +240,18 @@ trigger an action.
 
 ## 7. Action behavior
 
+The action layer mixes real local operations with demonstrations:
+
+- music playback, the countdown timer, the clock, and live weather are
+  functional local features;
+- light, color, and brightness control real GPIO only when compatible
+  Raspberry Pi hardware is available, and otherwise report simulation mode;
+- temperature, alarms, calls, and messages are interface simulations only;
+  they do not control a thermostat, schedule an operating-system alarm, place
+  a phone call, or send a message; and
+- reminders are stored only in memory for the current process and are not
+  persisted after the application exits.
+
 ### Light
 
 On a Raspberry Pi, **actions/light_driver.py** controls BCM 17/27/22 through
@@ -278,8 +292,9 @@ The panel displays:
 - the source and live/simulated status.
 
 Times are displayed in Philippine Time. Successful responses are marked
-**LIVE // 15-MIN MODEL**. A timeout, network error, provider failure, or
-invalid response automatically produces an explicitly marked
+**LIVE // N-MIN MODEL**, where N is the interval reported by the provider
+(normally 15). A timeout, network error, provider failure, or invalid response
+automatically produces an explicitly marked
 **SIMULATED // OFFLINE** panel. Simulation is never presented as live data.
 
 Only the fixed coordinates and normal HTTP request metadata leave the device.
@@ -378,8 +393,10 @@ This tests microphone capture and VCM classification without running actions.
 python3 mac_check.py
 ~~~
 
-The graphical application uses one main-thread Tk instance, avoiding the macOS
-failure caused by constructing windows on worker threads.
+This checks the same command model and feature pipeline used on the Pi, either
+from the live microphone or from a WAV supplied with **--audio**. It does not
+test the GUI. The graphical application separately keeps its single Tk
+instance on the main thread for macOS compatibility.
 
 ## 10. Troubleshooting
 
@@ -451,11 +468,13 @@ fresh user can clone the repository, run setup, and execute the same exported
 models and RV90 policy without locating replacement models, labels,
 filterbanks, songs, or a wake cue.
 
-The virtual environment, operating-system packages, and multi-gigabyte source
-training corpora are not committed. Setup downloads standard runtime
-dependencies appropriate to the target machine. The following model-creation
-section records the data sources and exact shipped recipes; source dataset
-licenses must be followed separately if retraining.
+The virtual environment, operating-system packages, multi-gigabyte source
+training corpora, training scripts, and PyTorch checkpoints are not committed.
+Setup downloads standard runtime dependencies appropriate to the target
+machine. The following model-creation section records the data sources and
+configuration of the shipped models, but this repository alone does not
+reproduce training from scratch. Source dataset licenses must be followed
+separately if retraining.
 
 ## 13. How the models were created
 
@@ -596,8 +615,12 @@ The following preparation produced the data consumed by RV90:
 
 RV90 fitting used 25,941 rows: 10,733 base training rows, 14,120
 Filipino-accented supplemental rows, 1,000 generated hard negatives, and 88
-noise rows. The development/selection pool contained 4,443 command rows and
-400 speaker-disjoint tune-out-of-scope examples.
+noise rows. The development/selection pool contained 4,443 test rows and 400
+speaker-disjoint tune-out-of-scope examples. These are observed counts from
+the derived RV90 working parquets, not the smaller published-base counts in
+the table above. Although the dataset card assigns the 88 noise files an
+augmentation-only role in its canonical recipe, this RV90 recipe explicitly
+repurposed them as out-of-scope fitting rows.
 
 #### Feature pipeline and augmentation
 
@@ -659,9 +682,12 @@ seed 812, four 10,000-sample epochs, batch size 64, AdamW at `2e-5`, a 0.1×
 learning-rate multiplier for convolution weights, frozen BatchNorm running
 statistics, cosine decay, and gradient-norm clipping at 5. Neural-weight and
 checkpoint selection used the dataset's test split as validation data together
-with the separate tune-OOS pool; holdout audio was not used to fit weights,
-distill the model, select the refinement checkpoint, or choose the 80/20 weight
-interpolation.
+with the separate tune-OOS pool. Holdout audio was not used to update neural
+weights, fine-tune the network, select a checkpoint, or choose the 80/20 weight
+interpolation. After those choices were fixed, error analysis on the 96 real
+holdout clips informed two targeted post-inference rejection-margin overrides:
+`PAUSE = -3.0` and `CREATE_REMINDER = 0.5`. That step tuned the decoding policy,
+not the neural model.
 
 #### RV90 decoding and rejection
 
@@ -679,22 +705,23 @@ two ONNX outputs does not reproduce RV90 behavior.
 
 | Benchmark | Intent accuracy | End-to-end accuracy or rejection |
 |---|---:|---:|
-| 4,443-row command test/selection set, all voices | 92.010% | 91.222% |
-| Command test/selection set, 824 real clips | — | 65.655% (541/824) |
-| Command test/selection set, 3,619 synthetic clips | — | 97.043% |
+| 4,443-row test/selection set, all voices | 92.010% | 91.222% |
+| Test/selection set, 824 real clips | — | 65.655% (541/824) |
+| Test/selection set, 3,619 synthetic clips | — | 97.043% |
 | 202-row development holdout, all voices | 94.554% | 94.059% |
 | Development holdout, 96 real clips | — | 90.625% (87/96) |
 | Development holdout, 106 synthetic clips | — | 97.170% |
 | 250-row out-of-scope development benchmark | — | 87.200% rejected (218/250) |
 
-These are reproducible internal development measurements. The dataset's test
-split and tune-OOS pool were the validation/model-selection sets. After RV90's
-neural weights and interpolation were fixed, holdout error analysis informed
-only two post-inference REJECT margins, for `PAUSE` and `CREATE_REMINDER`; it
-did not drive model training or checkpoint selection. Because those two
-margins are part of the deployed decision policy, the displayed holdout score
-describes the resulting development configuration rather than a new blind
-evaluation.
+These are recorded measurements from the retained verification run. The
+dataset's test split and tune-OOS pool were used for neural-model validation
+and selection. The holdout did not inform weight training, fine-tuning,
+checkpoint selection, or interpolation, but it did inform the two
+post-inference margins named above. Consequently, the 90.625% real-holdout
+result is a development result, not a blind generalization estimate. A new
+sealed, speaker-disjoint real-voice set is required for an unbiased final
+estimate. The deployed inference assets are checksum-verifiable here; the
+training and evaluation pipelines are not included in this repository.
 
 The ONNX export matches the PyTorch checkpoint: maximum absolute error was
 `3.81e-06` for the intent head and `4.77e-06` for the slot head, with matching
