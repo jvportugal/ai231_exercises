@@ -164,7 +164,8 @@ echo "-- checking bundled Python programs --"
 echo "-- verifying bundled wake-word + VCM models --"
 for asset in \
   wakeword_model/destiny.onnx wakeword_model/melbank.npy wakeword_model/metadata.json \
-  vcm_model/vcm.onnx vcm_model/melbank.npy vcm_model/labels.json; do
+  vcm_model/vcm.onnx vcm_model/melbank.npy vcm_model/labels.json \
+  vcm_model/policy.json; do
   if [ ! -r "$asset" ]; then
     echo "ERROR: required model asset is missing: $asset"
     exit 1

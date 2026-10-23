@@ -1,0 +1,42 @@
+{
+  "model": "RV90",
+  "n_params": 3192807,
+  "n_frames": 250,
+  "decoder": {
+    "type": "intent_slot_constrained",
+    "slot_compatibility_alpha": 0.075,
+    "slot_rule": "argmax only over values valid for selected intent"
+  },
+  "reject_policy": {
+    "type": "symmetric_classwise_logit_margin",
+    "rule": "reject iff reject_logit - compatibility_adjusted_best_command >= threshold",
+    "effective_thresholds": {
+      "PLAY_MUSIC": -0.15767679677734375,
+      "WEATHER": 0.0,
+      "TIME": 0.0,
+      "LIGHT_ON": -0.5522666977478027,
+      "LIGHT_OFF": 0.0,
+      "PAUSE": -3.0,
+      "STOP": 0.0,
+      "NEXT": 0.0,
+      "VOLUME_UP": 0.0,
+      "VOLUME_DOWN": 0.0,
+      "CALL": 0.0,
+      "MESSAGE": 0.0,
+      "LIST_REMINDERS": 0.0,
+      "TIMER": -0.9714031623435974,
+      "ALARM": -0.0706468628479004,
+      "TEMPERATURE": -2.4685469673706053,
+      "BRIGHTNESS": -5.129544358117676,
+      "COLOR": -1.3983653591705323,
+      "CREATE_REMINDER": 0.5
+    }
+  },
+  "training_constraints": {
+    "data": "local AI231 ME2 voice-command corpus and derived training-only augmentation",
+    "pretrained_models": false,
+    "parameter_increase": 0,
+    "architecture_compute_increase": 0
+  },
+  "evaluation_scope": "The real-voice holdout informed threshold selection and is treated as development data."
+}

@@ -1,13 +1,14 @@
-# ME2 — End-to-End Voice Command Model
+# ME2 — RV90 End-to-End Voice Command Model
 
-ME2 is a local, hands-free voice-control system designed primarily for a
-Raspberry Pi 5. Say **“Destiny”**, wait for the acknowledgement chime, speak a
-command, and the system classifies and executes that command.
+ME2 is a local, hands-free voice-control system built around the **RV90**
+voice-command model and designed primarily for a Raspberry Pi 5. Say
+**“Destiny”**, wait for the acknowledgement chime, speak a command, and the
+system classifies and executes that command.
 
 The complete runtime is included in this folder:
 
 - a Destiny wake-word ONNX model;
-- a 19-intent, two-head voice-command ONNX model;
+- the 19-intent, two-head RV90 ONNX model and its decoding policy;
 - the exact mel filterbanks and label maps required by both models;
 - persistent microphone capture and silence endpointing;
 - a generated two-note acknowledgement chime;
@@ -41,7 +42,7 @@ Destiny wake-word model
                  until trailing silence
                          │
                          ▼
-                 VCM intent + slot model
+                 RV90 intent + slot model
                          │
                          ▼
                  action dispatcher
@@ -52,9 +53,9 @@ Destiny wake-word model
        /audio         /timers        or simulation
 ~~~
 
-The wake-word and VCM models are separate. The first decides whether the user
-said “Destiny.” The second predicts one of 19 actions and, where required, one
-of 18 slot values such as a timer duration, color, or temperature.
+The wake-word and RV90 models are separate. The first decides whether the user
+said “Destiny.” RV90 predicts one of 19 actions and, where required, one of 18
+slot values such as a timer duration, color, or temperature.
 
 ## 2. Intended platform
 
@@ -144,7 +145,7 @@ sha256sum -c checksums.sha256
 ~~~
 
 The checksum manifest covers both models, both filterbanks, model metadata,
-labels, and the two bundled music files.
+RV90 labels and decoding policy, and the two bundled music files.
 
 ## 5. Run the complete system
 
@@ -434,7 +435,7 @@ tester running during ordinary room noise and unrelated speech.
 | **tester.py** | Standalone command-VCM microphone test |
 | **vcm_infer.py** | VCM preprocessing and ONNX inference |
 | **wakeword_model/** | Destiny ONNX model, filterbank, and metadata |
-| **vcm_model/** | Command ONNX model, filterbank, and labels |
+| **vcm_model/** | RV90 ONNX model, filterbank, labels, and decoding policy |
 | **vcm_action_runner/runner.py** | End-to-end dispatcher and CLI |
 | **vcm_action_runner/wakeword.py** | Persistent mic, chime, wake scoring, endpointing |
 | **vcm_action_runner/voice.py** | Command capture and VCM bridge |
@@ -447,8 +448,8 @@ tester running during ordinary room noise and unrelated speech.
 
 This repository reproduces the complete **inference and action runtime**. A
 fresh user can clone the repository, run setup, and execute the same exported
-models without locating replacement models, labels, filterbanks, songs, or a
-wake cue.
+models and RV90 policy without locating replacement models, labels,
+filterbanks, songs, or a wake cue.
 
 The virtual environment, operating-system packages, and multi-gigabyte source
 training corpora are not committed. Setup downloads standard runtime
@@ -541,115 +542,167 @@ dataset measurements, not guarantees for every microphone and room.
 The selected PyTorch checkpoint was exported to ONNX opset 17. The matching
 mel filterbank and evaluation metadata are included in **wakeword_model/**.
 
-### 13.2 Voice-command dataset
+### 13.2 RV90 voice-command dataset
 
-The command model used
+RV90 was created from
 [AI231 ME2 Voice Commands](https://huggingface.co/datasets/airimonda/ai231-me2-voice-commands)
-(DOI 10.57967/hf/10723). Its release contains 93 command variations for the
-19-intent Option B schema and an out-of-scope class. Audio was standardized as
-16 kHz, mono, 16-bit PCM WAV.
+(DOI 10.57967/hf/10723). The corpus defines 93 phrasings for the 19-intent
+Option B command schema plus out-of-scope audio. Files are standardized as
+16 kHz, mono, 16-bit PCM WAV, and real speakers and synthetic voice identities
+are separated across the train, test, and holdout splits.
 
-The base release reports:
+The published base corpus reports:
 
-| Split | Clips | Duration | Purpose |
+| Split | Clips | Duration | Dataset role |
 |---|---:|---:|---|
-| Train | 10,682 | 6.4 h | Model fitting |
-| Test | 4,418 | 2.5 h | Speaker-disjoint evaluation |
-| Holdout | 196 | 0.2 h | Final Raspberry Pi/live evaluation |
+| Train | 10,682 | 6.4 h | Command and out-of-scope training audio |
+| Test | 4,418 | 2.5 h | Speaker-disjoint benchmark audio |
+| Holdout | 196 | 0.2 h | Raspberry Pi/live benchmark audio |
 | Numerals | 66,390 | 21.8 h | Separate number-only pool |
 
-No real speaker or synthetic voice appears in more than one train/test/holdout
-split. The dataset combines course recordings, synthetic voices, and these
-external sources:
-
-- SLURP;
-- Google Speech Commands v2;
-- Mozilla Common Voice 19 English;
-- Fluent Speech Commands;
-- SNIPS spoken language understanding data;
-- Timers and Such;
-- MLEnd spoken numerals;
-- the Multi-Sensor Voice Command dataset;
-- DEMAND and MS-SNSD noise; and
-- Filipino-accented supplemental synthetic speech.
+The corpus combines course recordings, synthetic voices, SLURP, Google Speech
+Commands v2, Mozilla Common Voice 19 English, Fluent Speech Commands, SNIPS,
+Timers and Such, MLEnd spoken numerals, the Multi-Sensor Voice Command dataset,
+DEMAND/MS-SNSD noise, and Filipino-accented supplemental synthetic speech.
 
 The compilation has mixed source licenses and is limited as a whole to
-research and education/non-commercial use. Some group recordings and
+research and education/non-commercial use. Group recordings and some
 Filipino-accented synthetic references have additional consent or provenance
-caveats. Consult the dataset card and each original source before downloading,
-redistributing, or retraining.
+conditions. Consult the dataset card and each source license before obtaining,
+redistributing, or retraining on the corpus.
 
-#### VCM dataset curation and alterations
+#### Dataset preparation
 
-- Speaker IDs, including synthetic voice IDs, were split before balancing.
-- Real recordings were transcribed with Whisper large-v3-turbo and compared
-  with their labels. Incorrect commands, background speech, silence, and
-  unsupported slot values were moved to out of scope.
-- Unslotted commands containing extra slot information were removed and
-  replaced using voices already assigned to the same split.
-- Each variation was balanced with real audio first and same-split synthetic
-  voices filling shortages.
-- Out-of-scope samples mixed noise, Filipino speech, near-miss requests, and
-  general speech.
-- Synthetic hard negatives included noise-only, 3–6-speaker babble, reversed
-  clips, incomplete 25–40% command fragments, and near-silence hiss.
-- Supplemental Filipino-accented synthetic data was used only for training.
-- Separate tune-out-of-scope voices were excluded from training.
+The following preparation produced the data consumed by RV90:
 
-The shipped E8 training run logged 25,941 rows: 10,733 base training rows,
-14,120 Filipino-accented supplemental rows, 1,000 generated negatives, and 88
-noise rows. Its validation pool contained 4,443 test/tuning rows plus 400
-speaker-disjoint tune-out-of-scope examples.
+1. Standardize every waveform to 16 kHz mono PCM and normalize the schema to
+   19 command intents, 18 valid slot tokens, and REJECT.
+2. Split by real speaker and synthetic voice identity before balancing so an
+   identity cannot cross the train, test, and holdout partitions.
+3. Transcribe real course recordings with Whisper large-v3-turbo and compare
+   the transcript with the assigned label. Move wrong commands, background
+   speech, silence, and unsupported slot values to out of scope.
+4. Remove unslotted commands that include unsupported slot information and
+   replace shortages only with voices already assigned to that split.
+5. Balance the 93 phrasings with real audio first and same-split synthetic
+   voices where additional coverage is needed.
+6. Build out-of-scope coverage from noise, Filipino speech, near-miss requests,
+   and general speech.
+7. Generate hard negatives from noise-only audio, three-to-six-speaker babble,
+   reversed clips, the first 25–40% of incomplete commands, and near-silence
+   hiss.
+8. Add 14,120 Filipino-accented synthetic command clips to training only.
+   Tune-out-of-scope identities remain outside the fitting data.
 
-#### VCM preprocessing and selected augmentation
+RV90 fitting used 25,941 rows: 10,733 base training rows, 14,120
+Filipino-accented supplemental rows, 1,000 generated hard negatives, and 88
+noise rows. The development/selection pool contained 4,443 command rows and
+400 speaker-disjoint tune-out-of-scope examples.
 
-1. Decode and resample to 16 kHz mono.
-2. VAD-trim and center a 2.5-second, 40,000-sample window on the speech.
-3. Compute a 40-bin power mel spectrogram using a 400-sample FFT/window,
-   160-sample hop, and 20–8,000 Hz range.
-4. Log-scale, clip to the training range, and apply per-utterance,
-   per-mel mean/variance normalization.
-5. Rescale the normalized features and supply a 1 × 40 × 250 tensor.
+#### Feature pipeline and augmentation
 
-For the selected E8 model, online waveform augmentation used:
+At training and inference time, the feature path is:
+
+1. Decode or resample to 16 kHz mono.
+2. Center a 2.5-second, 40,000-sample window on the speech region.
+3. Compute a 40-bin power mel spectrogram with a 400-sample FFT and Hann
+   window, 160-sample hop, and 20–8,000 Hz frequency range.
+4. Apply base-10 log scaling, map the fixed −10.0 to 1.4 range into 0–1, and
+   clip.
+5. Apply per-utterance, per-mel mean/variance normalization, rescale with
+   `(x + 3) / 6`, and clip again.
+6. Supply a `1 × 40 × 250` float32 tensor to the network.
+
+The primary fitting run used online waveform augmentation:
 
 - a 50% chance of DEMAND/MS-SNSD room noise at 12–28 dB SNR;
-- random gain within ±4 dB; and
-- a time shift of up to ±10% of the clip.
+- random gain within ±4 dB;
+- a time shift of up to ±10% of the clip; and
+- a 30% chance of procedural three-to-five-source babble at 8–20 dB SNR.
 
-Experiments also evaluated speed perturbation, reverberation, babble,
-SpecAugment, label smoothing, different channel widths, deeper CNNs, and
-different GRU sizes. Those optional alterations were not enabled in the
-selected E8_gru_s301 recipe. Real-voice rows, weak twin intents, inverse-class
-frequency, and the REJECT intent received additional loss weighting.
+Sampling and loss weighting increased the contribution of real recordings,
+the six acoustically similar command pairs (`VOLUME_UP`, `VOLUME_DOWN`,
+`LIGHT_ON`, `LIGHT_OFF`, `STOP`, and `NEXT`), rare classes, and REJECT.
 
-#### VCM architecture and optimization
+The refinement stage used the same 25,941 rows with source-balanced sampling:
+30% course real voice, 20% other real speech, 35% synthetic commands, and 15%
+REJECT. It added mild babble with probability 0.10 and 0.94–1.06× speed
+perturbation with probability 0.10. Knowledge distillation against the primary
+checkpoint supplied 70% of the refinement objective. The deployed parameter
+state is an 80/20 interpolation of the primary and epoch-three refinement
+states; it remains one ordinary network with no ensemble at inference time.
 
-The shipped model is **E8_gru_s301**, a 3,192,807-parameter CRNN:
+#### RV90 architecture
 
-- convolution blocks with 32, 64, and 128 channels;
-- a three-layer, 256-unit bidirectional GRU;
-- a shared fully connected representation;
-- intent head A: 19 actions plus REJECT; and
-- value head B: 18 slot tokens plus REJECT.
+RV90 is a 3,192,807-parameter convolutional recurrent neural network:
 
-It used seed 301, batch size 128, AdamW at 3e-4 with weight decay 1e-4, cosine
-learning-rate decay, weighted cross entropy, a maximum of 36 epochs, and early
-stopping after six validation epochs without improvement. The best validation
-end-to-end score was selected at epoch 26; training stopped at epoch 32.
+~~~text
+input: B × 1 × 40 × 250 log-mel features
+  │
+  ├─ Conv2d 1→32,  3×3, stride 3, padding 1 → BatchNorm → ReLU
+  ├─ Conv2d 32→64, 3×3, stride 3, padding 1 → BatchNorm → ReLU
+  └─ Conv2d 64→128, 3×3, stride 3, padding 1 → BatchNorm → ReLU
+       │
+       └─ mean over the remaining mel-frequency axis
+            │
+            └─ 3-layer bidirectional GRU, 256 units per direction
+                 │
+                 └─ final time step → Linear 512→256 → ReLU → Dropout 0.3
+                      ├─ intent head: 20 logits (19 actions + REJECT)
+                      └─ slot head:   19 logits (18 values + REJECT)
+~~~
 
-Recorded single-model evaluation:
+Primary optimization used seed 301, batch size 128, AdamW at `3e-4` with
+weight decay `1e-4`, cosine learning-rate decay, weighted intent cross entropy,
+slot cross entropy, and early stopping with patience six. The refinement used
+seed 812, four 10,000-sample epochs, batch size 64, AdamW at `2e-5`, a 0.1×
+learning-rate multiplier for convolution weights, frozen BatchNorm running
+statistics, cosine decay, and gradient-norm clipping at 5.
 
-| Evaluation | Intent accuracy | End-to-end accuracy |
+#### RV90 decoding and rejection
+
+The two output heads are decoded jointly. For each command, the decoder adds
+`0.075 ×` the log-probability mass of slot values compatible with that command
+to its intent logit. It then selects a slot only from the values permitted for
+the chosen intent. Finally, the REJECT logit is compared with the selected
+command using the class-specific margins in **vcm_model/policy.json**. This
+policy adds no learned parameters and requires no second model pass.
+
+`vcm_infer.py` applies this policy automatically. Raw independent argmax of the
+two ONNX outputs does not reproduce RV90 behavior.
+
+#### Recorded evaluation
+
+| Benchmark | Intent accuracy | End-to-end accuracy or rejection |
 |---|---:|---:|
-| Test, all voices | 91.6% | 90.5% |
-| Test, real voices | 65.3% | 63.1% |
-| Holdout, all voices | 89.1% | 87.6% |
-| Holdout, real voices | 81.2% | 79.2% |
-| Separate synthetic-negative test | 79.6% rejected | 79.6% rejected |
+| 4,443-row command test/selection set, all voices | 92.010% | 91.222% |
+| Command test/selection set, 824 real clips | — | 65.655% (541/824) |
+| Command test/selection set, 3,619 synthetic clips | — | 97.043% |
+| 202-row development holdout, all voices | 94.554% | 94.059% |
+| Development holdout, 96 real clips | — | 90.625% (87/96) |
+| Development holdout, 106 synthetic clips | — | 97.170% |
+| 250-row out-of-scope development benchmark | — | 87.200% rejected (218/250) |
 
-The selected checkpoint was exported as an ONNX opset-13 graph with dynamic
-batch size. Audio preprocessing remains in **vcm_infer.py** so the Raspberry Pi
-runtime needs only NumPy and ONNX Runtime rather than the PyTorch training
-stack. The exported graph, exact melbank, and labels are included in
-**vcm_model/**.
+These are reproducible internal development measurements. The command test and
+tune-OOS sets informed model selection, and the real-voice holdout was later
+used for error analysis and rejection-threshold selection. The holdout is
+therefore treated as development data; an independent generalization result
+requires a new sealed, speaker-disjoint real-voice set.
+
+The ONNX export matches the PyTorch checkpoint: maximum absolute error was
+`3.81e-06` for the intent head and `4.77e-06` for the slot head, with matching
+argmax outputs. A single-thread x86 benchmark measured 1.996 ms median ONNX
+inference plus 0.142 ms median policy decoding for batch size one. Those host
+figures are relative measurements, not Raspberry Pi latency claims.
+
+RV90 is exported as an ONNX opset-13 graph with a dynamic batch axis. The
+deployed directory contains only the current model and its required artifacts:
+
+- **vcm_model/vcm.onnx** — RV90 network;
+- **vcm_model/melbank.npy** — exact 40-bin preprocessing filterbank;
+- **vcm_model/labels.json** — intent and slot-token order; and
+- **vcm_model/policy.json** — constrained decoder and REJECT margins.
+
+Audio preprocessing and policy decoding stay in **vcm_infer.py**, so the
+Raspberry Pi runtime uses NumPy and ONNX Runtime rather than the PyTorch
+training stack.
