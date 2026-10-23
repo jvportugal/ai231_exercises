@@ -1,0 +1,11 @@
+torch>=2.4
+numpy>=1.26
+scipy>=1.11
+pandas>=2.2
+pyarrow>=16
+librosa>=0.10.2
+soundfile>=0.12
+scikit-learn>=1.4
+onnx>=1.16
+onnxruntime>=1.18
+huggingface-hub>=0.25

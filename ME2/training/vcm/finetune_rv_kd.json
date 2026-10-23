@@ -1,0 +1,124 @@
+{
+  "protocol": "existing training data only; TEST + tune-OOS selection; HOLDOUT untouched",
+  "args": {
+    "base": "vcm_crnn_X6_babble.pt",
+    "tag": "rv_kd",
+    "epochs": 4,
+    "samples_per_epoch": 10000,
+    "batch": 64,
+    "threads": 8,
+    "lr": 2e-05,
+    "cnn_lr_scale": 0.1,
+    "real_voice_fraction": 0.3,
+    "other_real_fraction": 0.2,
+    "reject_fraction": 0.15,
+    "babble_p": 0.1,
+    "speed_p": 0.1,
+    "kd_weight": 0.7,
+    "temperature": 2.0,
+    "seed": 812
+  },
+  "groups": {
+    "real_voice": {
+      "rows": 530,
+      "mass": 0.30000000000000004
+    },
+    "other_real": {
+      "rows": 1628,
+      "mass": 0.2
+    },
+    "synthetic": {
+      "rows": 22425,
+      "mass": 0.3499999999999999
+    },
+    "reject": {
+      "rows": 1358,
+      "mass": 0.15000000000000002
+    }
+  },
+  "n_params": 3192807,
+  "best": {
+    "overall_intent": 92.167,
+    "overall_e2e": 91.155,
+    "real_e2e": 65.291,
+    "synthetic_e2e": 97.043,
+    "n": 4443,
+    "n_real": 824,
+    "n_synthetic": 3619,
+    "tune_oos_reject": 73.0,
+    "epoch": 3,
+    "train_loss": 0.11859,
+    "elapsed_s": 296.2,
+    "selection_score": 73.49875
+  },
+  "history": [
+    {
+      "overall_intent": 92.167,
+      "overall_e2e": 91.177,
+      "real_e2e": 65.049,
+      "synthetic_e2e": 97.126,
+      "n": 4443,
+      "n_real": 824,
+      "n_synthetic": 3619,
+      "tune_oos_reject": 73.5,
+      "epoch": 0,
+      "selection_score": 73.28285000000001
+    },
+    {
+      "overall_intent": 92.077,
+      "overall_e2e": 91.087,
+      "real_e2e": 64.442,
+      "synthetic_e2e": 97.154,
+      "n": 4443,
+      "n_real": 824,
+      "n_synthetic": 3619,
+      "tune_oos_reject": 73.75,
+      "epoch": 1,
+      "train_loss": 0.123982,
+      "elapsed_s": 103.0,
+      "selection_score": 72.68384999999999
+    },
+    {
+      "overall_intent": 92.145,
+      "overall_e2e": 91.177,
+      "real_e2e": 65.17,
+      "synthetic_e2e": 97.099,
+      "n": 4443,
+      "n_real": 824,
+      "n_synthetic": 3619,
+      "tune_oos_reject": 72.75,
+      "epoch": 2,
+      "train_loss": 0.12224,
+      "elapsed_s": 203.0,
+      "selection_score": 73.36635000000001
+    },
+    {
+      "overall_intent": 92.167,
+      "overall_e2e": 91.155,
+      "real_e2e": 65.291,
+      "synthetic_e2e": 97.043,
+      "n": 4443,
+      "n_real": 824,
+      "n_synthetic": 3619,
+      "tune_oos_reject": 73.0,
+      "epoch": 3,
+      "train_loss": 0.11859,
+      "elapsed_s": 296.2,
+      "selection_score": 73.49875
+    },
+    {
+      "overall_intent": 92.122,
+      "overall_e2e": 91.177,
+      "real_e2e": 65.17,
+      "synthetic_e2e": 97.099,
+      "n": 4443,
+      "n_real": 824,
+      "n_synthetic": 3619,
+      "tune_oos_reject": 73.75,
+      "epoch": 4,
+      "train_loss": 0.122696,
+      "elapsed_s": 390.5,
+      "selection_score": 73.41635000000001
+    }
+  ]
+}

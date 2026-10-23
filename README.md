@@ -53,6 +53,9 @@ predict one of 19 actions plus any required slot value.
 - [ME2/wakeword_model/](ME2/wakeword_model/) and
   [ME2/vcm_model/](ME2/vcm_model/) — deployable ONNX models and their exact
   preprocessing/label assets.
+- [ME2/training/](ME2/training/) — reproducible training, evaluation, and
+  export source, exact wake-word split manifests, retained checkpoints, and
+  model-creation instructions.
 
 > ME2 includes every project-specific asset required to run the pipeline.
 > Internet access is required during setup for standard dependencies and for

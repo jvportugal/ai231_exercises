@@ -453,6 +453,7 @@ tester running during ordinary room noise and unrelated speech.
 | **vcm_infer.py** | VCM preprocessing and ONNX inference |
 | **wakeword_model/** | Destiny ONNX model, filterbank, and metadata |
 | **vcm_model/** | RV90 ONNX model, filterbank, labels, and decoding policy |
+| **training/** | Training, evaluation, export source, exact splits, reports, and retained checkpoints for both models |
 | **vcm_action_runner/runner.py** | End-to-end dispatcher and CLI |
 | **vcm_action_runner/wakeword.py** | Persistent mic, chime, wake scoring, endpointing |
 | **vcm_action_runner/voice.py** | Command capture and VCM bridge |
@@ -468,13 +469,14 @@ fresh user can clone the repository, run setup, and execute the same exported
 models and RV90 policy without locating replacement models, labels,
 filterbanks, songs, or a wake cue.
 
-The virtual environment, operating-system packages, multi-gigabyte source
-training corpora, training scripts, and PyTorch checkpoints are not committed.
-Setup downloads standard runtime dependencies appropriate to the target
-machine. The following model-creation section records the data sources and
-configuration of the shipped models, but this repository alone does not
-reproduce training from scratch. Source dataset licenses must be followed
-separately if retraining.
+The training, evaluation, and export programs, exact wake-word split manifests,
+local noise inputs, retained PyTorch checkpoints, and recorded reports are
+committed under **training/**. This supports both checkpoint-to-ONNX export and
+fresh training after the source corpora are obtained. The virtual environment,
+operating-system packages, and multi-gigabyte third-party corpora are not
+committed. Setup downloads standard runtime dependencies appropriate to the
+target machine. Source dataset licenses and consent conditions must be followed
+separately when obtaining or retraining on the corpora.
 
 ## 13. How the models were created
 
