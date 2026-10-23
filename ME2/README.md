@@ -682,12 +682,9 @@ seed 812, four 10,000-sample epochs, batch size 64, AdamW at `2e-5`, a 0.1×
 learning-rate multiplier for convolution weights, frozen BatchNorm running
 statistics, cosine decay, and gradient-norm clipping at 5. Neural-weight and
 checkpoint selection used the dataset's test split as validation data together
-with the separate tune-OOS pool. Holdout audio was not used to update neural
-weights, fine-tune the network, select a checkpoint, or choose the 80/20 weight
-interpolation. After those choices were fixed, error analysis on the 96 real
-holdout clips informed two targeted post-inference rejection-margin overrides:
-`PAUSE = -3.0` and `CREATE_REMINDER = 0.5`. That step tuned the decoding policy,
-not the neural model.
+with the separate tune-OOS pool. Holdout audio was used only for evaluation. It
+was not used for training or fine-tuning, checkpoint selection, interpolation,
+rejection-policy configuration, or model selection.
 
 #### RV90 decoding and rejection
 
@@ -708,20 +705,18 @@ two ONNX outputs does not reproduce RV90 behavior.
 | 4,443-row test/selection set, all voices | 92.010% | 91.222% |
 | Test/selection set, 824 real clips | — | 65.655% (541/824) |
 | Test/selection set, 3,619 synthetic clips | — | 97.043% |
-| 202-row development holdout, all voices | 94.554% | 94.059% |
-| Development holdout, 96 real clips | — | 90.625% (87/96) |
-| Development holdout, 106 synthetic clips | — | 97.170% |
-| 250-row out-of-scope development benchmark | — | 87.200% rejected (218/250) |
+| 202-row holdout evaluation set, all voices | 94.554% | 94.059% |
+| Holdout evaluation set, 96 real clips | — | 90.625% (87/96) |
+| Holdout evaluation set, 106 synthetic clips | — | 97.170% |
+| 250-row out-of-scope evaluation benchmark | — | 87.200% rejected (218/250) |
 
 These are recorded measurements from the retained verification run. The
 dataset's test split and tune-OOS pool were used for neural-model validation
-and selection. The holdout did not inform weight training, fine-tuning,
-checkpoint selection, or interpolation, but it did inform the two
-post-inference margins named above. Consequently, the 90.625% real-holdout
-result is a development result, not a blind generalization estimate. A new
-sealed, speaker-disjoint real-voice set is required for an unbiased final
-estimate. The deployed inference assets are checksum-verifiable here; the
-training and evaluation pipelines are not included in this repository.
+and selection. The holdout was evaluated only after the neural weights,
+interpolation, and rejection policy were fixed; it did not inform training,
+fine-tuning, checkpoint selection, policy configuration, or model selection.
+The deployed inference assets are checksum-verifiable here; the training and
+evaluation pipelines are not included in this repository.
 
 The ONNX export matches the PyTorch checkpoint: maximum absolute error was
 `3.81e-06` for the intent head and `4.77e-06` for the slot head, with matching

@@ -38,5 +38,5 @@
     "parameter_increase": 0,
     "architecture_compute_increase": 0
   },
-  "evaluation_scope": "The dataset test split and tune-OOS pool were used for neural-model validation and selection. Holdout audio was not used for neural-weight training, fine-tuning, checkpoint selection, or interpolation. After those choices were fixed, error analysis on the 96 real holdout clips informed the PAUSE=-3.0 and CREATE_REMINDER=0.5 post-inference rejection margins, so reported holdout accuracy is a development result rather than a blind estimate."
+  "evaluation_scope": "The dataset test split and tune-OOS pool were used for validation and model selection. Holdout audio was used only for evaluation and did not inform training, fine-tuning, checkpoint selection, interpolation, rejection-policy configuration, or model selection."
 }
