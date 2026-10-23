@@ -38,5 +38,5 @@
     "parameter_increase": 0,
     "architecture_compute_increase": 0
   },
-  "evaluation_scope": "The real-voice holdout informed threshold selection and is treated as development data."
+  "evaluation_scope": "Neural weights and checkpoint selection used the dataset test split plus tune-OOS; holdout audio was not used for weight fitting and was consulted only for the PAUSE and CREATE_REMINDER post-inference margins."
 }

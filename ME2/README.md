@@ -657,7 +657,11 @@ weight decay `1e-4`, cosine learning-rate decay, weighted intent cross entropy,
 slot cross entropy, and early stopping with patience six. The refinement used
 seed 812, four 10,000-sample epochs, batch size 64, AdamW at `2e-5`, a 0.1×
 learning-rate multiplier for convolution weights, frozen BatchNorm running
-statistics, cosine decay, and gradient-norm clipping at 5.
+statistics, cosine decay, and gradient-norm clipping at 5. Neural-weight and
+checkpoint selection used the dataset's test split as validation data together
+with the separate tune-OOS pool; holdout audio was not used to fit weights,
+distill the model, select the refinement checkpoint, or choose the 80/20 weight
+interpolation.
 
 #### RV90 decoding and rejection
 
@@ -683,11 +687,14 @@ two ONNX outputs does not reproduce RV90 behavior.
 | Development holdout, 106 synthetic clips | — | 97.170% |
 | 250-row out-of-scope development benchmark | — | 87.200% rejected (218/250) |
 
-These are reproducible internal development measurements. The command test and
-tune-OOS sets informed model selection, and the real-voice holdout was later
-used for error analysis and rejection-threshold selection. The holdout is
-therefore treated as development data; an independent generalization result
-requires a new sealed, speaker-disjoint real-voice set.
+These are reproducible internal development measurements. The dataset's test
+split and tune-OOS pool were the validation/model-selection sets. After RV90's
+neural weights and interpolation were fixed, holdout error analysis informed
+only two post-inference REJECT margins, for `PAUSE` and `CREATE_REMINDER`; it
+did not drive model training or checkpoint selection. Because those two
+margins are part of the deployed decision policy, the displayed holdout score
+describes the resulting development configuration rather than a new blind
+evaluation.
 
 The ONNX export matches the PyTorch checkpoint: maximum absolute error was
 `3.81e-06` for the intent head and `4.77e-06` for the slot head, with matching
