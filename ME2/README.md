@@ -123,6 +123,17 @@ chmod +x setup.sh
 source .venv/bin/activate
 ~~~
 
+Alternatively, the all-in-one launcher makes `setup.sh` executable, runs the
+complete setup, and starts the Destiny wake-word application. From **ME2**:
+
+~~~bash
+bash start.sh
+~~~
+
+After its first run, it can also be invoked as `./start.sh`. Any extra options
+are passed to the action runner; for example, `./start.sh --term` deliberately
+uses the terminal interface.
+
 On Raspberry Pi OS, setup uses APT and may ask for the sudo password. It
 installs Python/Tk, PortAudio, ALSA tools, compilation prerequisites, and the
 Pi GPIO backend. Python packages are isolated inside **ME2/.venv**.
@@ -188,7 +199,24 @@ python3 vcm_action_runner/runner.py --wakeword --term
 ~~~
 
 Use terminal mode over SSH without X forwarding. To show the GUI remotely,
-connect with X forwarding or run the application directly on the Pi desktop.
+the laptop must have an X server running and must request X11 forwarding when
+it opens the connection. The setup script installs `xauth` and enables the
+Pi-side SSH setting, but it cannot add forwarding to an SSH connection that is
+already open.
+
+From the laptop, connect and verify the forwarded display:
+
+~~~bash
+ssh -Y USER@rpi5.local
+echo "$DISPLAY"                 # normally localhost:10.0 (or similar)
+cd ~/ai231_exercises/ME2
+./start.sh
+~~~
+
+Linux desktops normally already have an X server. macOS needs XQuartz running.
+On Windows, use an SSH environment with an X server, such as MobaXterm, VcXsrv,
+or WSLg. X11 forwarding carries the window only: the chime and music still use
+the Raspberry Pi's selected HDMI, USB, Bluetooth, or other audio output.
 
 ### Other operating modes
 

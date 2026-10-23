@@ -18,14 +18,15 @@ else
   exit 1
 fi
 
-# A fresh Raspberry Pi OS image does not necessarily include venv, Tk, the
-# PortAudio runtime/devel files, or build tools needed by Pi GPIO packages.
+# A fresh Raspberry Pi OS image does not necessarily include venv, Tk, X11
+# authentication, PortAudio runtime/devel files, or build tools needed by Pi
+# GPIO packages.
 # Install everything before creating the venv. Re-running this is safe.
 if command -v apt-get >/dev/null 2>&1; then
   echo "-- installing Raspberry Pi OS system prerequisites --"
   $SUDO apt-get update
   $SUDO apt-get install -y \
-    python3 python3-venv python3-pip python3-dev python3-tk \
+    python3 python3-venv python3-pip python3-dev python3-tk xauth \
     libportaudio2 portaudio19-dev alsa-utils \
     build-essential swig unzip \
     libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
@@ -73,6 +74,40 @@ elif "$PY" -c "import RPi.GPIO" >/dev/null 2>&1; then
 fi
 
 if [ "$IS_PI" = "1" ]; then
+  echo "-- Raspberry Pi detected: enabling SSH X11 forwarding --"
+  # Use an sshd drop-in instead of rewriting the user's main configuration.
+  # The 00- prefix makes this setting take effect before later drop-ins because
+  # OpenSSH uses the first value it obtains for each keyword.
+  SSHD_DROP_IN="/etc/ssh/sshd_config.d/00-ai231-x11-forwarding.conf"
+  $SUDO mkdir -p /etc/ssh/sshd_config.d
+  printf '%s\n' \
+    '# Installed by AI 231 ME2 setup for the remote Tk GUI.' \
+    'X11Forwarding yes' | $SUDO tee "$SSHD_DROP_IN" >/dev/null
+
+  if command -v sshd >/dev/null 2>&1; then
+    $SUDO sshd -t
+    if command -v systemctl >/dev/null 2>&1; then
+      $SUDO systemctl reload ssh 2>/dev/null || \
+        $SUDO systemctl reload sshd 2>/dev/null || true
+    fi
+    if $SUDO sshd -T 2>/dev/null | grep -qi '^x11forwarding yes$'; then
+      echo "  sshd X11 forwarding: enabled"
+    else
+      echo "  [!] sshd did not report X11 forwarding as enabled."
+      echo "      Check: sudo sshd -T | grep x11forwarding"
+    fi
+  fi
+
+  if [ -n "${SSH_CONNECTION:-}" ]; then
+    if [ -n "${DISPLAY:-}" ]; then
+      echo "  forwarded display: $DISPLAY"
+    else
+      echo "  [!] This existing SSH connection has no forwarded display."
+      echo "      After setup, disconnect and reconnect from the laptop with:"
+      echo "      ssh -Y $(id -un)@$(hostname).local"
+    fi
+  fi
+
   echo "-- Raspberry Pi detected: installing the physical RGB bulb driver --"
   echo "  installing gpiozero and the Pi 5 lgpio backend"
 
@@ -195,6 +230,11 @@ PY
 
 echo ""
 echo "== setup complete =="
+if [ -n "${SSH_CONNECTION:-}" ] && [ -z "${DISPLAY:-}" ]; then
+  echo "This SSH session cannot show the GUI. Reconnect from a laptop running"
+  echo "an X server with: ssh -Y $(id -un)@$(hostname).local"
+  echo ""
+fi
 echo "Activate the venv, then run:"
 echo "  source $VENV_DIR/bin/activate"
 echo "  python3 vcm_action_runner/runner.py --wakeword  # Destiny -> command -> action"
