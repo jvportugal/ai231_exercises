@@ -1,15 +1,17 @@
 # ME2 model training and export
 
 This directory contains the source, fixed split manifests, retained PyTorch
-checkpoints, evaluation programs, and exporters for both models shipped by
-ME2. The third-party audio corpora are deliberately not copied into Git: the
+checkpoints, evaluation programs, and exporters for the Destiny wake model and
+the later RV90 command-model experiment. The runtime currently ships the
+earlier E8 GRU command model. The third-party audio corpora are deliberately not copied into Git: the
 MSWC English archive is tens of gigabytes, and the RV90 corpus has
 source-specific license and consent conditions. Obtain each corpus from its
 publisher and accept its terms before training.
 
-The retained checkpoints provide the shortest reproducibility path: they let
-the exporters rebuild the ONNX graphs without retraining. The training scripts
-provide the longer path from the published audio. Exact floating-point weights
+The retained checkpoints provide the shortest reproducibility path for the
+Destiny and RV90 graphs. The E8 deployment graph itself is retained in
+`../vcm_model/vcm.onnx`; its PyTorch checkpoint is not included here. The
+training scripts provide the longer path from the published audio. Exact floating-point weights
 from a new training run can vary with PyTorch, accelerator, and library
 versions even when the recorded seeds and hyperparameters are unchanged.
 Verify all retained inputs with `sha256sum -c checksums.sha256` from this
@@ -58,7 +60,7 @@ The exporter verifies PyTorch/ONNX parity and numerical equivalence with the
 shipped ONNX graph. ONNX file bytes can differ across PyTorch exporter versions
 even when graph outputs are identical.
 
-## RV90 command model
+## RV90 command-model experiment (not currently shipped)
 
 Download the public parquet artifacts from
 [AI231 ME2 Voice Commands](https://huggingface.co/datasets/airimonda/ai231-me2-voice-commands)
@@ -103,8 +105,8 @@ python3 vcm/export_rv90.py
 The exporter defaults to the committed
 `vcm/checkpoints/vcm_crnn_X6_babble.pt` and
 `vcm/checkpoints/vcm_crnn_rv_kd_ep03.pt`, verifies the 3,192,807-parameter
-architecture, checks PyTorch/ONNX numerical parity, copies the shipped mel
-bank, labels, and fixed decoding policy, and writes hashes to
+architecture, checks PyTorch/ONNX numerical parity, copies the compatible mel
+bank and labels plus the RV90 decoding policy, and writes hashes to
 `vcm/artifacts/rv90/export_manifest.json`.
 
 The four WAV files in `vcm/noise` are the exact room-noise bank used by the
@@ -119,7 +121,7 @@ Included:
 - exact wake-word split manifests;
 - exact procedural/local noise inputs;
 - retained selected checkpoints and evaluation reports; and
-- deployable ONNX, filterbank, label, and policy assets elsewhere in ME2.
+- deployable Destiny and E8 ONNX, filterbank, and label assets elsewhere in ME2.
 
 Not included:
 

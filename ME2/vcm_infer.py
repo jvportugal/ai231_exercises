@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""VCM inference core for the RV90 voice-command model (option B).
+"""VCM inference core for the E8 single-seed model (option B).
 
 Model: CRNN_N (3 conv 32/64/128 + BiGRU 256x3), 3.19M params, 250-frame (2.5 s)
 window, DUAL heads -> (logits_a: 20 intents incl REJECT, logits_b: 19 slot
 tokens incl REJECT). Runs on onnxruntime (CPU). Only numpy + onnxruntime needed.
 
-Feature extraction matches the RV90 training and export pipeline:
+Feature path is VERIFIED bit-exact against E8 training:
   16 kHz mono -> VAD-trim + center 2.5 s window on speech midpoint ->
   log-mel (40 mels, N_FFT=400, HOP=160, 250 frames) -> per-utt CMVN -> (x+3)/6.
 
@@ -20,12 +20,10 @@ Public API (same names as before so tester.py/mac_check.py keep working):
 """
 import json
 import os
-from functools import lru_cache
-
 import numpy as np
 
 # ---------------------------------------------------------------------------
-# Feature configuration used by RV90 training and export
+# Config (identical to E8 training)
 # ---------------------------------------------------------------------------
 SAMPLE_RATE = 16000
 WINDOW_SEC = 2.5
@@ -55,7 +53,6 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_MODEL = os.path.join(_HERE, "vcm_model", "vcm.onnx")
 DEFAULT_LABELS = os.path.join(_HERE, "vcm_model", "labels.json")
 DEFAULT_MELBANK = os.path.join(_HERE, "vcm_model", "melbank.npy")
-DEFAULT_POLICY = os.path.join(_HERE, "vcm_model", "policy.json")
 
 # ---------------------------------------------------------------------------
 # Dual-head label -> (golden intent, slot) mapping.
@@ -126,13 +123,6 @@ def load_model(model_path=DEFAULT_MODEL):
 
 def load_labels(labels_path=DEFAULT_LABELS):
     with open(labels_path) as f:
-        return json.load(f)
-
-
-@lru_cache(maxsize=4)
-def load_policy(policy_path=DEFAULT_POLICY):
-    """Load the decoder and class-specific rejection configuration."""
-    with open(policy_path) as f:
         return json.load(f)
 
 
@@ -297,60 +287,6 @@ def _softmax(z):
     return e / e.sum()
 
 
-def _log_softmax_rows(z):
-    """Numerically stable row-wise log-softmax for decoder compatibility."""
-    z = np.asarray(z, dtype=np.float32)
-    shifted = z - z.max(axis=1, keepdims=True)
-    return shifted - np.log(np.exp(shifted).sum(axis=1, keepdims=True))
-
-
-def _decode_rv90(logits_a, logits_b, labels, policy=None):
-    """Apply RV90 intent/slot constraints and class-specific REJECT margins."""
-    if policy is None:
-        policy = load_policy()
-    logits_a = np.atleast_2d(np.asarray(logits_a, dtype=np.float32))
-    logits_b = np.atleast_2d(np.asarray(logits_b, dtype=np.float32))
-
-    intents = labels.get("intents", INTENT_NAMES)
-    values = labels.get("value_tokens", VALUE_TOKENS)
-    command_intents = intents[:-1]
-    reject_intent = len(intents) - 1
-    reject_slot = len(values) - 1
-
-    groups = []
-    for intent in command_intents:
-        prefix = intent + "_"
-        valid = [i for i, token in enumerate(values[:-1])
-                 if token.startswith(prefix)]
-        groups.append(np.asarray(valid or [reject_slot], dtype=np.int64))
-
-    decoder = policy["decoder"]
-    alpha = float(decoder["slot_compatibility_alpha"])
-    slot_logp = _log_softmax_rows(logits_b)
-    compatibility = np.stack([
-        np.log(np.exp(slot_logp[:, group]).sum(axis=1))
-        for group in groups
-    ], axis=1)
-    command_scores = logits_a[:, :reject_intent] + alpha * compatibility
-    intent_idx = command_scores.argmax(axis=1).astype(np.int64)
-    rows = np.arange(len(intent_idx))
-
-    configured = policy["reject_policy"]["effective_thresholds"]
-    thresholds = np.asarray([configured[name] for name in command_intents],
-                            dtype=np.float32)
-    margins = logits_a[:, reject_intent] - command_scores[rows, intent_idx]
-    selected_thresholds = thresholds[intent_idx]
-
-    slot_idx = np.asarray([
-        groups[selected][np.argmax(logits_b[row, groups[selected]])]
-        for row, selected in enumerate(intent_idx)
-    ], dtype=np.int64)
-    rejected = margins >= selected_thresholds
-    intent_idx[rejected] = reject_intent
-    slot_idx[rejected] = reject_slot
-    return intent_idx, slot_idx, margins, selected_thresholds
-
-
 def classify(sess, labels, x, verbose=False):
     """Run one clip. x = 16 kHz mono float32 (any length).
 
@@ -365,10 +301,8 @@ def classify(sess, labels, x, verbose=False):
     la, lb = sess.run(None, {"mel": mel})
     pa = _softmax(la[0])
     pb = _softmax(lb[0])
-    decoded_a, decoded_b, margins, thresholds = _decode_rv90(
-        la, lb, labels)
-    ia = int(decoded_a[0])
-    ib = int(decoded_b[0])
+    ia = int(np.argmax(pa))
+    ib = int(np.argmax(pb))
     intents = labels.get("intents", INTENT_NAMES)
     vtoks = labels.get("value_tokens", VALUE_TOKENS)
     intent = intents[ia]
@@ -381,9 +315,7 @@ def classify(sess, labels, x, verbose=False):
                 slot = _SLOT_TEXT.get(tok)
                 break
     info = dict(info)
-    info.update(slot=slot, slot_conf=float(pb[ib]), rejected=rejected,
-                reject_margin=float(margins[0]),
-                reject_threshold=float(thresholds[0]), decoder="RV90")
+    info.update(slot=slot, slot_conf=float(pb[ib]), rejected=rejected)
     return intent, float(pa[ia]), pa, info
 
 

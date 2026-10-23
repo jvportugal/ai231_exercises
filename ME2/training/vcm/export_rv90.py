@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild the shipped RV90 PyTorch/ONNX bundle from retained checkpoints."""
+"""Rebuild the non-shipped RV90 experiment from retained checkpoints."""
 from __future__ import annotations
 
 import argparse
@@ -97,8 +97,9 @@ def main():
         external_data=False,
     )
 
-    for name in ("melbank.npy", "labels.json", "policy.json"):
+    for name in ("melbank.npy", "labels.json"):
         shutil.copy2(ME2_ROOT / "vcm_model" / name, args.destination / name)
+    shutil.copy2(HERE / "policy.json", args.destination / "policy.json")
 
     # Legacy GRU export can mutate internal module state. Reload a fresh model
     # before comparing PyTorch and ONNX outputs.
@@ -129,7 +130,7 @@ def main():
         "parity": parity,
         "files": {path.name: sha256(path) for path in sorted(args.destination.iterdir())
                   if path.is_file()},
-        "shipped_vcm_sha256": sha256(ME2_ROOT / "vcm_model" / "vcm.onnx"),
+        "current_e8_vcm_sha256": sha256(ME2_ROOT / "vcm_model" / "vcm.onnx"),
     }
     with (args.destination / "export_manifest.json").open("w") as handle:
         json.dump(manifest, handle, indent=2)

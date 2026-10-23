@@ -49,7 +49,7 @@ class Voice:
     def _ensure_model(self):
         if self._sess is None:
             vcm = _import_vcm()
-            # None -> use vcm_infer's bundled RV90 model and labels.
+            # None -> use vcm_infer's bundled E8 GRU model and labels.
             self._sess = vcm.load_model(self._model) if self._model else vcm.load_model()
             self._labels = (vcm.load_labels(self._labels_path)
                             if self._labels_path else vcm.load_labels())

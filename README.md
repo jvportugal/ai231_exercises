@@ -25,17 +25,17 @@ with `einops` / `torch.einsum` — no `nn.Conv2d`, `nn.Linear`, `nn.MaxPool2d`,
 > The MNIST dataset is downloaded automatically by the notebook into
 > `ME1/mnist_data/` (gitignored).
 
-## ME2 — RV90 End-to-End Voice Command Model
+## ME2 — E8 GRU End-to-End Voice Command Model
 
 A Raspberry Pi-oriented, hands-free voice-control pipeline. A compact local
 model detects the wake word **“Destiny,”** plays an acknowledgement chime,
-captures one command, and uses the RV90 two-head ONNX voice-command model to
+captures one command, and uses the E8 GRU two-head ONNX voice-command model to
 predict one of 19 actions plus any required slot value.
 
 | Item | Detail |
 |------|--------|
 | Pipeline | Destiny wake word → endpointed command → intent/slot VCM → action |
-| Models | Bundled 73K-parameter wake CNN + 3,192,807-parameter RV90 CRNN |
+| Models | Bundled 73K-parameter wake CNN + 3,192,807-parameter E8 GRU CRNN |
 | Runtime | Local CPU inference with ONNX Runtime; no cloud speech recognition |
 | Actions | 19 intents: local media/time/timer/weather/light controls plus simulated communication, reminder, alarm, and climate actions |
 | Hardware | Designed for Raspberry Pi 5; optional RGB LED on BCM 17/27/22 |
@@ -43,9 +43,9 @@ predict one of 19 actions plus any required slot value.
 
 ### Files
 
-- [ME2/README.md](ME2/README.md) — comprehensive RV90 architecture, hardware,
+- [ME2/README.md](ME2/README.md) — comprehensive E8 architecture, hardware,
   setup, usage, testing, troubleshooting, dataset preparation, augmentation,
-  training, decoding, and evaluation documentation.
+  training, and evaluation documentation.
 - [ME2/setup.sh](ME2/setup.sh) — installs the runtime in an isolated virtual
   environment and verifies both bundled models.
 - [ME2/vcm_action_runner/](ME2/vcm_action_runner/) — the complete
