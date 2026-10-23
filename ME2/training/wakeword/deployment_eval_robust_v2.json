@@ -1,78 +1,78 @@
 {
   "checkpoint": "destiny_robust_v2.pt",
-  "threshold": 0.9472014904022217,
+  "threshold": 0.761174201965332,
   "target_combined_false_positive_rate": 0.005,
-  "clean_recall": 0.8596881959910914,
-  "clean_oos_false_positive_rate": 0.005875077303648732,
-  "stress_recall": 0.785,
-  "fan_false_positive_rate": 0.0,
+  "clean_recall": 0.9732739420935412,
+  "clean_oos_false_positive_rate": 0.010057471264367816,
+  "stress_recall": 0.955,
+  "fan_false_positive_rate": 0.001,
   "by_category": {
     "command": {
       "n": 668,
-      "false_positive_rate": 0.0
+      "false_positive_rate": 0.0014970059880239522
     },
     "fan_only": {
       "n": 600,
       "false_positive_rate": 0.0
     },
     "near_miss": {
-      "n": 205,
-      "false_positive_rate": 0.07804878048780488
+      "n": 28,
+      "false_positive_rate": 0.21428571428571427
     },
     "positive_close_clip": {
       "n": 80,
-      "recall": 0.5625
+      "recall": 0.9625
     },
     "positive_far_fan": {
       "n": 80,
-      "recall": 0.6625
+      "recall": 0.9375
     },
     "positive_high_pitch_prosody": {
       "n": 80,
-      "recall": 0.875
+      "recall": 0.95
     },
     "positive_low_pitch_prosody": {
       "n": 80,
-      "recall": 0.9375
+      "recall": 0.9625
     },
-    "positive_room_fan": {
+    "positive_real_fan": {
       "n": 80,
-      "recall": 0.8875
+      "recall": 0.9625
     },
-    "random": {
-      "n": 2361,
-      "false_positive_rate": 0.0012706480304955528
+    "real_fan_only": {
+      "n": 400,
+      "false_positive_rate": 0.0025
     }
   },
   "operating_points": {
     "0.85": {
-      "clean_recall": 0.9465478841870824,
-      "clean_oos_false_positive_rate": 0.012368583797155226,
-      "stress_recall": 0.9175,
-      "fan_false_positive_rate": 0.0
+      "clean_recall": 0.9599109131403119,
+      "clean_oos_false_positive_rate": 0.008620689655172414,
+      "stress_recall": 0.935,
+      "fan_false_positive_rate": 0.001
     },
     "0.875": {
-      "clean_recall": 0.9398663697104677,
-      "clean_oos_false_positive_rate": 0.011131725417439703,
-      "stress_recall": 0.9,
+      "clean_recall": 0.9510022271714922,
+      "clean_oos_false_positive_rate": 0.008620689655172414,
+      "stress_recall": 0.935,
       "fan_false_positive_rate": 0.0
     },
     "0.9": {
-      "clean_recall": 0.9220489977728286,
-      "clean_oos_false_positive_rate": 0.008658008658008658,
-      "stress_recall": 0.8825,
+      "clean_recall": 0.9398663697104677,
+      "clean_oos_false_positive_rate": 0.007183908045977011,
+      "stress_recall": 0.91,
       "fan_false_positive_rate": 0.0
     },
     "0.925": {
-      "clean_recall": 0.8975501113585747,
-      "clean_oos_false_positive_rate": 0.007111935683364255,
-      "stress_recall": 0.8325,
+      "clean_recall": 0.9265033407572383,
+      "clean_oos_false_positive_rate": 0.007183908045977011,
+      "stress_recall": 0.885,
       "fan_false_positive_rate": 0.0
     },
     "0.95": {
-      "clean_recall": 0.8507795100222717,
-      "clean_oos_false_positive_rate": 0.005875077303648732,
-      "stress_recall": 0.78,
+      "clean_recall": 0.8930957683741648,
+      "clean_oos_false_positive_rate": 0.0028735632183908046,
+      "stress_recall": 0.8475,
       "fan_false_positive_rate": 0.0
     }
   },

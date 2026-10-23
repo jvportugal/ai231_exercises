@@ -162,8 +162,8 @@ def _capture_test(detector, microphone, args):
 def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Spacebar-controlled Destiny wake-word tester")
-    parser.add_argument("--threshold", type=float, default=0.850,
-                        help="Destiny detection threshold (default: 0.850)")
+    parser.add_argument("--threshold", type=float, default=0.875,
+                        help="Destiny detection threshold (default: 0.875)")
     parser.add_argument("--mic-device", type=int, default=None,
                         help="sounddevice input device number")
     parser.add_argument("--speech-rms", type=float, default=0.008,

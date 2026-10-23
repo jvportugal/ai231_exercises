@@ -17,10 +17,12 @@ are produced in memory. Held-out speakers are never used for training.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import os
 import random
+import re
 import time
 import warnings
 from dataclasses import dataclass
@@ -54,6 +56,16 @@ def load_records(name: str) -> list[dict]:
         return json.load(f)
 
 
+def available_records(records: list[dict], allow_missing: bool) -> list[dict]:
+    present = [row for row in records
+               if os.path.isfile(os.path.join(WAVDIR, row["stem"] + ".wav"))]
+    if len(present) != len(records) and not allow_missing:
+        raise FileNotFoundError(
+            "%d/%d split WAVs are missing from %s" %
+            (len(records) - len(present), len(records), WAVDIR))
+    return present
+
+
 def load_mono(path: str) -> np.ndarray:
     y, sr = sf.read(path, dtype="float32")
     if y.ndim > 1:
@@ -61,6 +73,62 @@ def load_mono(path: str) -> np.ndarray:
     if sr != SR:
         y = librosa.resample(y, orig_sr=sr, target_sr=SR)
     return (y - float(np.mean(y))).astype(np.float32)
+
+
+def discover_external_noise(root: str | None,
+                            holdout_fraction: float = 0.20) -> tuple[list[str], list[str]]:
+    """Return deterministic, machine/file-disjoint train/eval noise paths.
+
+    DCASE machine IDs are assigned to one side. Generic corpora fall back to
+    whole files, preventing nearly identical windows from one recording from
+    appearing in both training and validation.
+    """
+    if not root:
+        return [], []
+    root = os.path.abspath(os.path.expanduser(root))
+    paths = []
+    for base, _, names in os.walk(root):
+        for name in names:
+            if name.lower().endswith((".wav", ".flac", ".ogg")):
+                paths.append(os.path.join(base, name))
+    paths.sort()
+    groups: dict[str, list[str]] = {}
+    for path in paths:
+        relative = os.path.relpath(path, root).replace(os.sep, "/")
+        # DCASE filenames expose machine IDs (id_00/id_02/...). Keep an
+        # entire physical fan on one side; adjacent recordings from the same
+        # machine are otherwise much too similar for a credible validation.
+        match = re.search(r"(?:^|[_/])(id_[0-9]+)(?:[_./]|$)", relative)
+        group = match.group(1) if match else relative
+        groups.setdefault(group, []).append(path)
+    train, held_out = [], []
+    if groups:
+        ordered = sorted(groups, key=lambda group: hashlib.sha256(
+            group.encode("utf-8")).hexdigest())
+        count = int(round(len(ordered) * holdout_fraction))
+        count = max(1, min(len(ordered) - 1, count)) if len(ordered) > 1 else 0
+        held_groups = set(ordered[:count])
+        for group, members in groups.items():
+            (held_out if group in held_groups else train).extend(members)
+        train.sort()
+        held_out.sort()
+    return train, held_out
+
+
+def noise_window(y: np.ndarray, rng: np.random.Generator,
+                 n: int = WINDOW_SAMPLES) -> np.ndarray:
+    """Randomly crop/tile a real environmental recording to exactly ``n``."""
+    if len(y) >= n:
+        start = int(rng.integers(0, len(y) - n + 1))
+        out = y[start:start + n].copy()
+    elif len(y):
+        repeats = int(math.ceil(n / len(y)))
+        out = np.tile(y, repeats)[:n].copy()
+    else:
+        out = np.zeros(n, dtype=np.float32)
+    out -= float(np.mean(out))
+    rms = math.sqrt(float(np.mean(out * out)) + 1e-10)
+    return (out / max(rms, 1e-5)).astype(np.float32)
 
 
 def vad_crop(y: np.ndarray, pad_ms: int = 65) -> tuple[np.ndarray, float]:
@@ -191,7 +259,8 @@ def warp_halves(y: np.ndarray, rng: np.random.Generator) -> np.ndarray:
     return np.concatenate(pieces).astype(np.float32)
 
 
-def augment_speech(y: np.ndarray, rng: np.random.Generator, positive: bool) -> np.ndarray:
+def augment_speech(y: np.ndarray, rng: np.random.Generator, positive: bool,
+                   external_fan=None, external_fan_probability: float = 0.55) -> np.ndarray:
     crop, voiced_len = vad_crop(y)
     if voiced_len >= 0.16:
         y = crop
@@ -221,7 +290,8 @@ def augment_speech(y: np.ndarray, rng: np.random.Generator, positive: bool) -> n
     y *= 10.0 ** (gain_db / 20.0)
 
     if rng.random() < 0.72:
-        fan = synth_fan(rng)
+        fan = (external_fan(rng) if external_fan is not None
+               and rng.random() < external_fan_probability else synth_fan(rng))
         y = mix_at_snr(y, fan, float(rng.uniform(2.0, 32.0)))
     elif rng.random() < 0.45:
         noise = colored_noise(rng, WINDOW_SAMPLES, float(rng.uniform(0, 1.5)))
@@ -282,12 +352,17 @@ class RobustWakeCNN(nn.Module):
 
 class WakeDataset(Dataset):
     def __init__(self, positives: list[dict], negatives: list[dict],
-                 examples_per_epoch: int, seed: int):
+                 examples_per_epoch: int, seed: int,
+                 external_noise: list[str] | None = None,
+                 external_fan_probability: float = 0.55):
         self.positives = positives
         self.negatives = negatives
         self.examples_per_epoch = examples_per_epoch
         self.seed = seed
+        self.external_noise = list(external_noise or [])
+        self.external_fan_probability = external_fan_probability
         self._cache: dict[str, np.ndarray] = {}
+        self._noise_cache: dict[str, np.ndarray] = {}
         self._rng = None
 
     def __len__(self):
@@ -306,25 +381,47 @@ class WakeDataset(Dataset):
             self._cache[stem] = load_mono(os.path.join(WAVDIR, stem + ".wav"))
         return self._cache[stem]
 
+    def _external_fan(self, rng: np.random.Generator) -> np.ndarray:
+        path = self.external_noise[int(rng.integers(len(self.external_noise)))]
+        if path not in self._noise_cache:
+            # Bound each worker's cache so a large public corpus cannot consume
+            # unbounded RAM during a long run.
+            if len(self._noise_cache) >= 16:
+                self._noise_cache.pop(next(iter(self._noise_cache)))
+            self._noise_cache[path] = load_mono(path)
+        return noise_window(self._noise_cache[path], rng)
+
     def __getitem__(self, index):
         del index
         rng = self._random()
         positive = bool(rng.random() < 0.5)
         if positive:
             rec = self.positives[int(rng.integers(len(self.positives)))]
-            y = augment_speech(self._load(rec).copy(), rng, True)
+            y = augment_speech(
+                self._load(rec).copy(), rng, True,
+                self._external_fan if self.external_noise else None,
+                self.external_fan_probability)
             label = 1.0
         else:
             # A third of negatives are fan-only. The rest are real words with
             # the same mic/channel transformations as positives.
             if rng.random() < 0.34:
-                y = synth_fan(rng)
+                if (self.external_noise and
+                        rng.random() < self.external_fan_probability):
+                    y = self._external_fan(rng)
+                    level = 10.0 ** (float(rng.uniform(-38.0, -10.0)) / 20.0)
+                    y = y * level
+                else:
+                    y = synth_fan(rng)
                 if rng.random() < 0.25:
                     y += synth_fan(rng)
                 y = np.clip(y, -1.0, 1.0).astype(np.float32)
             else:
                 rec = self.negatives[int(rng.integers(len(self.negatives)))]
-                y = augment_speech(self._load(rec).copy(), rng, False)
+                y = augment_speech(
+                    self._load(rec).copy(), rng, False,
+                    self._external_fan if self.external_noise else None,
+                    self.external_fan_probability)
             label = 0.0
         return torch.from_numpy(logmel_channels(y)), torch.tensor(label)
 
@@ -356,7 +453,9 @@ def build_clean_eval(positives: list[dict], negatives: list[dict]) -> list[EvalI
     return items
 
 
-def build_robust_eval(positives: list[dict], count: int = 400) -> list[EvalItem]:
+def build_robust_eval(positives: list[dict], count: int = 400,
+                      external_noise: list[str] | None = None,
+                      real_fan_count: int = 400) -> list[EvalItem]:
     """Deterministic held-out stress set; never sampled by the training set."""
     rng = np.random.default_rng(99017)
     items = []
@@ -389,8 +488,13 @@ def build_robust_eval(positives: list[dict], count: int = 400) -> list[EvalItem]
             category = "positive_high_pitch_prosody"
         else:
             y = room_reverb(fit_window(y, rng, False), rng)
-            y = mix_at_snr(y, synth_fan(rng), 12.0)
-            category = "positive_room_fan"
+            if external_noise:
+                path = external_noise[i % len(external_noise)]
+                y = mix_at_snr(y, noise_window(load_mono(path), rng), 12.0)
+                category = "positive_real_fan"
+            else:
+                y = mix_at_snr(y, synth_fan(rng), 12.0)
+                category = "positive_room_fan"
         items.append(EvalItem(torch.from_numpy(logmel_channels(
             np.clip(y, -1, 1).astype(np.float32))), 1.0, category))
     for i in range(600):
@@ -401,6 +505,14 @@ def build_robust_eval(positives: list[dict], count: int = 400) -> list[EvalItem]
             y = proximity_filter(y, rng)
         items.append(EvalItem(torch.from_numpy(logmel_channels(
             np.clip(y, -1, 1).astype(np.float32))), 0.0, "fan_only"))
+    if external_noise:
+        for i in range(real_fan_count):
+            path = external_noise[i % len(external_noise)]
+            y = noise_window(load_mono(path), rng)
+            level = 10.0 ** (float(rng.uniform(-38.0, -8.0)) / 20.0)
+            items.append(EvalItem(torch.from_numpy(logmel_channels(
+                np.clip(y * level, -1, 1).astype(np.float32))),
+                0.0, "real_fan_only"))
     return items
 
 
@@ -460,26 +572,39 @@ def metrics(model: nn.Module, clean: list[EvalItem], robust: list[EvalItem]):
 
 
 def train(args):
+    global WAVDIR
+    if args.wav_dir:
+        WAVDIR = os.path.abspath(os.path.expanduser(args.wav_dir))
     torch.manual_seed(SEED)
     np.random.seed(SEED)
     random.seed(SEED)
     torch.set_num_threads(args.torch_threads)
 
-    pos_train = load_records("pos_train")
-    neg_train = load_records("neg_train")
-    pos_test = load_records("pos_test")
-    neg_test = load_records("oos_test")
+    pos_train = available_records(load_records("pos_train"), args.allow_missing_audio)
+    neg_train = available_records(load_records("neg_train"), args.allow_missing_audio)
+    pos_test = available_records(load_records("pos_test"), args.allow_missing_audio)
+    neg_test = available_records(load_records("oos_test"), args.allow_missing_audio)
+    external_train, external_test = discover_external_noise(
+        args.noise_dir, args.noise_holdout_fraction)
     print("train speakers: positives=%d negatives=%d; held-out positives=%d negatives=%d" %
           (len(pos_train), len(neg_train), len(pos_test), len(neg_test)), flush=True)
+    print("external fan files: train=%d held-out=%d" %
+          (len(external_train), len(external_test)), flush=True)
     print("building deterministic clean and robustness evaluations...", flush=True)
     clean = build_clean_eval(pos_test, neg_test)
-    robust = build_robust_eval(pos_test, args.stress_positives)
+    robust = build_robust_eval(pos_test, args.stress_positives,
+                               external_test, args.real_fan_eval)
 
-    dataset = WakeDataset(pos_train, neg_train, args.examples_per_epoch, SEED)
+    dataset = WakeDataset(pos_train, neg_train, args.examples_per_epoch, SEED,
+                          external_train, args.external_fan_probability)
     loader = DataLoader(
         dataset, batch_size=args.batch, shuffle=False, num_workers=args.workers,
         persistent_workers=args.workers > 0, prefetch_factor=2 if args.workers else None)
     model = RobustWakeCNN()
+    if args.init_checkpoint:
+        initial = torch.load(args.init_checkpoint, map_location="cpu", weights_only=False)
+        model.load_state_dict(initial.get("model_state", initial))
+        print("fine-tuning from %s" % args.init_checkpoint, flush=True)
     count = sum(p.numel() for p in model.parameters())
     print("model parameters=%d; workers=%d; examples/epoch=%d" %
           (count, args.workers, args.examples_per_epoch), flush=True)
@@ -545,6 +670,12 @@ def train(args):
         "input_channels": ["utterance_cmvn_logmel", "temporal_delta"],
         "parameters": count,
         "metrics": final,
+        "external_noise": {
+            "source": "DCASE 2020 Task 2 development fan recordings" if args.noise_dir else None,
+            "train_files": len(external_train),
+            "held_out_files": len(external_test),
+            "split": "machine_id_disjoint",
+        },
     }
     torch.save(checkpoint, os.path.join(HERE, args.output))
     with open(os.path.join(HERE, args.report), "w", encoding="utf-8") as f:
@@ -563,6 +694,17 @@ def main():
     parser.add_argument("--examples-per-epoch", type=int, default=4200)
     parser.add_argument("--stress-positives", type=int, default=400)
     parser.add_argument("--lr", type=float, default=1.2e-3)
+    parser.add_argument("--noise-dir", default=None,
+                        help="recursive directory of real fan/HVAC recordings")
+    parser.add_argument("--wav-dir", default=None,
+                        help="prepared split WAV directory (default: wakeword/data/wavs)")
+    parser.add_argument("--allow-missing-audio", action="store_true",
+                        help="use the available subset of a partially restored corpus")
+    parser.add_argument("--noise-holdout-fraction", type=float, default=0.20)
+    parser.add_argument("--external-fan-probability", type=float, default=0.55)
+    parser.add_argument("--real-fan-eval", type=int, default=400)
+    parser.add_argument("--init-checkpoint", default=None,
+                        help="optional RobustWakeCNN-v2 checkpoint to fine-tune")
     parser.add_argument("--output", default="checkpoints/destiny_robust_v2.pt")
     parser.add_argument("--report", default="eval_report_robust_v2.json")
     train(parser.parse_args())

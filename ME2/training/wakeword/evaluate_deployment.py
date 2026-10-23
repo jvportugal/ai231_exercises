@@ -50,9 +50,18 @@ def score_candidates(model, candidates, batch=256):
     return scores
 
 
-def build_stress(positive_records, count=400):
+def build_stress(positive_records, count=400, external_noise=None,
+                 real_fan_count=400):
     rng = np.random.default_rng(99017)
     audio, labels, categories = [], [], []
+    external_noise = list(external_noise or [])
+    noise_cache = {}
+
+    def real_fan(index, samples=T.WINDOW_SAMPLES):
+        path = external_noise[index % len(external_noise)]
+        if path not in noise_cache:
+            noise_cache[path] = T.load_mono(path)
+        return T.noise_window(noise_cache[path], rng, samples)
     for i, rec in enumerate(positive_records[:min(count, len(positive_records))]):
         y = T.load_mono(os.path.join(T.WAVDIR, rec["stem"] + ".wav"))
         crop, voiced_len = T.vad_crop(y)
@@ -81,8 +90,12 @@ def build_stress(positive_records, count=400):
             category = "positive_high_pitch_prosody"
         else:
             y = T.room_reverb(T.fit_window(y, rng, False), rng)
-            y = T.mix_at_snr(y, T.synth_fan(rng), 12.0)
-            category = "positive_room_fan"
+            if external_noise:
+                y = T.mix_at_snr(y, real_fan(i), 12.0)
+                category = "positive_real_fan"
+            else:
+                y = T.mix_at_snr(y, T.synth_fan(rng), 12.0)
+                category = "positive_room_fan"
         audio.append(np.clip(y, -1, 1).astype(np.float32))
         labels.append(1)
         categories.append(category)
@@ -97,6 +110,12 @@ def build_stress(positive_records, count=400):
         audio.append(np.clip(y, -1, 1).astype(np.float32))
         labels.append(0)
         categories.append("fan_only")
+    for i in range(real_fan_count if external_noise else 0):
+        y = real_fan(i, 2 * T.WINDOW_SAMPLES)
+        level = 10.0 ** (float(rng.uniform(-38.0, -8.0)) / 20.0)
+        audio.append(np.clip(y * level, -1, 1).astype(np.float32))
+        labels.append(0)
+        categories.append("real_fan_only")
     return audio, np.asarray(labels), categories
 
 
@@ -109,14 +128,30 @@ def main():
     )
     parser.add_argument("--report", default="deployment_eval_robust_v2.json")
     parser.add_argument("--target-fpr", type=float, default=0.005)
+    parser.add_argument("--noise-dir", default=None,
+                        help="recursive directory of held-out real fan/HVAC recordings")
+    parser.add_argument("--wav-dir", default=None,
+                        help="prepared split WAV directory (default: wakeword/data/wavs)")
+    parser.add_argument("--allow-missing-audio", action="store_true")
+    parser.add_argument("--noise-holdout-fraction", type=float, default=0.20)
+    parser.add_argument("--real-fan-count", type=int, default=400)
+    parser.add_argument("--torch-threads", type=int, default=8)
     args = parser.parse_args()
+    torch.set_num_threads(args.torch_threads)
+    if args.wav_dir:
+        T.WAVDIR = os.path.abspath(os.path.expanduser(args.wav_dir))
 
     checkpoint = torch.load(args.checkpoint, map_location="cpu", weights_only=False)
     model = T.RobustWakeCNN()
     model.load_state_dict(checkpoint["model_state"])
 
-    pos_records = T.load_records("pos_test")
-    neg_records = T.load_records("oos_test")
+    pos_records = T.available_records(
+        T.load_records("pos_test"), args.allow_missing_audio)
+    neg_records = T.available_records(
+        T.load_records("oos_test"), args.allow_missing_audio)
+    _, external_test = T.discover_external_noise(
+        args.noise_dir, args.noise_holdout_fraction)
+    print("held-out external fan files=%d" % len(external_test), flush=True)
     print("loading clean held-out candidates...", flush=True)
     pos_audio = [T.load_mono(os.path.join(T.WAVDIR, r["stem"] + ".wav"))
                  for r in pos_records]
@@ -126,7 +161,9 @@ def main():
     neg_scores = score_candidates(model, neg_audio)
 
     print("building and scoring robustness candidates...", flush=True)
-    stress_audio, stress_y, stress_cat = build_stress(pos_records)
+    stress_audio, stress_y, stress_cat = build_stress(
+        pos_records, external_noise=external_test,
+        real_fan_count=args.real_fan_count)
     stress_scores = score_candidates(model, stress_audio)
     combined_neg = np.concatenate((neg_scores, stress_scores[stress_y == 0]))
     allowed = int(math.floor(args.target_fpr * len(combined_neg)))

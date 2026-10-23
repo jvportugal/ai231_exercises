@@ -42,6 +42,35 @@ python3 wakeword/evaluate_deployment.py
 python3 wakeword/export_robust.py --destination wakeword/artifacts
 ~~~
 
+If the corpus is already stored as indexed `tb<number>.tar.gz` shards, the
+equivalent space-saving path is:
+
+~~~bash
+python3 wakeword/extract_split_from_tarballs.py \
+  --archives /path/to/shards --map /path/to/stem_tarball_map.json \
+  --destination /path/to/prepared/mswc/wavs
+~~~
+
+For real fan/HVAC hard negatives, download the official DCASE fan recordings
+outside the repository, then pass the extracted directory to both training and
+deployment evaluation. DCASE machine IDs are deterministically split before
+any windows are sampled, so the held-out physical fan never appears in
+training.
+
+~~~bash
+python3 wakeword/fetch_dcase_fan.py --destination ~/sandbox/noise_datasets/dcase2020
+python3 wakeword/train_robust.py \
+  --wav-dir /path/to/prepared/mswc/wavs \
+  --noise-dir ~/sandbox/noise_datasets/dcase2020/extracted \
+  --init-checkpoint wakeword/checkpoints/destiny_robust_v2.pt \
+  --epochs 6 --lr 2e-4
+python3 wakeword/evaluate_deployment.py \
+  --wav-dir /path/to/prepared/mswc/wavs \
+  --noise-dir ~/sandbox/noise_datasets/dcase2020/extracted
+~~~
+
+The DCASE archive is not committed and is distributed under CC BY-NC-SA 4.0.
+
 Files:
 
 - `wakeword/splits/*.json` are the exact speaker-disjoint split manifests;

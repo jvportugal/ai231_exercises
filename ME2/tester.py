@@ -202,6 +202,13 @@ def record_spacebar():
         print("  (no audio captured)")
         return None
     raw = np.concatenate(chunks).astype(np.float32)
+    # The stop key and the hand moving toward it are recorded before the input
+    # callback is stopped.  Condenser microphones capture that transient very
+    # clearly, and it can dominate VAD/normalisation.  Remove only the final
+    # callback-sized tail; normal speech has already ended when STOP is pressed.
+    control_tail = int(round(native_sr * 0.18))
+    if len(raw) > control_tail:
+        raw = raw[:-control_tail]
     # Resample native rate -> 16 kHz (linear interp is fine for speech).
     if native_sr != V.SAMPLE_RATE:
         dur = len(raw) / float(native_sr)
@@ -282,16 +289,26 @@ def _drain_stdin():
 # ---------------------------------------------------------------------------
 def report(label, conf, probs, count, info=None):
     intent, slot = V.label_to_intent(label, info)
+    accepted, reason = V.safe_decision(intent, conf, info or {})
     print("\n  " + "-" * 68)
     if info:
         span = info.get("span")
+        print("  [mic] rms %.4f  peak %.3f  clipped %.2f%%" %
+              (info.get("capture_rms", 0.0), info.get("capture_peak", 0.0),
+               100.0 * info.get("clipping_fraction", 0.0)))
+        if info.get("clipping_fraction", 0.0) >= 0.005:
+            print("        WARNING: input is clipping; lower mic/input gain")
+        elif info.get("capture_rms", 0.0) < 0.003:
+            print("        WARNING: very quiet input; move closer or raise input gain")
         if span:
             print("  [vad] speech %.2f-%.2f s  |  window centered on speech, "
                   "gain x%.2f" % (span[0], span[1], info.get("gain", 1.0)))
         else:
             print("  [vad] no clear speech detected (raw window used)")
-    if intent is None:
+    if intent is None or not accepted:
         print("  [%d] REJECTED  (model label: %-28s conf=%.1f%%)" % (count, label, conf * 100))
+        if reason and reason != "model_reject":
+            print("        safety gate: %s -- please repeat" % reason.replace("_", " "))
         top3 = probs.argsort()[::-1][:3]
         alt = ", ".join("%s(%.0f%%)" % (l, p * 100) for l, p in
                         [(V.labels[i], probs[i]) for i in top3])
@@ -300,7 +317,7 @@ def report(label, conf, probs, count, info=None):
     else:
         print("  [%d] INTENT: %s   %s   (model label: %s, conf=%.1f%%)"
               % (count, intent, ("slot=" + slot) if slot else "", label, conf * 100))
-        if conf < 0.5:
+        if conf < V.MIN_INTENT_CONFIDENCE:
             top3 = probs.argsort()[::-1][:3]
             alt = ", ".join("%s(%.0f%%)" % (l, p * 100) for l, p in
                             [(V.labels[i], probs[i]) for i in top3])

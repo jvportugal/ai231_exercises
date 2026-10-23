@@ -77,9 +77,8 @@ class Voice:
         #     e.g. CALL @0.53 on pure silence), OR
         #   * the winning intent is not in the golden 19 (defensive).
         no_speech = info.get("span") is None
-        rejected = (bool(info.get("rejected"))
-                    or intent in (None, "REJECT")
-                    or no_speech)
+        accepted, rejection_reason = vcm.safe_decision(intent, conf, info)
+        rejected = not accepted
         return {
             "ok": (not rejected) and intent is not None,
             "latency": lat,
@@ -88,6 +87,12 @@ class Voice:
             "conf": conf,
             "rejected": rejected,
             "no_speech": no_speech,
+            "rejection_reason": rejection_reason,
+            "intent_margin": info.get("intent_margin"),
+            "slot_conf": info.get("slot_conf"),
+            "slot_margin": info.get("slot_margin"),
+            "audio": {k: info.get(k) for k in
+                      ("capture_peak", "capture_rms", "clipping_fraction", "gain")},
         }
 
     def listen_and_classify(self):
@@ -118,15 +123,25 @@ def describe(r):
                     + _latency_line(r))
         conf = r.get("conf")
         c = ("%.2f" % conf) if conf is not None else "?"
-        return ("  [voice] no command recognised (REJECT, conf=%s) -- try again" % c
-                + _latency_line(r))
+        reason = str(r.get("rejection_reason") or "model_reject").replace("_", " ")
+        return ("  [voice] no action (%s, conf=%s) -- please repeat" % (reason, c)
+                + _mic_warning(r) + _latency_line(r))
     slot = r.get("slot")
     c = ("%.2f" % r["conf"]) if r.get("conf") is not None else "?"
     line = "  [voice] heard: %s" % r["intent"]
     if slot:
         line += "  (slot: %s)" % slot
     line += "   [conf %s]" % c
-    return line + _latency_line(r)
+    return line + _mic_warning(r) + _latency_line(r)
+
+
+def _mic_warning(r):
+    audio = r.get("audio") or {}
+    if audio.get("clipping_fraction", 0.0) >= 0.005:
+        return "\n  [mic] clipping detected -- lower condenser/input gain"
+    if audio.get("capture_rms", 1.0) < 0.003:
+        return "\n  [mic] very quiet capture -- move closer or raise input gain"
+    return ""
 
 
 def _latency_line(r):

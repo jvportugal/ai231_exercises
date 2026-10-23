@@ -24,8 +24,10 @@ def main():
         default=os.path.join(HERE, "checkpoints", "destiny_robust_v2.pt"),
     )
     parser.add_argument("--deployment-report", default="deployment_eval_robust_v2.json")
-    parser.add_argument("--threshold", type=float, default=0.85)
+    parser.add_argument("--threshold", type=float, default=0.875)
     parser.add_argument("--destination", required=True)
+    parser.add_argument("--require-shipped-equivalence", action="store_true",
+                        help="fail unless export is numerically identical to the current asset")
     args = parser.parse_args()
 
     checkpoint_path = (args.checkpoint if os.path.isabs(args.checkpoint) else
@@ -75,8 +77,10 @@ def main():
         })
     if (verification["pytorch_onnx_max_abs_error"] > 1e-4
             or not verification["pytorch_onnx_decisions_match"]
-            or verification.get("exported_shipped_max_abs_error", 0.0) > 1e-4
-            or not verification.get("exported_shipped_decisions_match", True)):
+            or (args.require_shipped_equivalence and
+                verification.get("exported_shipped_max_abs_error", 0.0) > 1e-4)
+            or (args.require_shipped_equivalence and
+                not verification.get("exported_shipped_decisions_match", True))):
         raise RuntimeError("wake export parity check failed: %r" % verification)
 
     result = checkpoint["metrics"]
@@ -84,6 +88,8 @@ def main():
                               else os.path.join(HERE, args.deployment_report))
     with open(deployment_report_path, encoding="utf-8") as f:
         deployment = json.load(f)
+    deployment["checkpoint"] = os.path.basename(str(deployment.get(
+        "checkpoint", checkpoint_path)))
     metadata = {
         "wake_word": "Destiny",
         "model": checkpoint["architecture"],
@@ -108,7 +114,9 @@ def main():
                 "close-mic proximity, plosive, saturation and clipping",
                 "far-field room impulse responses",
                 "procedural fan/air-conditioner hum at 2-32dB SNR",
+                "real DCASE fan recordings with machine-ID-disjoint validation",
             ],
+            "external_noise": checkpoint.get("external_noise"),
         },
     }
     with open(os.path.join(args.destination, "metadata.json"), "w", encoding="utf-8") as f:

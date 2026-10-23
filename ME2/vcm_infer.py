@@ -46,6 +46,17 @@ VAD_REL_THRESH = 0.12
 VAD_ABS_FLOOR = 0.008
 PEAK_TARGET = 0.9
 
+# A wrong action is substantially worse than asking for one repeat.  These
+# operating points were checked on the larger 824-clip real-voice test (not the
+# small development holdout). Together with the valid-slot gate, this demo-safe
+# point substantially reduces wrong accepted actions while retaining most
+# otherwise-correct predictions. Slot gates are applied after restricting head
+# B to the three values valid for the intent.
+MIN_INTENT_CONFIDENCE = 0.80
+MIN_INTENT_MARGIN = 0.50
+MIN_SLOT_CONFIDENCE = 0.50
+MIN_SLOT_MARGIN = 0.10
+
 _HERE = os.path.dirname(os.path.abspath(__file__))
 # Ship the raw .onnx. load_model() also accepts a .onnx.gz and decompresses it
 # to a sibling .onnx on first use, but the bundle ships the plain model so it
@@ -208,10 +219,25 @@ def _detect_speech(x):
     if env.size == 0:
         return None
     peak = float(env.max())
-    if peak < VAD_ABS_FLOOR:
-        return None
-    thresh = max(VAD_ABS_FLOOR, VAD_REL_THRESH * peak)
+    if peak >= VAD_ABS_FLOOR:
+        # Preserve the training/evaluation-era placement for ordinary clips.
+        thresh = max(VAD_ABS_FLOOR, VAD_REL_THRESH * peak)
+    else:
+        # Quiet far-field fallback: use the recording's own noise floor, but
+        # require a clear sustained rise over it.  This path does not alter
+        # normal-level clips and therefore avoids moving their crop.
+        floor = float(np.percentile(env, 20))
+        robust_peak = float(np.percentile(env, 95))
+        if robust_peak < 0.001 or robust_peak < floor * 1.8:
+            return None
+        thresh = max(0.001, floor * 1.8,
+                     floor + 0.25 * (robust_peak - floor))
     voiced = env >= thresh
+    # At least four raw 20-ms frames must contain sustained energy.  Hangover
+    # is intentionally checked later because it can make one click look like a
+    # half-second utterance.
+    if int(voiced.sum()) * VAD_FRAME_MS < 80:
+        return None
     # hangover: extend voiced region to bridge word gaps
     hang = max(1, int(VAD_HANGOVER_MS / VAD_FRAME_MS))
     ext = voiced.copy()
@@ -236,6 +262,9 @@ def prepare_clip(x, verbose=False):
     Returns (clip, info). clip is 16 kHz mono float32 of length N_SAMPLES.
     """
     x = np.asarray(x, dtype=np.float32)
+    capture_peak = float(np.max(np.abs(x))) if x.size else 0.0
+    capture_rms = float(np.sqrt(np.mean(x * x))) if x.size else 0.0
+    clipping_fraction = float(np.mean(np.abs(x) >= 0.99)) if x.size else 0.0
     span = _detect_speech(x)
     if span is None:
         # no clear speech: use the raw (zero-padded) window, flag it
@@ -243,7 +272,9 @@ def prepare_clip(x, verbose=False):
             clip = np.pad(x, (0, N_SAMPLES - len(x)))
         else:
             clip = x[:N_SAMPLES]
-        info = dict(span=None, gain=1.0, note="no clear speech detected")
+        info = dict(span=None, gain=1.0, note="no clear speech detected",
+                    capture_peak=capture_peak, capture_rms=capture_rms,
+                    clipping_fraction=clipping_fraction)
         if verbose:
             print("[vad] " + info["note"])
         return clip, info
@@ -272,7 +303,9 @@ def prepare_clip(x, verbose=False):
     if ref_peak > 1e-6:
         gain = PEAK_TARGET / ref_peak
         seg = seg * gain
-    info = dict(span=(start_s, end_s), gain=gain)
+    info = dict(span=(start_s, end_s), gain=gain,
+                capture_peak=capture_peak, capture_rms=capture_rms,
+                clipping_fraction=clipping_fraction)
     if verbose:
         print(f"[vad] speech {start_s:.2f}-{end_s:.2f} s | window centered, gain x{gain:.2f}")
     return seg, info
@@ -285,6 +318,38 @@ def _softmax(z):
     z = z - z.max()
     e = np.exp(z)
     return e / e.sum()
+
+
+def _top_margin(probs):
+    """Return top-1 minus top-2 probability for a one-dimensional vector."""
+    if len(probs) < 2:
+        return float(probs[0]) if len(probs) else 0.0
+    pair = np.partition(np.asarray(probs), -2)[-2:]
+    return float(pair.max() - pair.min())
+
+
+def safe_decision(intent, conf, info):
+    """Return ``(accepted, reason)`` for the demo-safe action policy.
+
+    Classification remains visible to diagnostics, but the action runner only
+    fires when the audio, intent, and (when required) slot are unambiguous.
+    """
+    if intent in (None, "REJECT") or info.get("rejected"):
+        return False, "model_reject"
+    if info.get("span") is None:
+        return False, "no_speech"
+    if conf < MIN_INTENT_CONFIDENCE:
+        return False, "low_intent_confidence"
+    if info.get("intent_margin", 0.0) < MIN_INTENT_MARGIN:
+        return False, "low_intent_margin"
+    if intent in _SLOTTED_PREFIX:
+        if info.get("slot") is None:
+            return False, "missing_slot"
+        if info.get("slot_conf", 0.0) < MIN_SLOT_CONFIDENCE:
+            return False, "low_slot_confidence"
+        if info.get("slot_margin", 0.0) < MIN_SLOT_MARGIN:
+            return False, "low_slot_margin"
+    return True, None
 
 
 def classify(sess, labels, x, verbose=False):
@@ -308,14 +373,28 @@ def classify(sess, labels, x, verbose=False):
     intent = intents[ia]
     rejected = ia == REJECT_IDX_A
     slot = None
-    if not rejected and ib != REJECT_IDX_B:
-        tok = vtoks[ib]
-        for it, pref in _SLOTTED_PREFIX.items():
-            if tok.startswith(pref) and it == intent:
-                slot = _SLOT_TEXT.get(tok)
-                break
+    slot_conf = 0.0
+    slot_margin = 0.0
+    slot_token = None
+    # Head B covers values from all six slotted intents.  Once head A chooses
+    # an intent, compare only the three legal values for that intent.  A global
+    # argmax here used to turn e.g. COLOR_RED into COLOR_GREEN/None when an
+    # unrelated token narrowly won the head.
+    prefix = _SLOTTED_PREFIX.get(intent)
+    if not rejected and prefix:
+        valid = [i for i, token in enumerate(vtoks) if token.startswith(prefix)]
+        if valid:
+            valid_probs = pb[valid]
+            local = int(np.argmax(valid_probs))
+            ib = valid[local]
+            slot_token = vtoks[ib]
+            slot = _SLOT_TEXT.get(slot_token)
+            slot_conf = float(pb[ib])
+            slot_margin = _top_margin(valid_probs)
     info = dict(info)
-    info.update(slot=slot, slot_conf=float(pb[ib]), rejected=rejected)
+    info.update(slot=slot, slot_token=slot_token, slot_conf=slot_conf,
+                slot_margin=slot_margin, intent_margin=_top_margin(pa),
+                rejected=rejected)
     return intent, float(pa[ia]), pa, info
 
 

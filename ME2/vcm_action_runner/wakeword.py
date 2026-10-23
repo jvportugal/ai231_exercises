@@ -368,7 +368,7 @@ def _load_pcm_wav(path, volume):
 class WakeWordSession:
     """Wait for Destiny, then capture one command using silence endpointing."""
 
-    def __init__(self, threshold=0.850, device=None, command_timeout=6.0,
+    def __init__(self, threshold=0.875, device=None, command_timeout=6.0,
                  speech_start_timeout=4.0, silence_seconds=0.8,
                  speech_rms=0.008, guard_seconds=0.0,
                  noise_floor_multiplier=1.65,

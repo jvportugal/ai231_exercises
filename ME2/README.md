@@ -356,7 +356,7 @@ Press Space once to start and again to stop. Test:
 - unrelated words and normal conversation; and
 - the actual room with fans or air conditioning running.
 
-The runtime default threshold is 0.850. Raise it to reduce false activations,
+The runtime default threshold is 0.875. Raise it to reduce false activations,
 at the cost of more missed wake words:
 
 ~~~bash
@@ -414,6 +414,11 @@ python3 tester.py
 ~~~
 
 This tests microphone capture and VCM classification without running actions.
+The recorder drops the final 180 ms so a condenser microphone does not feed
+the stop-key click or the hand movement into VAD. The action path asks for a
+repeat when intent confidence is below 0.80, the top-two margin is below 0.50,
+or a required slot is ambiguous. A rejected attempt is preferable to firing a
+different action during a demonstration.
 
 ### macOS check
 
@@ -528,6 +533,14 @@ The curated, speaker-disjoint split used:
 Negatives included other commands, phonetically near words, and random words.
 Held-out speakers were never sampled during training.
 
+The real-fan refinement started from the retained full-corpus checkpoint. The
+local archive cache still contained all 1,010 training and 449 held-out
+Destiny clips, plus 921 training and 696 held-out word negatives; those
+available clips were used for the refinement and its matched baseline. The
+real-fan result uses 1,000 fan candidates from a machine-ID-disjoint DCASE
+split. The post-refinement word-OOS percentage therefore covers the available
+696-clip subset, not all 3,234 original held-out negatives.
+
 #### Wake-word preprocessing
 
 1. Convert to 16 kHz mono and remove DC mean.
@@ -552,9 +565,12 @@ Original corpus files were not modified. Variants were created in memory:
 - synthetic room impulse responses for far-field speech;
 - close-microphone bass/proximity coloration;
 - short plosive bursts, soft saturation, overload, and hard clipping;
-- colored background noise; and
+- colored background noise;
 - procedural fan/air-conditioner hum containing 50/60 Hz mains components,
-  blade harmonics, colored airflow, and slow modulation, mixed at 2–32 dB SNR.
+  blade harmonics, colored airflow, and slow modulation, mixed at 2–32 dB SNR;
+  and
+- real DCASE fan recordings, split by physical machine ID so the validation fan
+  was never heard during fine-tuning.
 
 One third of generated negative examples were fan-only hard negatives. Other
 negative words received similar channel transformations so augmentation
@@ -583,9 +599,10 @@ penalizing fan false positives. The held-out stress set covered far speech with
 fan noise, close clipped speech, high/low pitch and prosody, room reverberation,
 and 600 fan-only examples.
 
-At the deployed 0.850 threshold, the recorded evaluation was 94.65% clean
-Destiny recall, 91.75% stress recall, 1.24% held-out out-of-scope
-false-positive rate, and 0/600 procedural fan false activations. These are
+At the deployed 0.875 threshold, the deployment-matched evaluation measured
+95.10% clean Destiny recall, 93.50% stress recall, 0.86% held-out out-of-scope
+false-positive rate, and 0/1,000 procedural plus real-fan false activations.
+The real-fan portion used a held-out physical fan. These are
 dataset measurements, not guarantees for every microphone and room.
 
 The selected PyTorch checkpoint was exported to ONNX opset 17. The matching
@@ -698,8 +715,12 @@ Optimization used seed 301, batch size 128, AdamW at `3e-4` with
 weight decay `1e-4`, cosine learning-rate decay, weighted intent cross entropy,
 slot cross entropy, and early stopping with patience six. The best validation
 end-to-end score was selected at epoch 26; training stopped at epoch 32. E8
-uses direct argmax decoding for both output heads; the intent head's REJECT
-class rejects out-of-scope audio.
+uses argmax intent decoding. For a slotted intent, runtime decoding compares
+only that intent's three legal values and applies confidence/margin safety
+gates before executing an action. The intent head's REJECT class rejects
+out-of-scope audio. OOS rejection measures unrelated audio; it does not measure
+confusions between two valid commands such as WEATHER and VOLUME_DOWN, or
+between two valid colors.
 
 #### Recorded evaluation
 

@@ -1,294 +1,88 @@
 {
   "final": {
-    "threshold": 0.9003970623016357,
+    "threshold": 0.5434957146644592,
     "target_oos_fpr": 0.005,
-    "clean_auc": 0.9971137675560201,
-    "clean_recall": 0.9042316258351893,
-    "clean_oos_fpr": 0.005875077303648732,
-    "stress_recall": 0.8825,
-    "fan_false_positive_rate": 0.0,
+    "clean_auc": 0.9985120190461562,
+    "clean_recall": 0.9844097995545658,
+    "clean_oos_fpr": 0.010057471264367816,
+    "stress_recall": 0.98,
+    "fan_false_positive_rate": 0.001,
     "by_category": {
+      "command": {
+        "n": 668,
+        "false_positive_rate": 0.005988023952095809
+      },
       "destiny_clean": {
         "n": 449,
-        "recall": 0.9042316258351893
+        "recall": 0.9844097995545658
+      },
+      "fan_only": {
+        "n": 600,
+        "false_positive_rate": 0.0
+      },
+      "near_miss": {
+        "n": 28,
+        "false_positive_rate": 0.10714285714285714
       },
       "positive_close_clip": {
         "n": 80,
-        "recall": 0.6375
+        "recall": 0.975
       },
       "positive_far_fan": {
         "n": 80,
-        "recall": 0.9125
+        "recall": 0.95
       },
       "positive_high_pitch_prosody": {
         "n": 80,
-        "recall": 0.95
+        "recall": 0.9875
       },
       "positive_low_pitch_prosody": {
         "n": 80,
-        "recall": 0.9625
+        "recall": 0.9875
       },
-      "positive_room_fan": {
+      "positive_real_fan": {
         "n": 80,
-        "recall": 0.95
+        "recall": 1.0
+      },
+      "real_fan_only": {
+        "n": 400,
+        "false_positive_rate": 0.0025
       }
     }
   },
   "history": [
     {
       "epoch": 0,
-      "loss": 0.4216254144055503,
-      "objective": 0.21812444320712698,
-      "seconds": 9.306883573532104,
-      "threshold": 0.9553886651992798,
+      "loss": 0.10505323369588171,
+      "objective": 0.9684799554565702,
+      "seconds": 51.659966468811035,
+      "threshold": 0.6432859897613525,
       "target_oos_fpr": 0.005,
-      "clean_auc": 0.9648493938980736,
-      "clean_recall": 0.24944320712694878,
-      "clean_oos_fpr": 0.005875077303648732,
-      "stress_recall": 0.1925,
-      "fan_false_positive_rate": 0.0,
+      "clean_auc": 0.9982944218314005,
+      "clean_recall": 0.9799554565701559,
+      "clean_oos_fpr": 0.007183908045977011,
+      "stress_recall": 0.97,
+      "fan_false_positive_rate": 0.003,
       "by_category": {
+        "command": {
+          "n": 668,
+          "false_positive_rate": 0.0014970059880239522
+        },
         "destiny_clean": {
           "n": 449,
-          "recall": 0.24944320712694878
+          "recall": 0.9799554565701559
+        },
+        "fan_only": {
+          "n": 600,
+          "false_positive_rate": 0.0
+        },
+        "near_miss": {
+          "n": 28,
+          "false_positive_rate": 0.14285714285714285
         },
         "positive_close_clip": {
           "n": 80,
-          "recall": 0.05
-        },
-        "positive_far_fan": {
-          "n": 80,
-          "recall": 0.075
-        },
-        "positive_high_pitch_prosody": {
-          "n": 80,
-          "recall": 0.3375
-        },
-        "positive_low_pitch_prosody": {
-          "n": 80,
-          "recall": 0.3375
-        },
-        "positive_room_fan": {
-          "n": 80,
-          "recall": 0.1625
-        }
-      }
-    },
-    {
-      "epoch": 1,
-      "loss": 0.23636843570641108,
-      "objective": 0.43540534521158136,
-      "seconds": 7.743430137634277,
-      "threshold": 0.9234942197799683,
-      "target_oos_fpr": 0.005,
-      "clean_auc": 0.9822184391067623,
-      "clean_recall": 0.4053452115812918,
-      "clean_oos_fpr": 0.005875077303648732,
-      "stress_recall": 0.46,
-      "fan_false_positive_rate": 0.0,
-      "by_category": {
-        "destiny_clean": {
-          "n": 449,
-          "recall": 0.4053452115812918
-        },
-        "positive_close_clip": {
-          "n": 80,
-          "recall": 0.05
-        },
-        "positive_far_fan": {
-          "n": 80,
-          "recall": 0.5875
-        },
-        "positive_high_pitch_prosody": {
-          "n": 80,
-          "recall": 0.3375
-        },
-        "positive_low_pitch_prosody": {
-          "n": 80,
-          "recall": 0.575
-        },
-        "positive_room_fan": {
-          "n": 80,
-          "recall": 0.75
-        }
-      }
-    },
-    {
-      "epoch": 2,
-      "loss": 0.1838510455404009,
-      "objective": 0.5028964365256126,
-      "seconds": 7.196910381317139,
-      "threshold": 0.7491635084152222,
-      "target_oos_fpr": 0.005,
-      "clean_auc": 0.978510618663339,
-      "clean_recall": 0.39643652561247217,
-      "clean_oos_fpr": 0.005875077303648732,
-      "stress_recall": 0.59,
-      "fan_false_positive_rate": 0.0,
-      "by_category": {
-        "destiny_clean": {
-          "n": 449,
-          "recall": 0.39643652561247217
-        },
-        "positive_close_clip": {
-          "n": 80,
-          "recall": 0.0875
-        },
-        "positive_far_fan": {
-          "n": 80,
-          "recall": 0.85
-        },
-        "positive_high_pitch_prosody": {
-          "n": 80,
-          "recall": 0.675
-        },
-        "positive_low_pitch_prosody": {
-          "n": 80,
-          "recall": 0.65
-        },
-        "positive_room_fan": {
-          "n": 80,
-          "recall": 0.6875
-        }
-      }
-    },
-    {
-      "epoch": 3,
-      "loss": 0.16021530074732646,
-      "objective": 0.583471881959911,
-      "seconds": 7.171588182449341,
-      "threshold": 0.9652481079101562,
-      "target_oos_fpr": 0.005,
-      "clean_auc": 0.9869537610549383,
-      "clean_recall": 0.5968819599109132,
-      "clean_oos_fpr": 0.005875077303648732,
-      "stress_recall": 0.5725,
-      "fan_false_positive_rate": 0.0,
-      "by_category": {
-        "destiny_clean": {
-          "n": 449,
-          "recall": 0.5968819599109132
-        },
-        "positive_close_clip": {
-          "n": 80,
-          "recall": 0.2
-        },
-        "positive_far_fan": {
-          "n": 80,
-          "recall": 0.5375
-        },
-        "positive_high_pitch_prosody": {
-          "n": 80,
-          "recall": 0.6625
-        },
-        "positive_low_pitch_prosody": {
-          "n": 80,
-          "recall": 0.7875
-        },
-        "positive_room_fan": {
-          "n": 80,
-          "recall": 0.675
-        }
-      }
-    },
-    {
-      "epoch": 4,
-      "loss": 0.15485456577369144,
-      "objective": 0.5982422048997774,
-      "seconds": 6.890592813491821,
-      "threshold": 0.9672160148620605,
-      "target_oos_fpr": 0.005,
-      "clean_auc": 0.9849428331770044,
-      "clean_recall": 0.4922048997772829,
-      "clean_oos_fpr": 0.005875077303648732,
-      "stress_recall": 0.685,
-      "fan_false_positive_rate": 0.0,
-      "by_category": {
-        "destiny_clean": {
-          "n": 449,
-          "recall": 0.4922048997772829
-        },
-        "positive_close_clip": {
-          "n": 80,
-          "recall": 0.0875
-        },
-        "positive_far_fan": {
-          "n": 80,
-          "recall": 0.8625
-        },
-        "positive_high_pitch_prosody": {
-          "n": 80,
-          "recall": 0.7375
-        },
-        "positive_low_pitch_prosody": {
-          "n": 80,
-          "recall": 0.85
-        },
-        "positive_room_fan": {
-          "n": 80,
-          "recall": 0.8875
-        }
-      }
-    },
-    {
-      "epoch": 5,
-      "loss": 0.14573707580566406,
-      "objective": 0.6927327394209355,
-      "seconds": 6.409409761428833,
-      "threshold": 0.9852281212806702,
-      "target_oos_fpr": 0.005,
-      "clean_auc": 0.9927399994215138,
-      "clean_recall": 0.732739420935412,
-      "clean_oos_fpr": 0.005875077303648732,
-      "stress_recall": 0.66,
-      "fan_false_positive_rate": 0.0,
-      "by_category": {
-        "destiny_clean": {
-          "n": 449,
-          "recall": 0.732739420935412
-        },
-        "positive_close_clip": {
-          "n": 80,
-          "recall": 0.3125
-        },
-        "positive_far_fan": {
-          "n": 80,
-          "recall": 0.6875
-        },
-        "positive_high_pitch_prosody": {
-          "n": 80,
-          "recall": 0.725
-        },
-        "positive_low_pitch_prosody": {
-          "n": 80,
-          "recall": 0.8125
-        },
-        "positive_room_fan": {
-          "n": 80,
-          "recall": 0.7625
-        }
-      }
-    },
-    {
-      "epoch": 6,
-      "loss": 0.13621693138565336,
-      "objective": 0.8064423719376392,
-      "seconds": 7.451204776763916,
-      "threshold": 0.6645904779434204,
-      "target_oos_fpr": 0.005,
-      "clean_auc": 0.9943508077456535,
-      "clean_recall": 0.8173719376391982,
-      "clean_oos_fpr": 0.005875077303648732,
-      "stress_recall": 0.7975,
-      "fan_false_positive_rate": 0.0,
-      "by_category": {
-        "destiny_clean": {
-          "n": 449,
-          "recall": 0.8173719376391982
-        },
-        "positive_close_clip": {
-          "n": 80,
-          "recall": 0.3125
+          "recall": 0.9125
         },
         "positive_far_fan": {
           "n": 80,
@@ -296,444 +90,294 @@
         },
         "positive_high_pitch_prosody": {
           "n": 80,
-          "recall": 0.7875
+          "recall": 0.9875
         },
         "positive_low_pitch_prosody": {
-          "n": 80,
-          "recall": 0.95
-        },
-        "positive_room_fan": {
-          "n": 80,
-          "recall": 0.9625
-        }
-      }
-    },
-    {
-      "epoch": 7,
-      "loss": 0.12540260336228778,
-      "objective": 0.7737906458797328,
-      "seconds": 10.347214698791504,
-      "threshold": 0.8849592804908752,
-      "target_oos_fpr": 0.005,
-      "clean_auc": 0.9931091286484224,
-      "clean_recall": 0.7906458797327395,
-      "clean_oos_fpr": 0.005875077303648732,
-      "stress_recall": 0.76,
-      "fan_false_positive_rate": 0.0,
-      "by_category": {
-        "destiny_clean": {
-          "n": 449,
-          "recall": 0.7906458797327395
-        },
-        "positive_close_clip": {
-          "n": 80,
-          "recall": 0.475
-        },
-        "positive_far_fan": {
-          "n": 80,
-          "recall": 0.7875
-        },
-        "positive_high_pitch_prosody": {
-          "n": 80,
-          "recall": 0.7875
-        },
-        "positive_low_pitch_prosody": {
-          "n": 80,
-          "recall": 0.9125
-        },
-        "positive_room_fan": {
-          "n": 80,
-          "recall": 0.8375
-        }
-      }
-    },
-    {
-      "epoch": 8,
-      "loss": 0.12052333795598576,
-      "objective": 0.835971325167038,
-      "seconds": 7.991035223007202,
-      "threshold": 0.8921383619308472,
-      "target_oos_fpr": 0.005,
-      "clean_auc": 0.9955608078420677,
-      "clean_recall": 0.8463251670378619,
-      "clean_oos_fpr": 0.005875077303648732,
-      "stress_recall": 0.8275,
-      "fan_false_positive_rate": 0.0,
-      "by_category": {
-        "destiny_clean": {
-          "n": 449,
-          "recall": 0.8463251670378619
-        },
-        "positive_close_clip": {
-          "n": 80,
-          "recall": 0.55
-        },
-        "positive_far_fan": {
-          "n": 80,
-          "recall": 0.9
-        },
-        "positive_high_pitch_prosody": {
-          "n": 80,
-          "recall": 0.825
-        },
-        "positive_low_pitch_prosody": {
-          "n": 80,
-          "recall": 0.925
-        },
-        "positive_room_fan": {
-          "n": 80,
-          "recall": 0.9375
-        }
-      }
-    },
-    {
-      "epoch": 9,
-      "loss": 0.10837976344994137,
-      "objective": 0.8337346881959912,
-      "seconds": 6.665313005447388,
-      "threshold": 0.7728531956672668,
-      "target_oos_fpr": 0.005,
-      "clean_auc": 0.9952984230744333,
-      "clean_recall": 0.8596881959910914,
-      "clean_oos_fpr": 0.005875077303648732,
-      "stress_recall": 0.8125,
-      "fan_false_positive_rate": 0.0,
-      "by_category": {
-        "destiny_clean": {
-          "n": 449,
-          "recall": 0.8596881959910914
-        },
-        "positive_close_clip": {
-          "n": 80,
-          "recall": 0.3
-        },
-        "positive_far_fan": {
           "n": 80,
           "recall": 0.9875
         },
-        "positive_high_pitch_prosody": {
-          "n": 80,
-          "recall": 0.825
-        },
-        "positive_low_pitch_prosody": {
-          "n": 80,
-          "recall": 0.9625
-        },
-        "positive_room_fan": {
+        "positive_real_fan": {
           "n": 80,
           "recall": 0.9875
+        },
+        "real_fan_only": {
+          "n": 400,
+          "false_positive_rate": 0.0075
         }
       }
     },
     {
-      "epoch": 10,
-      "loss": 0.10135939457586833,
-      "objective": 0.8727480512249444,
-      "seconds": 6.70780611038208,
-      "threshold": 0.8779287934303284,
+      "epoch": 1,
+      "loss": 0.09528160099472319,
+      "objective": 0.9634688195991091,
+      "seconds": 47.742215394973755,
+      "threshold": 0.6052034497261047,
       "target_oos_fpr": 0.005,
-      "clean_auc": 0.9968727316802404,
-      "clean_recall": 0.8730512249443207,
-      "clean_oos_fpr": 0.005875077303648732,
-      "stress_recall": 0.8725,
-      "fan_false_positive_rate": 0.0,
+      "clean_auc": 0.9981216240432123,
+      "clean_recall": 0.9688195991091314,
+      "clean_oos_fpr": 0.007183908045977011,
+      "stress_recall": 0.97,
+      "fan_false_positive_rate": 0.003,
       "by_category": {
+        "command": {
+          "n": 668,
+          "false_positive_rate": 0.0014970059880239522
+        },
         "destiny_clean": {
           "n": 449,
-          "recall": 0.8730512249443207
+          "recall": 0.9688195991091314
+        },
+        "fan_only": {
+          "n": 600,
+          "false_positive_rate": 0.0
+        },
+        "near_miss": {
+          "n": 28,
+          "false_positive_rate": 0.14285714285714285
         },
         "positive_close_clip": {
-          "n": 80,
-          "recall": 0.6625
-        },
-        "positive_far_fan": {
-          "n": 80,
-          "recall": 0.95
-        },
-        "positive_high_pitch_prosody": {
-          "n": 80,
-          "recall": 0.8625
-        },
-        "positive_low_pitch_prosody": {
-          "n": 80,
-          "recall": 0.9375
-        },
-        "positive_room_fan": {
-          "n": 80,
-          "recall": 0.95
-        }
-      }
-    },
-    {
-      "epoch": 11,
-      "loss": 0.09001797842127936,
-      "objective": 0.8428708240534522,
-      "seconds": 7.489822864532471,
-      "threshold": 0.9307323098182678,
-      "target_oos_fpr": 0.005,
-      "clean_auc": 0.9952268009856301,
-      "clean_recall": 0.8708240534521158,
-      "clean_oos_fpr": 0.005875077303648732,
-      "stress_recall": 0.82,
-      "fan_false_positive_rate": 0.0,
-      "by_category": {
-        "destiny_clean": {
-          "n": 449,
-          "recall": 0.8708240534521158
-        },
-        "positive_close_clip": {
-          "n": 80,
-          "recall": 0.5
-        },
-        "positive_far_fan": {
-          "n": 80,
-          "recall": 0.875
-        },
-        "positive_high_pitch_prosody": {
-          "n": 80,
-          "recall": 0.8375
-        },
-        "positive_low_pitch_prosody": {
-          "n": 80,
-          "recall": 0.9375
-        },
-        "positive_room_fan": {
-          "n": 80,
-          "recall": 0.95
-        }
-      }
-    },
-    {
-      "epoch": 12,
-      "loss": 0.08868224199329104,
-      "objective": 0.8461096881959911,
-      "seconds": 6.686519384384155,
-      "threshold": 0.8612247705459595,
-      "target_oos_fpr": 0.005,
-      "clean_auc": 0.9950071140017052,
-      "clean_recall": 0.8596881959910914,
-      "clean_oos_fpr": 0.005875077303648732,
-      "stress_recall": 0.835,
-      "fan_false_positive_rate": 0.0,
-      "by_category": {
-        "destiny_clean": {
-          "n": 449,
-          "recall": 0.8596881959910914
-        },
-        "positive_close_clip": {
-          "n": 80,
-          "recall": 0.4625
-        },
-        "positive_far_fan": {
-          "n": 80,
-          "recall": 0.9375
-        },
-        "positive_high_pitch_prosody": {
-          "n": 80,
-          "recall": 0.875
-        },
-        "positive_low_pitch_prosody": {
-          "n": 80,
-          "recall": 0.95
-        },
-        "positive_room_fan": {
-          "n": 80,
-          "recall": 0.95
-        }
-      }
-    },
-    {
-      "epoch": 13,
-      "loss": 0.09537061878613064,
-      "objective": 0.8736341870824054,
-      "seconds": 6.869586229324341,
-      "threshold": 0.9375685453414917,
-      "target_oos_fpr": 0.005,
-      "clean_auc": 0.9971185882735358,
-      "clean_recall": 0.8841870824053452,
-      "clean_oos_fpr": 0.005875077303648732,
-      "stress_recall": 0.865,
-      "fan_false_positive_rate": 0.0,
-      "by_category": {
-        "destiny_clean": {
-          "n": 449,
-          "recall": 0.8841870824053452
-        },
-        "positive_close_clip": {
-          "n": 80,
-          "recall": 0.6125
-        },
-        "positive_far_fan": {
           "n": 80,
           "recall": 0.925
         },
+        "positive_far_fan": {
+          "n": 80,
+          "recall": 0.9625
+        },
         "positive_high_pitch_prosody": {
           "n": 80,
-          "recall": 0.8625
+          "recall": 0.9875
         },
         "positive_low_pitch_prosody": {
           "n": 80,
-          "recall": 0.9625
+          "recall": 0.9875
         },
-        "positive_room_fan": {
+        "positive_real_fan": {
           "n": 80,
-          "recall": 0.9625
+          "recall": 0.9875
+        },
+        "real_fan_only": {
+          "n": 400,
+          "false_positive_rate": 0.0075
         }
       }
     },
     {
-      "epoch": 14,
-      "loss": 0.08084212737424033,
-      "objective": 0.8922792316258352,
-      "seconds": 6.197032451629639,
-      "threshold": 0.9003970623016357,
+      "epoch": 2,
+      "loss": 0.08784423926046916,
+      "objective": 0.9768571826280625,
+      "seconds": 46.391499280929565,
+      "threshold": 0.7063447833061218,
       "target_oos_fpr": 0.005,
-      "clean_auc": 0.9971137675560201,
-      "clean_recall": 0.9042316258351893,
-      "clean_oos_fpr": 0.005875077303648732,
-      "stress_recall": 0.8825,
+      "clean_auc": 0.9982400225277117,
+      "clean_recall": 0.9821826280623608,
+      "clean_oos_fpr": 0.011494252873563218,
+      "stress_recall": 0.9725,
       "fan_false_positive_rate": 0.0,
       "by_category": {
+        "command": {
+          "n": 668,
+          "false_positive_rate": 0.005988023952095809
+        },
         "destiny_clean": {
           "n": 449,
-          "recall": 0.9042316258351893
+          "recall": 0.9821826280623608
+        },
+        "fan_only": {
+          "n": 600,
+          "false_positive_rate": 0.0
+        },
+        "near_miss": {
+          "n": 28,
+          "false_positive_rate": 0.14285714285714285
         },
         "positive_close_clip": {
           "n": 80,
-          "recall": 0.6375
+          "recall": 0.9375
         },
         "positive_far_fan": {
           "n": 80,
-          "recall": 0.9125
+          "recall": 0.9625
         },
         "positive_high_pitch_prosody": {
+          "n": 80,
+          "recall": 0.9875
+        },
+        "positive_low_pitch_prosody": {
+          "n": 80,
+          "recall": 0.9875
+        },
+        "positive_real_fan": {
+          "n": 80,
+          "recall": 0.9875
+        },
+        "real_fan_only": {
+          "n": 400,
+          "false_positive_rate": 0.0
+        }
+      }
+    },
+    {
+      "epoch": 3,
+      "loss": 0.09383068663733346,
+      "objective": 0.9779755011135858,
+      "seconds": 46.33573865890503,
+      "threshold": 0.6192958354949951,
+      "target_oos_fpr": 0.005,
+      "clean_auc": 0.9979648260502265,
+      "clean_recall": 0.9755011135857461,
+      "clean_oos_fpr": 0.011494252873563218,
+      "stress_recall": 0.98,
+      "fan_false_positive_rate": 0.0,
+      "by_category": {
+        "command": {
+          "n": 668,
+          "false_positive_rate": 0.0074850299401197605
+        },
+        "destiny_clean": {
+          "n": 449,
+          "recall": 0.9755011135857461
+        },
+        "fan_only": {
+          "n": 600,
+          "false_positive_rate": 0.0
+        },
+        "near_miss": {
+          "n": 28,
+          "false_positive_rate": 0.10714285714285714
+        },
+        "positive_close_clip": {
+          "n": 80,
+          "recall": 0.9625
+        },
+        "positive_far_fan": {
           "n": 80,
           "recall": 0.95
         },
+        "positive_high_pitch_prosody": {
+          "n": 80,
+          "recall": 1.0
+        },
         "positive_low_pitch_prosody": {
           "n": 80,
-          "recall": 0.9625
+          "recall": 0.9875
         },
-        "positive_room_fan": {
+        "positive_real_fan": {
+          "n": 80,
+          "recall": 1.0
+        },
+        "real_fan_only": {
+          "n": 400,
+          "false_positive_rate": 0.0
+        }
+      }
+    },
+    {
+      "epoch": 4,
+      "loss": 0.08690004876681737,
+      "objective": 0.9799844097995547,
+      "seconds": 47.72038388252258,
+      "threshold": 0.5434957146644592,
+      "target_oos_fpr": 0.005,
+      "clean_auc": 0.9985120190461562,
+      "clean_recall": 0.9844097995545658,
+      "clean_oos_fpr": 0.010057471264367816,
+      "stress_recall": 0.98,
+      "fan_false_positive_rate": 0.001,
+      "by_category": {
+        "command": {
+          "n": 668,
+          "false_positive_rate": 0.005988023952095809
+        },
+        "destiny_clean": {
+          "n": 449,
+          "recall": 0.9844097995545658
+        },
+        "fan_only": {
+          "n": 600,
+          "false_positive_rate": 0.0
+        },
+        "near_miss": {
+          "n": 28,
+          "false_positive_rate": 0.10714285714285714
+        },
+        "positive_close_clip": {
+          "n": 80,
+          "recall": 0.975
+        },
+        "positive_far_fan": {
           "n": 80,
           "recall": 0.95
+        },
+        "positive_high_pitch_prosody": {
+          "n": 80,
+          "recall": 0.9875
+        },
+        "positive_low_pitch_prosody": {
+          "n": 80,
+          "recall": 0.9875
+        },
+        "positive_real_fan": {
+          "n": 80,
+          "recall": 1.0
+        },
+        "real_fan_only": {
+          "n": 400,
+          "false_positive_rate": 0.0025
         }
       }
     },
     {
-      "epoch": 15,
-      "loss": 0.08851137684924262,
-      "objective": 0.8716297327394209,
-      "seconds": 6.162559986114502,
-      "threshold": 0.9117754697799683,
+      "epoch": 5,
+      "loss": 0.08589410841464996,
+      "objective": 0.9786094097995546,
+      "seconds": 46.279807806015015,
+      "threshold": 0.493739515542984,
       "target_oos_fpr": 0.005,
-      "clean_auc": 0.9971798802533769,
-      "clean_recall": 0.8797327394209354,
-      "clean_oos_fpr": 0.005875077303648732,
-      "stress_recall": 0.865,
-      "fan_false_positive_rate": 0.0,
+      "clean_auc": 0.9985728182679261,
+      "clean_recall": 0.9844097995545658,
+      "clean_oos_fpr": 0.010057471264367816,
+      "stress_recall": 0.9775,
+      "fan_false_positive_rate": 0.001,
       "by_category": {
+        "command": {
+          "n": 668,
+          "false_positive_rate": 0.005988023952095809
+        },
         "destiny_clean": {
           "n": 449,
-          "recall": 0.8797327394209354
+          "recall": 0.9844097995545658
+        },
+        "fan_only": {
+          "n": 600,
+          "false_positive_rate": 0.0
+        },
+        "near_miss": {
+          "n": 28,
+          "false_positive_rate": 0.10714285714285714
         },
         "positive_close_clip": {
           "n": 80,
-          "recall": 0.5875
-        },
-        "positive_far_fan": {
-          "n": 80,
-          "recall": 0.925
-        },
-        "positive_high_pitch_prosody": {
-          "n": 80,
-          "recall": 0.9125
-        },
-        "positive_low_pitch_prosody": {
-          "n": 80,
           "recall": 0.9625
         },
-        "positive_room_fan": {
-          "n": 80,
-          "recall": 0.9375
-        }
-      }
-    },
-    {
-      "epoch": 16,
-      "loss": 0.07372833688344274,
-      "objective": 0.877129732739421,
-      "seconds": 6.428167819976807,
-      "threshold": 0.8852894902229309,
-      "target_oos_fpr": 0.005,
-      "clean_auc": 0.9972177573195709,
-      "clean_recall": 0.8797327394209354,
-      "clean_oos_fpr": 0.005875077303648732,
-      "stress_recall": 0.875,
-      "fan_false_positive_rate": 0.0,
-      "by_category": {
-        "destiny_clean": {
-          "n": 449,
-          "recall": 0.8797327394209354
-        },
-        "positive_close_clip": {
-          "n": 80,
-          "recall": 0.625
-        },
         "positive_far_fan": {
-          "n": 80,
-          "recall": 0.9375
-        },
-        "positive_high_pitch_prosody": {
-          "n": 80,
-          "recall": 0.9125
-        },
-        "positive_low_pitch_prosody": {
-          "n": 80,
-          "recall": 0.9625
-        },
-        "positive_room_fan": {
-          "n": 80,
-          "recall": 0.9375
-        }
-      }
-    },
-    {
-      "epoch": 17,
-      "loss": 0.08427792917404855,
-      "objective": 0.8791341870824054,
-      "seconds": 6.3934667110443115,
-      "threshold": 0.8810626864433289,
-      "target_oos_fpr": 0.005,
-      "clean_auc": 0.9971874556666158,
-      "clean_recall": 0.8841870824053452,
-      "clean_oos_fpr": 0.005875077303648732,
-      "stress_recall": 0.875,
-      "fan_false_positive_rate": 0.0,
-      "by_category": {
-        "destiny_clean": {
-          "n": 449,
-          "recall": 0.8841870824053452
-        },
-        "positive_close_clip": {
-          "n": 80,
-          "recall": 0.6125
-        },
-        "positive_far_fan": {
-          "n": 80,
-          "recall": 0.9375
-        },
-        "positive_high_pitch_prosody": {
-          "n": 80,
-          "recall": 0.9125
-        },
-        "positive_low_pitch_prosody": {
-          "n": 80,
-          "recall": 0.9625
-        },
-        "positive_room_fan": {
           "n": 80,
           "recall": 0.95
+        },
+        "positive_high_pitch_prosody": {
+          "n": 80,
+          "recall": 0.9875
+        },
+        "positive_low_pitch_prosody": {
+          "n": 80,
+          "recall": 0.9875
+        },
+        "positive_real_fan": {
+          "n": 80,
+          "recall": 1.0
+        },
+        "real_fan_only": {
+          "n": 400,
+          "false_positive_rate": 0.0025
         }
       }
     }

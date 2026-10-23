@@ -231,6 +231,9 @@ def _handle_voice_result(r, app, running_message):
         return True  # REJECT / no command -> just listen again
     intent = r["intent"]
     slot = r.get("slot")
+    if BY_NAME.get(intent, (None, None, []))[2] and slot is None:
+        print("  [voice] no action: %s requires a clearly recognised value" % intent)
+        return True
     # Normalise a slot the model emitted to a golden value when possible
     # (head-B tokens map 1:1, but be tolerant of case/spacing differences).
     if slot is not None:
@@ -369,8 +372,8 @@ def main(argv=None):
                         help="keyboard-controlled mic recording")
     parser.add_argument("--wakeword", action="store_true",
                         help='hands-free: say "Destiny" before each command')
-    parser.add_argument("--wakeword-threshold", type=float, default=0.850,
-                        help="Destiny probability threshold (default: 0.850)")
+    parser.add_argument("--wakeword-threshold", type=float, default=0.875,
+                        help="Destiny probability threshold (default: 0.875)")
     parser.add_argument("--no-wake-chime", action="store_true",
                         help="disable the sound played after Destiny is detected")
     parser.add_argument("--wake-chime", default=None, metavar="PCM_WAV",
