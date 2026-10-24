@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 
 import vcm_infer as V
-from vcm_action_runner.voice import Voice
+from vcm_action_runner.voice import Voice, describe
 
 
 class _Session:
@@ -125,6 +125,29 @@ class VoiceSafetyTests(unittest.TestCase):
         self.assertTrue(rescued["ok"])
         self.assertEqual(rescued["intent"], "PAUSE")
         self.assertEqual(rescued["acceptance_policy"], "wake_reject_rescue")
+
+    def test_every_rejection_reports_top_three_model_predictions(self):
+        probabilities = np.full(len(V.INTENT_NAMES), 0.01 / 17.0, np.float32)
+        probabilities[V.INTENT_NAMES.index("PAUSE")] = 0.10
+        probabilities[V.INTENT_NAMES.index("CALL")] = 0.07
+        probabilities[V.REJECT_IDX_A] = 0.82
+        bridge = Voice()
+        bridge._sess = _Session(np.log(probabilities),
+                                np.zeros(len(V.VALUE_TOKENS), np.float32))
+        bridge._labels = {"intents": V.INTENT_NAMES,
+                          "value_tokens": V.VALUE_TOKENS}
+        audio = np.zeros(V.SAMPLE_RATE, np.float32)
+        t = np.arange(6000, dtype=np.float32) / V.SAMPLE_RATE
+        audio[3000:9000] = 0.02 * np.sin(2 * np.pi * 180 * t)
+
+        result = bridge.classify_audio(audio)
+        description = describe(result)
+
+        self.assertFalse(result["ok"])
+        self.assertEqual([name for name, _ in result["top_predictions"]],
+                         ["REJECT", "PAUSE", "CALL"])
+        self.assertIn("top 3 model predictions: REJECT=0.82, PAUSE=0.10, CALL=0.07",
+                      description)
 
 
 if __name__ == "__main__":

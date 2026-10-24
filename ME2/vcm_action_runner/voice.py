@@ -91,6 +91,7 @@ class Voice:
             accepted, rejection_reason = vcm.safe_decision(
                 intent, conf, info, allow_wake_short=allow_wake_short)
         rejected = not accepted
+        top_indices = probs.argsort()[::-1][:3]
         return {
             "ok": (not rejected) and intent is not None,
             "latency": lat,
@@ -105,6 +106,13 @@ class Voice:
                                   else "strict"),
             "model_intent": model_intent,
             "model_conf": model_conf,
+            # Keep the raw model ranking for diagnostics.  This is populated
+            # for every result so all safety-rejection paths (not only a
+            # literal REJECT top class) can explain what the model heard.
+            "top_predictions": [
+                (labels["intents"][int(i)], float(probs[int(i)]))
+                for i in top_indices
+            ],
             "command_intent": info.get("command_intent"),
             "command_conf": info.get("command_conf"),
             "command_conditional_conf": info.get("command_conditional_conf"),
@@ -146,12 +154,11 @@ def describe(r):
         c = ("%.2f" % conf) if conf is not None else "?"
         reason = str(r.get("rejection_reason") or "model_reject").replace("_", " ")
         line = "  [voice] no action (%s, conf=%s) -- please repeat" % (reason, c)
-        if r.get("model_intent") == "REJECT" and r.get("command_intent"):
-            line += ("\n  [voice] best command under REJECT: %s "
-                     "(raw %.2f, conditional %.2f, margin %.2f)" %
-                     (r["command_intent"], r.get("command_conf", 0.0),
-                      r.get("command_conditional_conf", 0.0),
-                      r.get("command_conditional_margin", 0.0)))
+        predictions = r.get("top_predictions") or ()
+        if predictions:
+            ranked = ", ".join("%s=%.2f" % (intent, confidence)
+                               for intent, confidence in predictions[:3])
+            line += "\n  [voice] top 3 model predictions: " + ranked
         return line + _mic_warning(r) + _latency_line(r)
     slot = r.get("slot")
     c = ("%.2f" % r["conf"]) if r.get("conf") is not None else "?"
@@ -169,7 +176,10 @@ def describe(r):
 def _mic_warning(r):
     audio = r.get("audio") or {}
     if audio.get("clipping_fraction", 0.0) >= 0.005:
-        return "\n  [mic] clipping detected -- lower condenser/input gain"
+        return ("\n  [mic] clipping detected -- peak %.3f, clipped %.2f%%; "
+                "lower hardware/input gain" %
+                (audio.get("capture_peak", 0.0),
+                 100.0 * audio.get("clipping_fraction", 0.0)))
     if audio.get("capture_rms", 1.0) < 0.003:
         return "\n  [mic] very quiet capture -- move closer or raise input gain"
     return ""
