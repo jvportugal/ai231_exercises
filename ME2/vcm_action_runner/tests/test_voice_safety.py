@@ -74,6 +74,19 @@ class VoiceSafetyTests(unittest.TestCase):
                 "intent_margin": 0.8, "slot": None}
         self.assertEqual(V.safe_decision("WEATHER", 0.9, info), (True, None))
 
+    def test_calibrated_policy_uses_learned_reject_class_not_global_gate(self):
+        info = {"span": (0.1, 0.7), "rejected": False,
+                "decision_calibrated": True, "intent_margin": 0.02,
+                "slot": None}
+        self.assertEqual(V.safe_decision("PAUSE", 0.35, info), (True, None))
+
+    def test_calibrated_reject_is_not_overridden_by_wake_rescue(self):
+        info = {"span": (0.1, 1.2), "decision_calibrated": True,
+                "command_intent": "PAUSE", "command_conf": 0.14,
+                "command_conditional_conf": 0.78,
+                "command_conditional_margin": 0.61, "reject_conf": 0.82}
+        self.assertIsNone(V.wake_reject_rescue(info))
+
     def test_wake_short_policy_accepts_clear_short_fixed_command(self):
         info = {"span": (0.1, 0.9), "rejected": False,
                 "intent_margin": 0.40, "slot": None}
@@ -131,6 +144,7 @@ class VoiceSafetyTests(unittest.TestCase):
         t = np.arange(6000, dtype=np.float32) / V.SAMPLE_RATE
         audio[3000:9000] = 0.02 * np.sin(2 * np.pi * 180 * t)
         bridge = Voice()
+        bridge._policy = False
         bridge._sess = _Session(intent_logits, slot_logits)
         bridge._labels = {"intents": V.INTENT_NAMES,
                           "value_tokens": V.VALUE_TOKENS}
@@ -150,6 +164,7 @@ class VoiceSafetyTests(unittest.TestCase):
         probabilities[V.INTENT_NAMES.index("TIME")] = 0.25
         probabilities[V.REJECT_IDX_A] = 0.05
         bridge = Voice()
+        bridge._policy = False
         bridge._sess = _Session(np.log(probabilities),
                                 np.zeros(len(V.VALUE_TOKENS), np.float32))
         bridge._labels = {"intents": V.INTENT_NAMES,
@@ -174,6 +189,7 @@ class VoiceSafetyTests(unittest.TestCase):
         probabilities[V.INTENT_NAMES.index("CALL")] = 0.07
         probabilities[V.REJECT_IDX_A] = 0.82
         bridge = Voice()
+        bridge._policy = False
         bridge._sess = _Session(np.log(probabilities),
                                 np.zeros(len(V.VALUE_TOKENS), np.float32))
         bridge._labels = {"intents": V.INTENT_NAMES,

@@ -105,11 +105,13 @@ def make_model(state):
 
 def predict(model, features, batch=64):
     pred_a, pred_b = [], []
+    device = next(model.parameters()).device
     with torch.inference_mode():
         for start in range(0, len(features), batch):
-            logits_a, logits_b = model(torch.from_numpy(features[start:start + batch]))
-            pred_a.append(logits_a.argmax(1).numpy())
-            pred_b.append(logits_b.argmax(1).numpy())
+            inputs = torch.from_numpy(features[start:start + batch]).to(device)
+            logits_a, logits_b = model(inputs)
+            pred_a.append(logits_a.argmax(1).cpu().numpy())
+            pred_b.append(logits_b.argmax(1).cpu().numpy())
     return np.concatenate(pred_a), np.concatenate(pred_b)
 
 

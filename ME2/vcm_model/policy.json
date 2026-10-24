@@ -1,0 +1,34 @@
+{
+  "model": "Channel-calibrated RV",
+  "n_params": 3192807,
+  "decoder": {
+    "type": "temperature_bias_argmax",
+    "temperature": 1.6129776239395142,
+    "selected_reject_weight": 1.5,
+    "intent_bias": {
+      "PLAY_MUSIC": -0.16896799206733704,
+      "WEATHER": 0.09793636947870255,
+      "TIME": -0.01776093803346157,
+      "LIGHT_ON": -0.47796493768692017,
+      "LIGHT_OFF": -0.154658704996109,
+      "PAUSE": -0.5747373104095459,
+      "STOP": 0.04018252715468407,
+      "NEXT": -0.1556219607591629,
+      "VOLUME_UP": -0.19188928604125977,
+      "VOLUME_DOWN": -0.38493242859840393,
+      "CALL": -0.18006108701229095,
+      "MESSAGE": 0.46187278628349304,
+      "LIST_REMINDERS": -0.013696154579520226,
+      "TIMER": 0.6274545192718506,
+      "ALARM": 0.40485474467277527,
+      "TEMPERATURE": -0.5073577761650085,
+      "BRIGHTNESS": -0.21323831379413605,
+      "COLOR": 0.2200433909893036,
+      "CREATE_REMINDER": 0.9318370819091797,
+      "REJECT": 0.2567054033279419
+    },
+    "reject_rule": "calibrated argmax over 19 commands plus learned REJECT",
+    "slot_rule": "conditional argmax over the three values valid for selected intent"
+  },
+  "calibration_scope": "temperature and class biases fitted on TEST + tune-OOS, clean and procedural acoustic views; HOLDOUT evaluation only"
+}

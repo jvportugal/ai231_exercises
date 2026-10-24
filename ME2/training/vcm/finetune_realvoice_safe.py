@@ -21,10 +21,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import config as C
-from battery import BatDataset, CRNN_N
+from battery import (BatDataset, CRNN_N, _make_rirs, _need,
+                     add_playback_channel, add_reverb, wav_to_mel)
 from eval_ens5c import load_split
 from experiment_weight_soup import build_features, command_metrics, labels, load_oos, predict
-from train_centered import load_audio_split, load_noise_bank
+from train_centered import (center_crop, decode_wav, load_audio_split,
+                            load_noise_bank)
 
 
 def read_sources() -> list[str]:
@@ -66,18 +68,62 @@ def source_balanced_weights(rows, sources, real_voice_fraction,
     return weights, report
 
 
-def validation_metrics(model, frame, features, target_a, target_b, tune_features):
+def build_channel_features(frame, seed=231024):
+    """One fixed procedural speaker/room/mic view for model selection."""
+    rng = np.random.RandomState(seed)
+    rirs = _make_rirs(n=40, rng=np.random.RandomState(seed + 1))
+    need = _need(250)
+    output = np.empty((len(frame), 1, C.N_MELS, 250), np.float32)
+    started = time.time()
+    for index in range(len(frame)):
+        audio = frame["audio"].iloc[index]
+        raw = audio["bytes"] if isinstance(audio, dict) else audio
+        try:
+            waveform = decode_wav(raw)
+            waveform = add_reverb(waveform, rirs, rng)
+            waveform = add_playback_channel(waveform, rng)
+            output[index, 0] = wav_to_mel(center_crop(waveform, n=need), 250)
+        except Exception:
+            output[index, 0] = 0.0
+        if (index + 1) % 500 == 0:
+            print(f"channel features {index + 1}/{len(frame)} "
+                  f"({time.time() - started:.0f}s)", flush=True)
+    return output
+
+
+def validation_metrics(model, frame, features, target_a, target_b, tune_features,
+                       channel_features=None, channel_tune_features=None):
     pred_a, pred_b = predict(model, features, batch=64)
     pred_oos, _ = predict(model, tune_features, batch=64)
     metrics = command_metrics(frame, target_a, target_b, pred_a, pred_b)
     metrics["tune_oos_reject"] = round(float((pred_oos == C.N_INTENT).mean() * 100), 3)
+    if channel_features is not None:
+        channel_a, channel_b = predict(model, channel_features, batch=64)
+        channel = command_metrics(
+            frame, target_a, target_b, channel_a, channel_b)
+        metrics.update({f"channel_{key}": value for key, value in channel.items()
+                        if key in ("overall_e2e", "real_e2e", "synthetic_e2e")})
+    if channel_tune_features is not None:
+        channel_oos, _ = predict(model, channel_tune_features, batch=64)
+        metrics["channel_tune_oos_reject"] = round(
+            float((channel_oos == C.N_INTENT).mean() * 100), 3)
     return metrics
 
 
 def selection_score(metrics):
     aggregate_penalty = max(0.0, 90.0 - metrics["overall_e2e"]) * 25.0
-    return (metrics["real_e2e"] + 0.05 * metrics["overall_e2e"]
-            + 0.05 * metrics["tune_oos_reject"] - aggregate_penalty)
+    if "channel_real_e2e" not in metrics:
+        return (metrics["real_e2e"] + 0.05 * metrics["overall_e2e"]
+                + 0.05 * metrics["tune_oos_reject"] - aggregate_penalty)
+    # Clean and acoustic-channel real speech are equally important. Synthetic
+    # and OOS measurements constrain regressions rather than dominating model
+    # selection through their much larger row counts.
+    return (0.45 * metrics["real_e2e"]
+            + 0.45 * metrics["channel_real_e2e"]
+            + 0.05 * metrics["overall_e2e"]
+            + 0.025 * metrics["tune_oos_reject"]
+            + 0.025 * metrics.get("channel_tune_oos_reject", 0.0)
+            - aggregate_penalty)
 
 
 def distillation_loss(student_logits, teacher_logits, temperature):
@@ -88,6 +134,14 @@ def distillation_loss(student_logits, teacher_logits, temperature):
     ) * (temperature * temperature)
 
 
+def seed_worker(worker_id):
+    """Give every augmentation worker an independent deterministic RNG."""
+    info = torch.utils.data.get_worker_info()
+    if info is not None and hasattr(info.dataset, "rng"):
+        info.dataset.rng = np.random.RandomState(
+            int(torch.initial_seed() % (2 ** 32)))
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--base", default="vcm_crnn_X6_babble.pt")
@@ -96,6 +150,7 @@ def main():
     parser.add_argument("--samples-per-epoch", type=int, default=12000)
     parser.add_argument("--batch", type=int, default=64)
     parser.add_argument("--threads", type=int, default=8)
+    parser.add_argument("--workers", type=int, default=0)
     parser.add_argument("--lr", type=float, default=2e-5)
     parser.add_argument("--cnn-lr-scale", type=float, default=0.1)
     parser.add_argument("--real-voice-fraction", type=float, default=0.25)
@@ -103,6 +158,10 @@ def main():
     parser.add_argument("--reject-fraction", type=float, default=0.15)
     parser.add_argument("--babble-p", type=float, default=0.15)
     parser.add_argument("--speed-p", type=float, default=0.25)
+    parser.add_argument("--reverb-p", type=float, default=0.0)
+    parser.add_argument("--channel-p", type=float, default=0.0)
+    parser.add_argument("--channel-val", action="store_true",
+                        help="select using a fixed procedural playback-channel validation view")
     parser.add_argument("--kd-weight", type=float, default=0.0)
     parser.add_argument("--temperature", type=float, default=2.0)
     parser.add_argument("--seed", type=int, default=811)
@@ -112,7 +171,8 @@ def main():
     torch.set_num_interop_threads(1)
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
-    device = torch.device("cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"training device: {device}", flush=True)
 
     base_path = args.base if os.path.isabs(args.base) else os.path.join(C.OUT_DIR, args.base)
     base = torch.load(base_path, map_location="cpu", weights_only=False)
@@ -150,6 +210,7 @@ def main():
         rows, noise, aug=True, seed=args.seed, n_frames=250,
         snr_min=12.0, snr_max=28.0, gain_db=4.0, shift=0.10,
         babble_p=args.babble_p, speed_p=args.speed_p,
+        reverb_p=args.reverb_p, channel_p=args.channel_p,
         speed_lo=0.94, speed_hi=1.06)
     generator = torch.Generator().manual_seed(args.seed)
     sampler = torch.utils.data.WeightedRandomSampler(
@@ -157,13 +218,21 @@ def main():
         replacement=True, generator=generator)
     loader = torch.utils.data.DataLoader(
         dataset, batch_size=args.batch, sampler=sampler,
-        num_workers=0, pin_memory=False)
+        num_workers=args.workers, pin_memory=(device.type == "cuda"),
+        worker_init_fn=seed_worker,
+        persistent_workers=(args.workers > 0))
 
     test_frame = load_split("test")
     tune_frame = load_oos(os.path.join(C.HF_DIR, "synthetic_negatives", "tune_oos-*.parquet"))
     print("building fixed selection features", flush=True)
     test_features = build_features(test_frame, 250)
     tune_features = build_features(tune_frame, 250)
+    channel_features = None
+    channel_tune_features = None
+    if args.channel_val:
+        print("building fixed playback-channel selection features", flush=True)
+        channel_features = build_channel_features(test_frame, seed=args.seed + 1000)
+        channel_tune_features = build_channel_features(tune_frame, seed=args.seed + 2000)
     test_a, test_b = labels(test_frame)
 
     cnn = list(model.cnn.parameters())
@@ -178,7 +247,8 @@ def main():
     history = []
     model.eval()
     initial = validation_metrics(model, test_frame, test_features, test_a, test_b,
-                                 tune_features)
+                                 tune_features, channel_features,
+                                 channel_tune_features)
     initial.update({"epoch": 0, "selection_score": selection_score(initial)})
     history.append(initial)
     best_metrics = initial
@@ -221,7 +291,8 @@ def main():
         scheduler.step()
         model.eval()
         metrics = validation_metrics(model, test_frame, test_features, test_a, test_b,
-                                     tune_features)
+                                     tune_features, channel_features,
+                                     channel_tune_features)
         metrics.update({
             "epoch": epoch,
             "train_loss": round(total_loss / seen, 6),
@@ -232,11 +303,13 @@ def main():
         state = copy.deepcopy(model.state_dict())
         epoch_path = os.path.join(C.OUT_DIR, f"vcm_crnn_{args.tag}_ep{epoch:02d}.pt")
         torch.save({
-            "model": state, "config": dict(cfg), "intents": base["intents"],
-            "value_tokens": base["value_tokens"], "n_params": n_params,
+            "model": state, "config": dict(cfg),
+            "intents": base.get("intents", C.INTENTS),
+            "value_tokens": base.get("value_tokens", C.VALUE_TOKENS),
+            "n_params": n_params,
             "arch": "battery", "n_frames": 250, "tag": args.tag,
             "epoch": epoch, "selection": metrics,
-            "recipe": "source-balanced conservative real_voice fine-tune of X6",
+            "recipe": "source-balanced real-voice and playback-channel fine-tune",
         }, epoch_path)
         if metrics["selection_score"] > best_metrics["selection_score"]:
             best_metrics = metrics
@@ -254,11 +327,13 @@ def main():
 
     best_path = os.path.join(C.OUT_DIR, f"vcm_crnn_{args.tag}.pt")
     torch.save({
-        "model": best_state, "config": dict(cfg), "intents": base["intents"],
-        "value_tokens": base["value_tokens"], "n_params": n_params,
+        "model": best_state, "config": dict(cfg),
+        "intents": base.get("intents", C.INTENTS),
+        "value_tokens": base.get("value_tokens", C.VALUE_TOKENS),
+        "n_params": n_params,
         "arch": "battery", "n_frames": 250, "tag": args.tag,
         "selection": best_metrics,
-        "recipe": "source-balanced conservative real_voice fine-tune of X6",
+        "recipe": "source-balanced real-voice and playback-channel fine-tune",
     }, best_path)
     print("BEST " + json.dumps(best_metrics, sort_keys=True), flush=True)
     print(f"saved {best_path}", flush=True)

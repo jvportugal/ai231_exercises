@@ -1,14 +1,15 @@
-# ME2 — E8 GRU End-to-End Voice Command Model
+# ME2 — Channel-Robust End-to-End Voice Command Model
 
-ME2 is a local, hands-free voice-control system built around the **E8 GRU**
-voice-command model and designed primarily for a Raspberry Pi 5. Say
+ME2 is a local, hands-free voice-control system built around a compact
+**channel-robust CRNN** voice-command model and designed primarily for a
+Raspberry Pi 5. Say
 **“Destiny”**, wait for the acknowledgement chime, speak a command, and the
 system classifies and executes that command.
 
 The complete runtime is included in this folder:
 
 - a Destiny wake-word ONNX model;
-- the 19-intent, two-head E8 GRU ONNX model;
+- the 19-intent, two-head calibrated CRNN ONNX model;
 - the exact mel filterbanks and label maps required by both models;
 - persistent microphone capture and silence endpointing;
 - a generated two-note acknowledgement chime;
@@ -42,7 +43,7 @@ Destiny wake-word model
                  until trailing silence
                          │
                          ▼
-                 E8 GRU intent + slot model
+                 calibrated intent + slot model
                          │
                          ▼
                  action dispatcher
@@ -53,9 +54,10 @@ Destiny wake-word model
        /audio         /timers        or simulation
 ~~~
 
-The wake-word and E8 GRU models are separate. The first decides whether the
-user said “Destiny.” E8 predicts one of 19 actions and, where required, one of
-18 slot values such as a timer duration, color, or temperature.
+The wake-word and command models are separate. The first decides whether the
+user said “Destiny.” The command model predicts one of 19 actions or its
+learned REJECT class and, where required, one of 18 slot values such as a
+timer duration, color, or temperature.
 
 ## 2. Intended platform
 
@@ -576,8 +578,8 @@ tester running during ordinary room noise and unrelated speech.
 | **tester.py** | Standalone command-VCM microphone test |
 | **vcm_infer.py** | VCM preprocessing and ONNX inference |
 | **wakeword_model/** | Destiny ONNX model, filterbank, and metadata |
-| **vcm_model/** | E8 GRU ONNX model, filterbank, and labels |
-| **training/** | Destiny reproducibility assets plus the retained, non-shipped RV90 experiment |
+| **vcm_model/** | Calibrated CRNN ONNX model, decoder policy, filterbank, and labels |
+| **training/** | Destiny and command-model training/calibration code |
 | **vcm_action_runner/runner.py** | End-to-end dispatcher and CLI |
 | **vcm_action_runner/wakeword.py** | Persistent mic, chime, wake scoring, endpointing |
 | **vcm_action_runner/voice.py** | Command capture and VCM bridge |
@@ -593,9 +595,10 @@ fresh user can clone the repository, run setup, and execute the same exported
 models without locating replacement models, labels, filterbanks, songs, or a
 wake cue.
 
-The training directory contains complete Destiny reproducibility assets and a
-retained later RV90 command-model experiment. The shipped E8 graph and runtime
-assets are checksum-verifiable, but its PyTorch checkpoint is not committed.
+The training directory contains complete Destiny reproducibility assets and
+the command-model augmentation, fine-tuning, and calibration code. The shipped
+ONNX graph and runtime assets are checksum-verifiable; its large PyTorch
+training checkpoint is not committed.
 The virtual environment, operating-system packages, and multi-gigabyte
 third-party corpora are also not committed. Setup downloads standard runtime
 dependencies appropriate to the target machine. Source dataset licenses and
@@ -835,3 +838,31 @@ deployed directory contains only the current model and its required artifacts:
 
 Audio preprocessing stays in **vcm_infer.py**, so the Raspberry Pi runtime
 uses NumPy and ONNX Runtime rather than the PyTorch training stack.
+
+### 13.3 Shipped channel-robust calibration
+
+The current shipped model starts from the retained real-voice RV checkpoint
+and is fine-tuned with randomized playback-channel effects: room reverberation,
+speaker/microphone frequency response, resampling, gain, compression, and mild
+clipping. Model selection combines clean and channel-augmented validation while
+preserving out-of-scope rejection.
+
+Deployment no longer applies one hard-coded confidence threshold to every
+intent. A scalar temperature and per-class biases are fitted on clean and
+channel validation audio plus out-of-scope examples; inference then takes the
+calibrated argmax across the 19 intents and learned REJECT class. For slotted
+commands, the value is decoded conditionally among only the three values legal
+for the selected intent.
+
+The selected export has 3,192,807 parameters. On the sealed direct-audio
+holdout it scored 90.6% intent accuracy and 89.6% command accuracy (83.3%
+end-to-end on real voices). On the fixed procedural playback-channel validation
+view, command accuracy improved from 66.4% before fine-tuning to 73.5% after
+fine-tuning and calibration. These are reproducible model evaluations; the
+shared physical speaker-to-Pi benchmark remains the authoritative real-room
+measurement.
+
+Additional deployed artifacts:
+
+- **vcm_model/policy.json** — calibrated decoder parameters and rules;
+- **vcm_model/calibration_report.json** — selection candidates and final metrics.

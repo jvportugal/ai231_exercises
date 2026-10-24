@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""VCM inference core for the E8 single-seed model (option B).
+"""VCM inference core for the channel-robust calibrated RV model.
 
 Model: CRNN_N (3 conv 32/64/128 + BiGRU 256x3), 3.19M params, 250-frame (2.5 s)
 window, DUAL heads -> (logits_a: 20 intents incl REJECT, logits_b: 19 slot
@@ -20,6 +20,7 @@ Public API (same names as before so tester.py/mac_check.py keep working):
 """
 import json
 import os
+from functools import lru_cache
 import numpy as np
 
 # ---------------------------------------------------------------------------
@@ -81,6 +82,7 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_MODEL = os.path.join(_HERE, "vcm_model", "vcm.onnx")
 DEFAULT_LABELS = os.path.join(_HERE, "vcm_model", "labels.json")
 DEFAULT_MELBANK = os.path.join(_HERE, "vcm_model", "melbank.npy")
+DEFAULT_POLICY = os.path.join(_HERE, "vcm_model", "policy.json")
 
 # ---------------------------------------------------------------------------
 # Dual-head label -> (golden intent, slot) mapping.
@@ -151,6 +153,15 @@ def load_model(model_path=DEFAULT_MODEL):
 
 def load_labels(labels_path=DEFAULT_LABELS):
     with open(labels_path) as f:
+        return json.load(f)
+
+
+@lru_cache(maxsize=4)
+def load_policy(policy_path=DEFAULT_POLICY):
+    """Load the fitted deployment decoder, or return None for old bundles."""
+    if not policy_path or not os.path.exists(policy_path):
+        return None
+    with open(policy_path) as f:
         return json.load(f)
 
 
@@ -382,6 +393,11 @@ def wake_reject_rescue(info):
     is only safe after a valid wake word and only when they strongly agree on
     one eligible fixed intent; generic inference keeps the original argmax.
     """
+    # The fitted decoder already compares every command with the learned
+    # REJECT class. Do not override that decision with the old hand-tuned
+    # wake-word rescue heuristic.
+    if info.get("decision_calibrated"):
+        return None
     span = info.get("span")
     if span is None or len(span) != 2:
         return None
@@ -414,6 +430,10 @@ def safe_decision(intent, conf, info, allow_wake_short=False):
         return False, "model_reject"
     if info.get("span") is None:
         return False, "no_speech"
+    if info.get("decision_calibrated"):
+        if intent in _SLOTTED_PREFIX and info.get("slot") is None:
+            return False, "missing_slot"
+        return True, None
     if intent in _SLOTTED_PREFIX:
         if conf < MIN_INTENT_CONFIDENCE:
             return False, "low_intent_confidence"
@@ -438,7 +458,7 @@ def safe_decision(intent, conf, info, allow_wake_short=False):
     return True, None
 
 
-def classify(sess, labels, x, verbose=False):
+def classify(sess, labels, x, verbose=False, policy=None):
     """Run one clip. x = 16 kHz mono float32 (any length).
 
     Returns (label, conf, probs, info):
@@ -450,7 +470,23 @@ def classify(sess, labels, x, verbose=False):
     prep, info = prepare_clip(x, verbose=verbose)
     mel = audio_to_mel(prep)
     la, lb = sess.run(None, {"mel": mel})
-    pa = _softmax(la[0])
+    # New bundles use a calibration learned on clean speech, procedural
+    # speaker/microphone playback, and out-of-scope audio. It replaces the
+    # universal confidence/margin thresholds with one calibrated argmax over
+    # all 19 commands plus the trained REJECT class. Passing policy=False keeps
+    # compatibility with the original raw-logit E8 behavior.
+    if policy is None:
+        policy = load_policy()
+    decoder = policy.get("decoder", {}) if policy else {}
+    decision_calibrated = decoder.get("type") == "temperature_bias_argmax"
+    intent_logits = la[0]
+    if decision_calibrated:
+        temperature = max(float(decoder.get("temperature", 1.0)), 1e-6)
+        bias_by_name = decoder.get("intent_bias", {})
+        bias = np.asarray([bias_by_name.get(name, 0.0)
+                           for name in INTENT_NAMES], dtype=np.float32)
+        intent_logits = intent_logits / temperature + bias
+    pa = _softmax(intent_logits)
     pb = _softmax(lb[0])
     ia = int(np.argmax(pa))
     ib = int(np.argmax(pb))
@@ -476,17 +512,21 @@ def classify(sess, labels, x, verbose=False):
     if not rejected and prefix:
         valid = [i for i, token in enumerate(vtoks) if token.startswith(prefix)]
         if valid:
-            valid_probs = pb[valid]
+            # Confidence is conditional on the selected intent: only its three
+            # legal slot values compete. A valid slot no longer loses mass to
+            # the other fifteen unrelated slot tokens.
+            valid_probs = _softmax(lb[0][valid])
             local = int(np.argmax(valid_probs))
             ib = valid[local]
             slot_token = vtoks[ib]
             slot = _SLOT_TEXT.get(slot_token)
-            slot_conf = float(pb[ib])
+            slot_conf = float(valid_probs[local])
             slot_margin = _top_margin(valid_probs)
     info = dict(info)
     info.update(slot=slot, slot_token=slot_token, slot_conf=slot_conf,
                 slot_margin=slot_margin, intent_margin=_top_margin(pa),
-                rejected=rejected,
+                rejected=rejected, decision_calibrated=decision_calibrated,
+                decoder_type=decoder.get("type") if decoder else "raw_logits",
                 command_intent=command_intent,
                 command_conf=float(command_probs[command_index]),
                 command_conditional_conf=float(command_conditional[command_index]),

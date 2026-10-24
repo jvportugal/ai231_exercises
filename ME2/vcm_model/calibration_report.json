@@ -1,0 +1,185 @@
+{
+  "protocol": "temperature and class biases fitted on TEST + tune-OOS, clean and procedural acoustic views; HOLDOUT evaluation only",
+  "temperature": 1.6129776239395142,
+  "selected_reject_weight": 1.5,
+  "intent_bias": {
+    "PLAY_MUSIC": -0.16896799206733704,
+    "WEATHER": 0.09793636947870255,
+    "TIME": -0.01776093803346157,
+    "LIGHT_ON": -0.47796493768692017,
+    "LIGHT_OFF": -0.154658704996109,
+    "PAUSE": -0.5747373104095459,
+    "STOP": 0.04018252715468407,
+    "NEXT": -0.1556219607591629,
+    "VOLUME_UP": -0.19188928604125977,
+    "VOLUME_DOWN": -0.38493242859840393,
+    "CALL": -0.18006108701229095,
+    "MESSAGE": 0.46187278628349304,
+    "LIST_REMINDERS": -0.013696154579520226,
+    "TIMER": 0.6274545192718506,
+    "ALARM": 0.40485474467277527,
+    "TEMPERATURE": -0.5073577761650085,
+    "BRIGHTNESS": -0.21323831379413605,
+    "COLOR": 0.2200433909893036,
+    "CREATE_REMINDER": 0.9318370819091797,
+    "REJECT": 0.2567054033279419
+  },
+  "before": {
+    "clean": {
+      "intent": 91.987,
+      "e2e": 90.907,
+      "real_e2e": 66.505,
+      "synthetic_e2e": 96.463
+    },
+    "channel": {
+      "intent": 77.583,
+      "e2e": 73.486,
+      "real_e2e": 51.699,
+      "synthetic_e2e": 78.447
+    },
+    "clean_oos_reject": 69.25,
+    "channel_oos_reject": 75.75
+  },
+  "after": {
+    "clean": {
+      "intent": 91.987,
+      "e2e": 90.885,
+      "real_e2e": 65.655,
+      "synthetic_e2e": 96.629
+    },
+    "channel": {
+      "intent": 77.673,
+      "e2e": 73.509,
+      "real_e2e": 51.092,
+      "synthetic_e2e": 78.613
+    },
+    "clean_oos_reject": 72.0,
+    "channel_oos_reject": 78.0
+  },
+  "calibration_candidates": [
+    {
+      "reject_weight": 1.0,
+      "temperature": 1.611627459526062,
+      "clean": {
+        "intent": 92.28,
+        "e2e": 91.155,
+        "real_e2e": 66.626,
+        "synthetic_e2e": 96.739
+      },
+      "channel": {
+        "intent": 78.821,
+        "e2e": 74.432,
+        "real_e2e": 51.699,
+        "synthetic_e2e": 79.608
+      },
+      "clean_oos_reject": 66.0,
+      "channel_oos_reject": 71.25,
+      "selection_score": 81.1212
+    },
+    {
+      "reject_weight": 1.25,
+      "temperature": 1.612661600112915,
+      "clean": {
+        "intent": 92.1,
+        "e2e": 90.997,
+        "real_e2e": 66.019,
+        "synthetic_e2e": 96.684
+      },
+      "channel": {
+        "intent": 78.213,
+        "e2e": 74.027,
+        "real_e2e": 50.971,
+        "synthetic_e2e": 79.276
+      },
+      "clean_oos_reject": 69.5,
+      "channel_oos_reject": 75.5,
+      "selection_score": 80.815
+    },
+    {
+      "reject_weight": 1.5,
+      "temperature": 1.6129776239395142,
+      "clean": {
+        "intent": 91.987,
+        "e2e": 90.885,
+        "real_e2e": 65.655,
+        "synthetic_e2e": 96.629
+      },
+      "channel": {
+        "intent": 77.673,
+        "e2e": 73.509,
+        "real_e2e": 51.092,
+        "synthetic_e2e": 78.613
+      },
+      "clean_oos_reject": 72.0,
+      "channel_oos_reject": 78.0,
+      "selection_score": 80.4594
+    },
+    {
+      "reject_weight": 2.0,
+      "temperature": 1.6123793125152588,
+      "clean": {
+        "intent": 91.785,
+        "e2e": 90.682,
+        "real_e2e": 65.049,
+        "synthetic_e2e": 96.518
+      },
+      "channel": {
+        "intent": 76.3,
+        "e2e": 72.406,
+        "real_e2e": 50.0,
+        "synthetic_e2e": 77.508
+      },
+      "clean_oos_reject": 77.0,
+      "channel_oos_reject": 80.25,
+      "selection_score": 79.71640000000001
+    },
+    {
+      "reject_weight": 3.0,
+      "temperature": 1.608775019645691,
+      "clean": {
+        "intent": 91.312,
+        "e2e": 90.232,
+        "real_e2e": 63.835,
+        "synthetic_e2e": 96.242
+      },
+      "channel": {
+        "intent": 74.229,
+        "e2e": 70.56,
+        "real_e2e": 48.18,
+        "synthetic_e2e": 75.656
+      },
+      "clean_oos_reject": 83.0,
+      "channel_oos_reject": 83.5,
+      "selection_score": 78.4288
+    },
+    {
+      "reject_weight": 4.0,
+      "temperature": 1.604245662689209,
+      "clean": {
+        "intent": 90.975,
+        "e2e": 89.917,
+        "real_e2e": 62.257,
+        "synthetic_e2e": 96.214
+      },
+      "channel": {
+        "intent": 72.406,
+        "e2e": 68.962,
+        "real_e2e": 46.238,
+        "synthetic_e2e": 74.137
+      },
+      "clean_oos_reject": 85.75,
+      "channel_oos_reject": 87.25,
+      "selection_score": 77.344
+    }
+  ],
+  "holdout_evaluation": {
+    "intent": 90.594,
+    "e2e": 89.604,
+    "real_e2e": 83.333,
+    "synthetic_e2e": 95.283,
+    "oos_reject": 68.75,
+    "in_scope_e2e": 91.398,
+    "n_oos": 16,
+    "n_commands": 186
+  }
+}

@@ -140,6 +140,59 @@ def add_babble(x, rng, p=0.3, snr_min=8.0, snr_max=20.0):
     return out.astype(np.float32)
 
 
+def add_playback_channel(x, rng):
+    """Approximate a laptop-speaker -> room -> USB-microphone channel.
+
+    This uses no external audio.  A smooth random frequency response models
+    speaker/microphone coloration, optional low-rate resampling models cheap
+    audio interfaces, and a soft limiter models playback/capture compression.
+    Peak normalization alone cannot create these distortions, so this augments
+    the exact failure mode seen in the live acoustic benchmark.
+    """
+    y = np.asarray(x, dtype=np.float32).copy()
+    if y.size < 2:
+        return y
+
+    # Smooth broad-band EQ.  Speech-band anchors receive modest independent
+    # variation while the extremes are attenuated like small speakers/mics.
+    n_fft = 1 << (len(y) - 1).bit_length()
+    spectrum = np.fft.rfft(y, n=n_fft)
+    frequencies = np.fft.rfftfreq(n_fft, d=1.0 / C.SR)
+    anchors_hz = np.asarray([0, 70, 180, 500, 1200, 3000, 5500, 8000], np.float32)
+    anchors_db = np.asarray([
+        rng.uniform(-30.0, -16.0), rng.uniform(-18.0, -8.0),
+        rng.uniform(-7.0, 2.0), rng.uniform(-4.0, 4.0),
+        rng.uniform(-4.0, 4.0), rng.uniform(-5.0, 3.0),
+        rng.uniform(-12.0, 0.0), rng.uniform(-30.0, -12.0),
+    ], np.float32)
+    response_db = np.interp(frequencies, anchors_hz, anchors_db)
+    response = np.power(10.0, response_db / 20.0)
+    y = np.fft.irfft(spectrum * response, n=n_fft)[:len(y)].astype(np.float32)
+
+    # Simulate a restricted capture rate followed by the runtime's 16 kHz
+    # resampling.  Linear interpolation deliberately matches the live helper.
+    if rng.random() < 0.65:
+        rate = int(rng.choice([8000, 11025, 12000, 16000]))
+        if rate != C.SR:
+            n_low = max(2, int(round(len(y) * rate / C.SR)))
+            low = np.interp(np.linspace(0, len(y) - 1, n_low),
+                            np.arange(len(y)), y).astype(np.float32)
+            y = np.interp(np.linspace(0, n_low - 1, len(y)),
+                          np.arange(n_low), low).astype(np.float32)
+
+    # Mild automatic-gain compression / overload.  Random gain by itself is
+    # removed by runtime normalization; the nonlinear shape is not.
+    drive = float(rng.uniform(1.0, 3.0))
+    y = np.tanh(y * drive) / np.tanh(drive)
+    if rng.random() < 0.25:
+        ceiling = float(rng.uniform(0.55, 0.95))
+        y = np.clip(y, -ceiling, ceiling) / ceiling
+    peak = float(np.max(np.abs(y)))
+    if peak > 0.98:
+        y *= 0.98 / peak
+    return y.astype(np.float32)
+
+
 # ============================================================ dataset ==========
 class BatDataset(CenteredAugDataset):
     """LongWinDataset + optional reverb / babble (waveform) and SpecAug (mel)."""
@@ -148,7 +201,8 @@ class BatDataset(CenteredAugDataset):
                  snr_min=12.0, snr_max=28.0, gain_db=4.0, shift=0.10,
                  n_frames=250, reverb_p=0.0, babble_p=0.0, specaug_p=0.0,
                  spec_tmask=1, spec_tlen=10, spec_fmask=1, spec_flen=4,
-                 speed_p=0.0, speed_lo=0.9, speed_hi=1.1):
+                 speed_p=0.0, speed_lo=0.9, speed_hi=1.1,
+                 channel_p=0.0):
         super().__init__(rows, noise_bank, aug=aug, seed=seed, weights=weights,
                          snr_min=snr_min, snr_max=snr_max, gain_db=gain_db,
                          shift=shift)
@@ -157,6 +211,7 @@ class BatDataset(CenteredAugDataset):
         self.babble_p = babble_p
         self.specaug_p = specaug_p
         self.speed_p = speed_p
+        self.channel_p = channel_p
         self.speed_lo, self.speed_hi = speed_lo, speed_hi
         self.spec_tmask = spec_tmask
         self.spec_tlen = spec_tlen
@@ -178,10 +233,12 @@ class BatDataset(CenteredAugDataset):
             x = time_shift(x, self.rng, self.shift)
             if self.speed_p > 0 and self.rng.random() < self.speed_p:
                 x = speed_perturb(x, self.rng, factor=(self.speed_lo, self.speed_hi))
-            if self.reverb_p > 0:
+            if self.reverb_p > 0 and self.rng.random() < self.reverb_p:
                 x = add_reverb(x, self._get_rirs(), self.rng)
             if self.babble_p > 0:
                 x = add_babble(x, self.rng, p=self.babble_p)
+            if self.channel_p > 0 and self.rng.random() < self.channel_p:
+                x = add_playback_channel(x, self.rng)
         x = center_crop(x, n=_need(self.n_frames))
         mel = wav_to_mel(x, self.n_frames)
         if self.aug and self.specaug_p > 0 and self.rng.random() < self.specaug_p:
@@ -274,6 +331,8 @@ def main():
     ap.add_argument("--spec-tlen", type=int, default=10)
     ap.add_argument("--spec-fmask", type=int, default=1)
     ap.add_argument("--spec-flen", type=int, default=4)
+    ap.add_argument("--channel-p", type=float, default=0.0,
+                    help="probability of procedural speaker/mic channel augmentation")
     ap.add_argument("--numerals", type=int, default=0,
                     help="cap on real-voice OOS numerals reject rows")
     args = ap.parse_args()
@@ -314,7 +373,7 @@ def main():
                  spec_tmask=args.spec_tmask, spec_tlen=args.spec_tlen,
                  spec_fmask=args.spec_fmask, spec_flen=args.spec_flen,
                  speed_p=args.speed_p, speed_lo=args.speed_lo,
-                 speed_hi=args.speed_hi)
+                 speed_hi=args.speed_hi, channel_p=args.channel_p)
     va = BatDataset(va_rows, noise_bank, aug=False, seed=args.seed, **ds_kw)
     val = torch.utils.data.DataLoader(va, batch_size=256, shuffle=False,
                                       num_workers=args.workers, pin_memory=True)

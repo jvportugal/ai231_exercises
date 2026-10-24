@@ -39,17 +39,20 @@ def _import_capture():
 class Voice:
     """One-shot 'listen -> classify' helper with a cached model."""
 
-    def __init__(self, model=None, labels=None, verbose=False):
+    def __init__(self, model=None, labels=None, policy=None, verbose=False):
         self.verbose = verbose
         self._sess = None
         self._labels = None
         self._model = model
         self._labels_path = labels
+        # A custom model must opt into a matching calibration policy. The
+        # bundled model automatically uses vcm_model/policy.json.
+        self._policy = False if model is not None and policy is None else policy
 
     def _ensure_model(self):
         if self._sess is None:
             vcm = _import_vcm()
-            # None -> use vcm_infer's bundled E8 GRU model and labels.
+            # None -> use the bundled channel-robust VCM model and labels.
             self._sess = vcm.load_model(self._model) if self._model else vcm.load_model()
             self._labels = (vcm.load_labels(self._labels_path)
                             if self._labels_path else vcm.load_labels())
@@ -66,8 +69,9 @@ class Voice:
         vcm = _import_vcm()
         sess, labels = self._ensure_model()
         t0 = time.perf_counter()
-        intent, conf, probs, info = vcm.classify(sess, labels, x,
-                                                 verbose=self.verbose)
+        classify_policy = False if legacy_e8 else self._policy
+        intent, conf, probs, info = vcm.classify(
+            sess, labels, x, verbose=self.verbose, policy=classify_policy)
         t1 = time.perf_counter()
         lat = {"classify_ms": (t1 - t0) * 1000.0}
         # Reject on ANY of:
@@ -119,6 +123,8 @@ class Voice:
             "acceptance_policy": ("legacy_e8" if legacy_e8
                                   else "wake_reject_rescue" if rescued_intent
                                   else "wake_short" if accepted and not strict_accepted
+                                  else "calibrated_argmax"
+                                  if info.get("decision_calibrated")
                                   else "strict"),
             "model_intent": model_intent,
             "model_conf": model_conf,
@@ -136,6 +142,7 @@ class Voice:
             "intent_margin": info.get("intent_margin"),
             "slot_conf": info.get("slot_conf"),
             "slot_margin": info.get("slot_margin"),
+            "decoder_type": info.get("decoder_type"),
             "audio": {k: info.get(k) for k in
                       ("capture_peak", "capture_rms", "clipping_fraction", "gain",
                        "active_speech_seconds", "centered_start_seconds")},
