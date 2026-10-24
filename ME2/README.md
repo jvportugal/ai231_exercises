@@ -186,7 +186,9 @@ WAITING FOR DESTINY
 
 Speak the command after the chime. The microphone remains open, but blocks
 that overlap the chime are discarded so the cue is not classified as part of
-the command.
+the command. Command capture uses a sensitive short-frame gate after Destiny
+has armed it, so quick one-word commands such as **stop**, **next**, and
+**pause** are not averaged out by the stream's 100 ms blocks.
 
 ### Display selection
 
@@ -305,7 +307,9 @@ python3 vcm_action_runner/runner.py --wakeword --wake-chime path/to/custom.wav
 ~~~
 
 A custom cue must be an uncompressed 8-, 16-, or 32-bit PCM WAV. The generated
-cue remains the self-contained default.
+cue remains the self-contained default. Playback automatically converts the
+cue to the output device's native rate and prefers 16-bit PCM, which covers
+Raspberry Pi ALSA outputs that do not accept 16 kHz float audio.
 
 ### Weather
 
@@ -452,7 +456,9 @@ speaker-test -t sine -f 880 -l 1
 ~~~
 
 On desktop systems, confirm that Python/Terminal has microphone permission and
-that the intended speakers are the default output.
+that the intended speakers are the default output. On successful startup, the
+first wake event prints the selected chime device, sample rate, PCM format, and
+channel count. Use that line to verify that the expected output was selected.
 
 ### The GUI does not appear over SSH
 

@@ -390,8 +390,8 @@ def main(argv=None):
                         help="maximum command speech seconds")
     parser.add_argument("--speech-start-timeout", type=float, default=4.0,
                         help="seconds to wait for speech after Destiny")
-    parser.add_argument("--command-silence", type=float, default=0.8,
-                        help="trailing silence seconds that ends a command")
+    parser.add_argument("--command-silence", type=float, default=0.5,
+                        help="trailing silence seconds that ends a command (default: 0.5)")
     args = parser.parse_args(argv)
     if not 0.0 <= args.wake_chime_volume <= 1.0:
         parser.error("--wake-chime-volume must be between 0 and 1")

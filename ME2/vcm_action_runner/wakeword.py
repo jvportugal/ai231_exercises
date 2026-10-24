@@ -39,6 +39,27 @@ def block_rms(audio):
     return float(np.sqrt(np.mean(x * x) + 1e-12))
 
 
+def short_speech_level(audio, frame_ms=20):
+    """Return a level that does not average a short word out of a 100 ms block.
+
+    Command capture reads 100 ms blocks for efficient streaming.  A stop
+    consonant or a quickly spoken one-word command may occupy only one or two
+    20 ms frames, making the RMS of the complete block deceptively quiet.  The
+    second-loudest short-frame RMS preserves 40 ms of speech evidence without
+    making an isolated click look like sustained speech.
+    """
+    x = np.asarray(audio, dtype=np.float32).reshape(-1)
+    frame_samples = max(1, SAMPLE_RATE * int(frame_ms) // 1000)
+    count = len(x) // frame_samples
+    if count == 0:
+        return block_rms(x)
+    frames = x[:count * frame_samples].reshape(count, frame_samples)
+    levels = np.sqrt(np.mean(frames * frames, axis=1) + 1e-12)
+    if len(levels) == 1:
+        return float(levels[0])
+    return float(np.partition(levels, -2)[-2])
+
+
 class AdaptiveSpeechGate:
     """Track the room floor so a steady fan does not start speech capture.
 
@@ -365,11 +386,86 @@ def _load_pcm_wav(path, volume):
     return np.clip(audio * float(volume), -1.0, 1.0).astype(np.float32)
 
 
+def _resample_audio(audio, source_rate, target_rate):
+    """Resample a complete mono cue while preserving its duration."""
+    x = np.asarray(audio, dtype=np.float32).reshape(-1)
+    if int(source_rate) == int(target_rate) or not len(x):
+        return x
+    count = max(1, int(round(len(x) * float(target_rate) / source_rate)))
+    old = np.linspace(0.0, 1.0, num=len(x), endpoint=False)
+    new = np.linspace(0.0, 1.0, num=count, endpoint=False)
+    return np.interp(new, old, x).astype(np.float32)
+
+
+def _play_audio_compatible(sd, audio, source_rate=SAMPLE_RATE):
+    """Play mono float audio using formats commonly accepted by ALSA devices.
+
+    ``sounddevice.play`` inherits the array's float32 format and the supplied
+    16 kHz rate.  Many Raspberry Pi USB, HDMI, and analogue outputs only expose
+    signed 16-bit PCM at 44.1 or 48 kHz.  Prefer the device's advertised native
+    rate and int16, resampling and duplicating to stereo when necessary.
+
+    Return a small description of the successful stream.  Raise the final
+    error only after trying the practical ALSA combinations.
+    """
+    info = sd.query_devices(None, "output")
+    default_rate = int(round(float(info.get("default_samplerate", 0) or 0)))
+    max_channels = int(info.get("max_output_channels", 0) or 0)
+    if max_channels < 1:
+        raise RuntimeError("default audio device has no output channels")
+
+    rates = []
+    for rate in (default_rate, 48000, 44100, source_rate, 32000, 22050):
+        rate = int(rate)
+        if rate > 0 and rate not in rates:
+            rates.append(rate)
+    # Stereo is the most widely accepted hardware layout; retain mono as a
+    # fallback for small USB speakers that expose exactly one channel.
+    channels = [2, 1] if max_channels >= 2 else [1]
+    errors = []
+    # Exhaust the hardware-friendly int16 combinations before attempting
+    # float32, avoiding the noisy ALSA sample-format failure in the common
+    # case where only the channel layout needs to fall back from stereo.
+    for dtype in ("int16", "float32"):
+        for rate in rates:
+            samples = _resample_audio(audio, source_rate, rate)
+            for channel_count in channels:
+                if dtype == "int16":
+                    data = (np.clip(samples, -1.0, 1.0) * 32767.0).astype(np.int16)
+                else:
+                    data = samples.astype(np.float32)
+                if channel_count > 1:
+                    data = np.repeat(data[:, None], channel_count, axis=1)
+                stream = None
+                try:
+                    stream = sd.OutputStream(
+                        samplerate=rate, channels=channel_count, dtype=dtype)
+                    stream.start()
+                    stream.write(data)
+                    stream.stop()
+                    return {
+                        "rate": rate,
+                        "channels": channel_count,
+                        "dtype": dtype,
+                        "device": info.get("name", "default"),
+                    }
+                except Exception as exc:
+                    errors.append("%d Hz/%d ch/%s: %s" %
+                                  (rate, channel_count, dtype, exc))
+                finally:
+                    if stream is not None:
+                        try:
+                            stream.close()
+                        except Exception:
+                            pass
+    raise RuntimeError("no compatible output format (" + "; ".join(errors) + ")")
+
+
 class WakeWordSession:
     """Wait for Destiny, then capture one command using silence endpointing."""
 
     def __init__(self, threshold=0.875, device=None, command_timeout=6.0,
-                 speech_start_timeout=4.0, silence_seconds=0.8,
+                 speech_start_timeout=4.0, silence_seconds=0.5,
                  speech_rms=0.008, guard_seconds=0.0,
                  noise_floor_multiplier=1.65,
                  wake_silence_seconds=0.4, wake_max_seconds=2.0,
@@ -395,6 +491,7 @@ class WakeWordSession:
         self.chime_path = chime_path
         self.chime_audio = None
         self._chime_failed = False
+        self._chime_output = None
         self.speech_gate = AdaptiveSpeechGate(
             self.speech_rms, multiplier=noise_floor_multiplier)
         self.last_timing = {}
@@ -429,9 +526,14 @@ class WakeWordSession:
         try:
             import sounddevice as sd
             started = time.perf_counter()
-            sd.play(self.chime_audio, SAMPLE_RATE, blocking=True)
+            output = _play_audio_compatible(sd, self.chime_audio, SAMPLE_RATE)
             elapsed = time.perf_counter() - started
             self.last_timing["wake_chime_ms"] = elapsed * 1000.0
+            if self._chime_output is None:
+                print("  [wakeword] chime output: %s @ %d Hz, %s, %d ch" %
+                      (output["device"], output["rate"], output["dtype"],
+                       output["channels"]), flush=True)
+            self._chime_output = output
             return len(self.chime_audio) / float(SAMPLE_RATE)
         except Exception as exc:
             # A missing/default output device must never disable voice control.
@@ -529,7 +631,14 @@ class WakeWordSession:
             while quit_flag is None or not quit_flag.is_set():
                 block = self.microphone.read()
                 rms = meter.update(block)
-                voiced, _ = self.speech_gate.update(rms, started)
+                # Command mode is explicitly armed by the wake word, so it can
+                # use a more sensitive gate than always-on wake-word mode.  A
+                # short-frame level prevents quick words such as "stop" and
+                # "next" from being averaged away inside a 100 ms read.
+                command_threshold = max(
+                    0.003, self.speech_gate.threshold * 0.70)
+                voiced = short_speech_level(block) >= command_threshold
+                self.speech_gate.update(rms, started)
                 elapsed = time.monotonic() - t0
 
                 if not started:
@@ -554,7 +663,11 @@ class WakeWordSession:
                 else:
                     quiet_blocks += 1
 
-                if quiet_blocks >= self.silence_blocks and voiced_blocks >= 2:
+                # One 100 ms block is sufficient.  The VCM's own 20 ms VAD and
+                # confidence/margin policy still reject clicks and ambiguity.
+                # Requiring two blocks made a valid short command wait for the
+                # full command timeout before it could be classified.
+                if quiet_blocks >= self.silence_blocks and voiced_blocks >= 1:
                     break
                 if time.monotonic() - speech_t0 >= self.command_timeout:
                     meter.clear()
