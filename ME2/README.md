@@ -475,6 +475,11 @@ python3 -c "import sounddevice as sd; print(sd.query_devices())"
 Confirm the correct input appears, then pass its sounddevice number using
 **--mic-device NUMBER**.
 
+If PortAudio reports default input `-1` but lists an input-capable device, the
+wake-word runner now tries the listed inputs automatically. Use
+`--mic-device NUMBER` when more than one microphone is connected and automatic
+selection chooses the wrong one.
+
 ### The chime or music is silent
 
 When connected through SSH, audio plays on the Raspberry Pi, not on the laptop

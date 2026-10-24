@@ -1,4 +1,5 @@
 import io
+import sys
 import unittest
 import wave
 from unittest import mock
@@ -52,7 +53,64 @@ class _Microphone:
         return next(self.blocks)
 
 
+class _InputStream:
+    def __init__(self, owner, **settings):
+        self.owner = owner
+        self.device = settings["device"]
+        if self.device != owner.working_device or settings["samplerate"] != 48000:
+            raise RuntimeError("unsupported input")
+
+    def start(self):
+        self.owner.started += 1
+
+    def stop(self):
+        self.owner.stopped += 1
+
+    def close(self):
+        self.owner.closed += 1
+
+
+class _InputSoundDevice:
+    class _Default:
+        device = (-1, 0)
+
+    def __init__(self):
+        self.default = self._Default()
+        self.working_device = 2
+        self.started = 0
+        self.stopped = 0
+        self.closed = 0
+        self.devices = [
+            {"name": "HDMI output", "max_input_channels": 0},
+            {"name": "Unavailable input", "max_input_channels": 1},
+            {"name": "USB microphone", "max_input_channels": 1},
+        ]
+
+    def query_devices(self, device=None, kind=None):
+        if device is None:
+            return self.devices
+        if kind == "input" and self.devices[device]["max_input_channels"] < 1:
+            raise RuntimeError("not an input")
+        return self.devices[device]
+
+    def InputStream(self, **settings):
+        return _InputStream(self, **settings)
+
+
 class WakewordAudioTests(unittest.TestCase):
+    def test_microphone_falls_back_when_default_input_is_minus_one(self):
+        sd = _InputSoundDevice()
+        with mock.patch.dict(sys.modules, {"sounddevice": sd}):
+            microphone = W.Microphone().open()
+            try:
+                self.assertEqual(microphone.device, 2)
+                self.assertEqual(microphone.device_name, "USB microphone")
+                self.assertEqual(microphone.native_rate, 48000)
+                self.assertEqual(sd.started, 1)
+            finally:
+                microphone.close()
+        self.assertEqual((sd.stopped, sd.closed), (1, 1))
+
     def test_chime_uses_native_int16_stereo_output(self):
         sd = _SoundDevice()
         audio = np.linspace(-0.2, 0.2, 1600, dtype=np.float32)

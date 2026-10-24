@@ -283,6 +283,44 @@ class Microphone:
         self.native_block = None
         self.device_name = "default"
 
+    @staticmethod
+    def _input_candidates(sd, requested):
+        """Return explicit/default/available input IDs in preference order.
+
+        PortAudio commonly reports ``(-1, output_id)`` after a USB microphone
+        is reconnected or when an SSH process has no saved default. Passing
+        ``device=None`` then repeatedly queries device -1 even though a usable
+        capture device is present. Enumerate inputs as a fallback while still
+        respecting an explicit ``--mic-device`` selection.
+        """
+        if requested is not None:
+            return [requested]
+
+        candidates = []
+        try:
+            default = sd.default.device
+            if isinstance(default, dict):
+                default = default.get("input")
+            elif isinstance(default, (tuple, list)):
+                default = default[0]
+            if default is not None and int(default) >= 0:
+                candidates.append(int(default))
+        except Exception:
+            pass
+
+        try:
+            devices = sd.query_devices()
+        except Exception:
+            devices = ()
+        for index, info in enumerate(devices):
+            try:
+                has_input = int(info.get("max_input_channels", 0) or 0) > 0
+            except Exception:
+                has_input = False
+            if has_input and index not in candidates:
+                candidates.append(index)
+        return candidates
+
     def open(self):
         try:
             import sounddevice as sd
@@ -290,39 +328,44 @@ class Microphone:
             raise RuntimeError(
                 "sounddevice is unavailable; run ./setup.sh (%s)" % exc)
 
-        if self.device is not None:
-            try:
-                self.device_name = sd.query_devices(self.device, "input").get(
-                    "name", str(self.device))
-            except Exception:
-                self.device_name = str(self.device)
+        devices = self._input_candidates(sd, self.device)
+        if not devices:
+            raise RuntimeError(
+                "PortAudio reports no input devices; check `arecord -l` and reconnect "
+                "the microphone")
 
         errors = []
-        for rate in self.CANDIDATE_RATES:
-            stream = None
+        for device in devices:
             try:
-                block = int(rate * BLOCK_MS / 1000)
-                stream = sd.InputStream(
-                    samplerate=rate, channels=1, dtype="float32",
-                    device=self.device, blocksize=block)
-                stream.start()
-                self.stream = stream
-                self.native_rate = rate
-                self.native_block = block
-                if self.device is None:
-                    try:
-                        info = sd.query_devices(stream.device, "input")
-                        self.device_name = info.get("name", "default")
-                    except Exception:
-                        pass
-                return self
-            except Exception as exc:
-                errors.append("%d Hz: %s" % (rate, exc))
-                if stream is not None:
-                    try:
-                        stream.close()
-                    except Exception:
-                        pass
+                info = sd.query_devices(device, "input")
+                device_name = info.get("name", str(device))
+            except Exception:
+                device_name = str(device)
+            for rate in self.CANDIDATE_RATES:
+                stream = None
+                try:
+                    block = int(rate * BLOCK_MS / 1000)
+                    stream = sd.InputStream(
+                        samplerate=rate, channels=1, dtype="float32",
+                        device=device, blocksize=block)
+                    stream.start()
+                    self.stream = stream
+                    self.device = device
+                    self.device_name = device_name
+                    self.native_rate = rate
+                    self.native_block = block
+                    if len(devices) > 1 and device != devices[0]:
+                        print("  [wakeword] selected fallback input #%s: %s" %
+                              (device, device_name), flush=True)
+                    return self
+                except Exception as exc:
+                    errors.append("device #%s (%s), %d Hz: %s" %
+                                  (device, device_name, rate, exc))
+                    if stream is not None:
+                        try:
+                            stream.close()
+                        except Exception:
+                            pass
         raise RuntimeError("could not open microphone (" + "; ".join(errors) + ")")
 
     def read(self):
