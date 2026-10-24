@@ -348,6 +348,21 @@ Raspberry Pi ALSA outputs that do not accept 16 kHz float audio.
 On Linux, the chime uses native ALSA through **aplay**. This also works from an
 SSH login where no PulseAudio or PipeWire desktop session is available.
 
+### Original E8 compatibility
+
+To compare with the originally shipped E8 runner, enable its command capture
+and acceptance behavior while retaining the current microphone fallback and
+diagnostics:
+
+~~~bash
+python3 vcm_action_runner/runner.py --wakeword --term --no-wake-chime --legacy-e8
+~~~
+
+This compatibility mode uses the original adaptive RMS command gate, requires
+two voiced blocks, waits for 0.8 seconds of trailing silence, and accepts E8's
+top intent whenever it is not REJECT and speech was detected. It can therefore
+fire more wrong actions than the default confidence-and-margin safety policy.
+
 ### Weather
 
 The WEATHER action requests current conditions for fixed Quezon City

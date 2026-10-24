@@ -573,7 +573,8 @@ class WakeWordSession:
                  wake_silence_seconds=0.4, wake_max_seconds=2.0,
                  model_path=DEFAULT_MODEL, melbank_path=DEFAULT_MELBANK,
                  chime=True, chime_volume=0.22, chime_path=None,
-                 chime_device=None, on_wake=None):
+                 chime_device=None, on_wake=None,
+                 legacy_command_capture=False):
         if not 0.0 < threshold < 1.0:
             raise ValueError("wake-word threshold must be between 0 and 1")
         self.threshold = float(threshold)
@@ -594,6 +595,7 @@ class WakeWordSession:
         self.chime_path = chime_path
         self.chime_device = chime_device
         self.on_wake = on_wake
+        self.legacy_command_capture = bool(legacy_command_capture)
         self.chime_audio = None
         self._chime_failed = False
         self._chime_output = None
@@ -728,7 +730,8 @@ class WakeWordSession:
                         # the normal 100 ms block boundary. Preserve it for
                         # users who answer immediately instead of throwing
                         # away the onset of a one-word command.
-                        if block_index == chime_blocks - 1:
+                        if (not getattr(self, "legacy_command_capture", False) and
+                                block_index == chime_blocks - 1):
                             post_chime_block = chime_block
                         else:
                             self.speech_gate.update(block_rms(chime_block), False)
@@ -741,6 +744,7 @@ class WakeWordSession:
         return None
 
     def _capture_command(self, quit_flag, initial_blocks=None):
+        legacy_capture = getattr(self, "legacy_command_capture", False)
         for _ in range(self.guard_blocks):
             block = self.microphone.read()
             self.speech_gate.update(block_rms(block), False)
@@ -759,14 +763,19 @@ class WakeWordSession:
             while quit_flag is None or not quit_flag.is_set():
                 block = pending.popleft() if pending else self.microphone.read()
                 rms = meter.update(block)
-                # Command mode is explicitly armed by the wake word, so it can
-                # use a more sensitive gate than always-on wake-word mode.  A
-                # short-frame level prevents quick words such as "stop" and
-                # "next" from being averaged away inside a 100 ms read.
-                command_threshold = max(
-                    0.003, self.speech_gate.threshold * 0.70)
-                voiced = short_speech_level(block) >= command_threshold
-                self.speech_gate.update(rms, started)
+                if legacy_capture:
+                    # Original E8 runner behavior: use the same adaptive RMS
+                    # gate as wake-word mode and require two voiced blocks.
+                    voiced, _ = self.speech_gate.update(rms, started)
+                else:
+                    # Command mode is explicitly armed by the wake word, so it
+                    # can use a more sensitive gate than always-on wake-word
+                    # mode. A short-frame level prevents quick words such as
+                    # "stop" from being averaged away inside a 100 ms read.
+                    command_threshold = max(
+                        0.003, self.speech_gate.threshold * 0.70)
+                    voiced = short_speech_level(block) >= command_threshold
+                    self.speech_gate.update(rms, started)
                 elapsed = time.monotonic() - t0
 
                 if not started:
@@ -795,7 +804,9 @@ class WakeWordSession:
                 # confidence/margin policy still reject clicks and ambiguity.
                 # Requiring two blocks made a valid short command wait for the
                 # full command timeout before it could be classified.
-                if quiet_blocks >= self.silence_blocks and voiced_blocks >= 1:
+                minimum_voiced = 2 if legacy_capture else 1
+                if (quiet_blocks >= self.silence_blocks and
+                        voiced_blocks >= minimum_voiced):
                     break
                 if time.monotonic() - speech_t0 >= self.command_timeout:
                     meter.clear()

@@ -61,7 +61,7 @@ class Voice:
         sess, _ = self._ensure_model()
         vcm.warmup(sess, n=1)
 
-    def classify_audio(self, x, allow_wake_short=False):
+    def classify_audio(self, x, allow_wake_short=False, legacy_e8=False):
         """x = float32 @16 kHz mono -> dict {intent, slot, conf, rejected, ok}."""
         vcm = _import_vcm()
         sess, labels = self._ensure_model()
@@ -80,8 +80,19 @@ class Voice:
         model_intent = intent
         model_conf = conf
         rescued_intent = (vcm.wake_reject_rescue(info)
-                          if allow_wake_short and intent == "REJECT" else None)
-        if rescued_intent is not None:
+                          if allow_wake_short and not legacy_e8 and
+                          intent == "REJECT" else None)
+        if legacy_e8:
+            # Compatibility with the originally shipped E8 runner: fire the
+            # model's top command whenever it is not REJECT and VAD found
+            # speech.  The later confidence/margin safety policy remains the
+            # default because it is safer for actions with side effects.
+            accepted = (intent not in (None, "REJECT") and
+                        not bool(info.get("rejected")) and not no_speech)
+            strict_accepted = accepted
+            rejection_reason = None if accepted else (
+                "no_speech" if no_speech else "model_reject")
+        elif rescued_intent is not None:
             intent = rescued_intent
             conf = info.get("command_conditional_conf", 0.0)
             strict_accepted = False
@@ -101,7 +112,8 @@ class Voice:
             "rejected": rejected,
             "no_speech": no_speech,
             "rejection_reason": rejection_reason,
-            "acceptance_policy": ("wake_reject_rescue" if rescued_intent
+            "acceptance_policy": ("legacy_e8" if legacy_e8
+                                  else "wake_reject_rescue" if rescued_intent
                                   else "wake_short" if accepted and not strict_accepted
                                   else "strict"),
             "model_intent": model_intent,
@@ -170,6 +182,8 @@ def describe(r):
         line += " [wake-short assist]"
     elif r.get("acceptance_policy") == "wake_reject_rescue":
         line += " [wake rescue: model REJECT %.2f]" % r.get("model_conf", 0.0)
+    elif r.get("acceptance_policy") == "legacy_e8":
+        line += " [legacy E8 policy]"
     return line + _mic_warning(r) + _latency_line(r)
 
 

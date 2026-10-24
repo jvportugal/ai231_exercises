@@ -333,21 +333,26 @@ def _wakeword_loop(vcm, app, quit_flag, args):
                 device=args.mic_device,
                 command_timeout=args.command_timeout,
                 speech_start_timeout=args.speech_start_timeout,
-                silence_seconds=args.command_silence,
+                silence_seconds=(0.8 if args.legacy_e8
+                                 else args.command_silence),
                 speech_rms=args.speech_rms,
                 noise_floor_multiplier=args.noise_floor_multiplier,
                 chime=not args.no_wake_chime,
                 chime_volume=args.wake_chime_volume,
                 chime_path=args.wake_chime,
                 chime_device=args.wake_chime_device,
-                on_wake=duck_music_for_command) as session:
+                on_wake=duck_music_for_command,
+                legacy_command_capture=args.legacy_e8) as session:
             while not quit_flag.is_set():
                 audio = session.wait_for_command(quit_flag)
                 if audio is None:
                     restore_ducked_music()
                     continue
                 result = vcm.classify_audio(
-                    audio, allow_wake_short=not args.strict_command_policy)
+                    audio,
+                    allow_wake_short=(not args.strict_command_policy and
+                                      not args.legacy_e8),
+                    legacy_e8=args.legacy_e8)
                 # Join the wake/endpoint timings to the VCM inference timing
                 # so one result line explains where the perceived delay came
                 # from on this particular Raspberry Pi.
@@ -431,6 +436,8 @@ def main(argv=None):
                         help="trailing silence seconds that ends a command (default: 0.5)")
     parser.add_argument("--strict-command-policy", action="store_true",
                         help="disable wake-armed assistance for short fixed commands")
+    parser.add_argument("--legacy-e8", action="store_true",
+                        help="restore original E8 capture and acceptance behavior")
     args = parser.parse_args(argv)
     if not 0.0 <= args.wake_chime_volume <= 1.0:
         parser.error("--wake-chime-volume must be between 0 and 1")
@@ -441,6 +448,8 @@ def main(argv=None):
     mode = "gui" if args.gui else ("term" if args.term else "auto")
     wakeword_mode = args.wakeword
     voice_mode = args.voice or wakeword_mode
+    if args.legacy_e8:
+        print("  [voice] legacy E8 compatibility mode enabled")
 
     # GUI is the DEFAULT. The terminal "box" is only a headless escape hatch
     # (explicit --term). If there's no display, we say so and stop instead of

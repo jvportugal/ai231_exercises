@@ -217,6 +217,27 @@ class WakewordAudioTests(unittest.TestCase):
         self.assertEqual(len(audio), 4 * W.BLOCK_SAMPLES)
         self.assertLess(session.last_timing["command_speech_wait_ms"], 50.0)
 
+    def test_legacy_capture_uses_original_two_block_endpoint(self):
+        speech = np.full(W.BLOCK_SAMPLES, 0.02, np.float32)
+        silence = np.zeros(W.BLOCK_SAMPLES, np.float32)
+
+        session = W.WakeWordSession.__new__(W.WakeWordSession)
+        session.guard_blocks = 0
+        session.silence_blocks = 3
+        session.command_timeout = 6.0
+        session.speech_start_timeout = 4.0
+        session.speech_gate = W.AdaptiveSpeechGate(minimum=0.008)
+        session.microphone = _Microphone(
+            [speech, speech, silence, silence, silence])
+        session.last_timing = {}
+        session.legacy_command_capture = True
+
+        audio = session._capture_command(None)
+
+        self.assertIsNotNone(audio)
+        self.assertEqual(len(audio), 5 * W.BLOCK_SAMPLES)
+        self.assertEqual(session.last_timing["command_endpoint_ms"], 300.0)
+
     def test_wake_callback_runs_before_command_capture(self):
         speech = np.full(W.BLOCK_SAMPLES, 0.02, np.float32)
         silence = np.zeros(W.BLOCK_SAMPLES, np.float32)

@@ -126,6 +126,30 @@ class VoiceSafetyTests(unittest.TestCase):
         self.assertEqual(rescued["intent"], "PAUSE")
         self.assertEqual(rescued["acceptance_policy"], "wake_reject_rescue")
 
+    def test_legacy_e8_accepts_original_non_reject_top_prediction(self):
+        probabilities = np.full(len(V.INTENT_NAMES), 0.15 / 17.0, np.float32)
+        probabilities[V.INTENT_NAMES.index("WEATHER")] = 0.55
+        probabilities[V.INTENT_NAMES.index("TIME")] = 0.25
+        probabilities[V.REJECT_IDX_A] = 0.05
+        bridge = Voice()
+        bridge._sess = _Session(np.log(probabilities),
+                                np.zeros(len(V.VALUE_TOKENS), np.float32))
+        bridge._labels = {"intents": V.INTENT_NAMES,
+                          "value_tokens": V.VALUE_TOKENS}
+        audio = np.zeros(V.SAMPLE_RATE, np.float32)
+        t = np.arange(6000, dtype=np.float32) / V.SAMPLE_RATE
+        audio[3000:9000] = 0.02 * np.sin(2 * np.pi * 180 * t)
+
+        safer = bridge.classify_audio(audio)
+        legacy = bridge.classify_audio(audio, legacy_e8=True)
+
+        self.assertFalse(safer["ok"])
+        self.assertEqual(safer["rejection_reason"], "low_intent_confidence")
+        self.assertTrue(legacy["ok"])
+        self.assertEqual(legacy["intent"], "WEATHER")
+        self.assertEqual(legacy["acceptance_policy"], "legacy_e8")
+        self.assertIn("legacy E8 policy", describe(legacy))
+
     def test_every_rejection_reports_top_three_model_predictions(self):
         probabilities = np.full(len(V.INTENT_NAMES), 0.01 / 17.0, np.float32)
         probabilities[V.INTENT_NAMES.index("PAUSE")] = 0.10
