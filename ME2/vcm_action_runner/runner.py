@@ -42,6 +42,7 @@ from ui.appkit import App, has_display
 from ui.timer_display import CountdownTimer  # noqa: F401  (kept for API parity)
 import voice as voice_mod
 import wakeword as wakeword_mod
+from benchmark_log import BenchmarkLogger
 
 # Blocking handlers (worker-thread entry points).
 HANDLERS = dict(actions.sims.HANDLERS)
@@ -222,11 +223,13 @@ def _dispatch(code_or_num, app):
 # --------------------------------------------------------------------------
 # VOICE mode: mic -> VCM -> intent -> the SAME _open_intent dispatch above.
 # --------------------------------------------------------------------------
-def _handle_voice_result(r, app, running_message):
+def _handle_voice_result(r, app, running_message, benchmark_logger=None):
     """Print and dispatch one classification from either microphone mode."""
     print(voice_mod.describe(r))
     if r.get("cancelled"):
         return False
+    if benchmark_logger is not None:
+        benchmark_logger.decision(r)
     if not r.get("ok"):
         return True  # REJECT / no command -> just listen again
     intent = r["intent"]
@@ -241,16 +244,20 @@ def _handle_voice_result(r, app, running_message):
         if gold and slot not in gold:
             low = {g.lower().strip(): g for g in gold}
             slot = low.get(str(slot).lower().strip(), slot)
-    _open_intent(intent, slot, app)
-    print(running_message)
+    if benchmark_logger is None:
+        _open_intent(intent, slot, app)
+        print(running_message)
+    else:
+        print("  [benchmark] decision logged; action suppressed")
     return True
 
 
-def _voice_dispatch(vcm, app):
+def _voice_dispatch(vcm, app, benchmark_logger=None):
     """One keyboard listen->classify->act cycle."""
     return _handle_voice_result(
         vcm.listen_and_classify(), app,
-        "  [running -- press SPACE to say a new command, 'q' to quit]")
+        "  [running -- press SPACE to say a new command, 'q' to quit]",
+        benchmark_logger=benchmark_logger)
 
 
 def print_voice_menu(wakeword=False):
@@ -271,7 +278,7 @@ def print_voice_menu(wakeword=False):
     print("-" * 58)
 
 
-def _voice_loop(vcm, app, quit_flag):
+def _voice_loop(vcm, app, quit_flag, benchmark_logger=None):
     """Terminal loop for --voice.
 
     Exactly the flow requested:
@@ -287,7 +294,7 @@ def _voice_loop(vcm, app, quit_flag):
         n += 1
         print("\n  [listen %d] press SPACE to record..." % n)
         try:
-            if not _voice_dispatch(vcm, app):
+            if not _voice_dispatch(vcm, app, benchmark_logger):
                 break
         except KeyboardInterrupt:
             break
@@ -298,7 +305,7 @@ def _voice_loop(vcm, app, quit_flag):
         CURRENT["act"] = None
 
 
-def _wakeword_loop(vcm, app, quit_flag, args):
+def _wakeword_loop(vcm, app, quit_flag, args, benchmark_logger=None):
     """Hands-free Destiny -> command -> action loop using one mic stream."""
     print_voice_menu(wakeword=True)
     print("  Wake-word control is ON: no SPACE/ENTER input is needed.")
@@ -310,6 +317,9 @@ def _wakeword_loop(vcm, app, quit_flag, args):
         music_duck = {"active": False}
 
         def duck_music_for_command():
+            if benchmark_logger is not None:
+                benchmark_logger.wake()
+                return
             with DEVICE.locked():
                 should_pause = DEVICE.playing and not DEVICE.paused
             if should_pause:
@@ -359,7 +369,8 @@ def _wakeword_loop(vcm, app, quit_flag, args):
                 result.setdefault("latency", {}).update(session.last_timing)
                 _handle_voice_result(
                     result, app,
-                    "  [running -- say \"Destiny\" for a new command]")
+                    "  [running -- say \"Destiny\" for a new command]",
+                    benchmark_logger=benchmark_logger)
                 # PLAY/NEXT explicitly start audio, PAUSE/STOP intentionally
                 # leave it paused/stopped, and cross-domain actions stop it.
                 # Volume-only actions and rejected attempts need restoration.
@@ -438,6 +449,10 @@ def main(argv=None):
                         help="disable wake-armed assistance for short fixed commands")
     parser.add_argument("--legacy-e8", action="store_true",
                         help="restore original E8 capture and acceptance behavior")
+    parser.add_argument("--benchmark", action="store_true",
+                        help="write benchmark JSONL and suppress real actions")
+    parser.add_argument("--benchmark-log", default=None, metavar="PATH",
+                        help="benchmark JSONL path (implies --benchmark)")
     args = parser.parse_args(argv)
     if not 0.0 <= args.wake_chime_volume <= 1.0:
         parser.error("--wake-chime-volume must be between 0 and 1")
@@ -448,6 +463,12 @@ def main(argv=None):
     mode = "gui" if args.gui else ("term" if args.term else "auto")
     wakeword_mode = args.wakeword
     voice_mode = args.voice or wakeword_mode
+    benchmark_mode = args.benchmark or args.benchmark_log is not None
+    benchmark_logger = None
+    if benchmark_mode:
+        benchmark_logger = BenchmarkLogger(args.benchmark_log)
+        print("  [benchmark] logging decisions to %s" % benchmark_logger.path)
+        print("  [benchmark] real actions are suppressed")
     if args.legacy_e8:
         print("  [voice] legacy E8 compatibility mode enabled")
 
@@ -477,9 +498,9 @@ def main(argv=None):
         def reader():
             try:
                 if wakeword_mode:
-                    _wakeword_loop(vcm, app, quit_flag, args)
+                    _wakeword_loop(vcm, app, quit_flag, args, benchmark_logger)
                 elif voice_mode:
-                    _voice_loop(vcm, app, quit_flag)
+                    _voice_loop(vcm, app, quit_flag, benchmark_logger)
                 else:
                     _reader_loop(app, quit_flag)
             except Exception as e:
@@ -510,12 +531,14 @@ def main(argv=None):
             print("  Continuing in terminal mode for now...")
         quit_flag = threading.Event()
         if wakeword_mode:
-            _wakeword_loop(vcm, None, quit_flag, args)
+            _wakeword_loop(vcm, None, quit_flag, args, benchmark_logger)
         elif voice_mode:
-            _voice_loop(vcm, None, quit_flag)
+            _voice_loop(vcm, None, quit_flag, benchmark_logger)
         else:
             _reader_loop(None, quit_flag)
     LIGHT.cleanup()
+    if benchmark_logger is not None:
+        benchmark_logger.close()
     print("\n  bye.")
 
 

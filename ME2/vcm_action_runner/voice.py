@@ -106,6 +106,10 @@ class Voice:
         return {
             "ok": (not rejected) and intent is not None,
             "latency": lat,
+            # The wake-word and keyboard capture paths both supply 16 kHz mono
+            # audio.  The benchmark uses this with classify_ms for real-time
+            # factor and requires it on the same decision record.
+            "audio_ms": len(x) / 16000.0 * 1000.0,
             "intent": None if rejected else intent,
             "slot": None if rejected else info.get("slot"),
             "conf": conf,

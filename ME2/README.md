@@ -270,6 +270,23 @@ python3 vcm_action_runner/runner.py
 
 Press Ctrl+C to stop wake-word mode. In typed mode, enter q to quit.
 
+### Shared live benchmark
+
+The course benchmark reads structured decisions from the newest log under
+`~/vcm_benchmark/`. Start the Pi runner in benchmark mode with:
+
+~~~bash
+python3 vcm_action_runner/runner.py --wakeword --term --no-wake-chime --benchmark
+~~~
+
+This creates a timestamped JSON-lines log containing a wake record and one
+decision record per captured command. Every decision supplies `intent`,
+`slot`, `infer_ms`, and `audio_ms`; rejected commands are written as
+`OUT_OF_SCOPE`. Real actions, including music and GPIO changes, are suppressed
+so their output cannot leak into later microphone trials. Normal interactive
+operation is unchanged when `--benchmark` is omitted. Use
+`--benchmark-log PATH` to select a fixed log path if required.
+
 ## 6. Supported actions
 
 The VCM has 20 intent-head classes: 19 actions plus REJECT. Six actions use the
