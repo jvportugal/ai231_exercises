@@ -77,9 +77,19 @@ class Voice:
         #     e.g. CALL @0.53 on pure silence), OR
         #   * the winning intent is not in the golden 19 (defensive).
         no_speech = info.get("span") is None
-        strict_accepted, _ = vcm.safe_decision(intent, conf, info)
-        accepted, rejection_reason = vcm.safe_decision(
-            intent, conf, info, allow_wake_short=allow_wake_short)
+        model_intent = intent
+        model_conf = conf
+        rescued_intent = (vcm.wake_reject_rescue(info)
+                          if allow_wake_short and intent == "REJECT" else None)
+        if rescued_intent is not None:
+            intent = rescued_intent
+            conf = info.get("command_conditional_conf", 0.0)
+            strict_accepted = False
+            accepted, rejection_reason = True, None
+        else:
+            strict_accepted, _ = vcm.safe_decision(intent, conf, info)
+            accepted, rejection_reason = vcm.safe_decision(
+                intent, conf, info, allow_wake_short=allow_wake_short)
         rejected = not accepted
         return {
             "ok": (not rejected) and intent is not None,
@@ -90,8 +100,15 @@ class Voice:
             "rejected": rejected,
             "no_speech": no_speech,
             "rejection_reason": rejection_reason,
-            "acceptance_policy": ("wake_short" if accepted and not strict_accepted
+            "acceptance_policy": ("wake_reject_rescue" if rescued_intent
+                                  else "wake_short" if accepted and not strict_accepted
                                   else "strict"),
+            "model_intent": model_intent,
+            "model_conf": model_conf,
+            "command_intent": info.get("command_intent"),
+            "command_conf": info.get("command_conf"),
+            "command_conditional_conf": info.get("command_conditional_conf"),
+            "command_conditional_margin": info.get("command_conditional_margin"),
             "intent_margin": info.get("intent_margin"),
             "slot_conf": info.get("slot_conf"),
             "slot_margin": info.get("slot_margin"),
@@ -128,8 +145,14 @@ def describe(r):
         conf = r.get("conf")
         c = ("%.2f" % conf) if conf is not None else "?"
         reason = str(r.get("rejection_reason") or "model_reject").replace("_", " ")
-        return ("  [voice] no action (%s, conf=%s) -- please repeat" % (reason, c)
-                + _mic_warning(r) + _latency_line(r))
+        line = "  [voice] no action (%s, conf=%s) -- please repeat" % (reason, c)
+        if r.get("model_intent") == "REJECT" and r.get("command_intent"):
+            line += ("\n  [voice] best command under REJECT: %s "
+                     "(raw %.2f, conditional %.2f, margin %.2f)" %
+                     (r["command_intent"], r.get("command_conf", 0.0),
+                      r.get("command_conditional_conf", 0.0),
+                      r.get("command_conditional_margin", 0.0)))
+        return line + _mic_warning(r) + _latency_line(r)
     slot = r.get("slot")
     c = ("%.2f" % r["conf"]) if r.get("conf") is not None else "?"
     line = "  [voice] heard: %s" % r["intent"]
@@ -138,6 +161,8 @@ def describe(r):
     line += "   [conf %s]" % c
     if r.get("acceptance_policy") == "wake_short":
         line += " [wake-short assist]"
+    elif r.get("acceptance_policy") == "wake_reject_rescue":
+        line += " [wake rescue: model REJECT %.2f]" % r.get("model_conf", 0.0)
     return line + _mic_warning(r) + _latency_line(r)
 
 

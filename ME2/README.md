@@ -209,6 +209,15 @@ wrong commands, and no additional out-of-scope clips. On the separate 202-row
 holdout it accepted three additional correct commands, with no additional wrong
 or out-of-scope acceptance.
 
+Wake-word mode can also rescue a short fixed command when the model's top class
+is REJECT, but the remaining command probability strongly agrees on one action.
+This second policy covers the eligible intents above plus weather, requires at
+least 0.60 conditional command confidence and 0.50 conditional margin, and
+never applies to slotted commands. On the test/selection split it recovered 19
+additional correct commands with two additional wrong commands and no added
+out-of-scope acceptance; it added no errors on the separate holdout. Rescued
+results are marked `[wake rescue: model REJECT ...]`.
+
 If music is already playing, a successful Destiny activation temporarily
 pauses playback before the chime and command capture. This prevents the
 speaker output from masking short commands such as **pause**. Playback resumes

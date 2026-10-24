@@ -282,6 +282,7 @@ class Microphone:
         self.native_rate = None
         self.native_block = None
         self.device_name = "default"
+        self._read_failures = 0
 
     @staticmethod
     def _input_candidates(sd, requested):
@@ -369,7 +370,16 @@ class Microphone:
         raise RuntimeError("could not open microphone (" + "; ".join(errors) + ")")
 
     def read(self):
-        data, overflowed = self.stream.read(self.native_block)
+        try:
+            data, overflowed = self.stream.read(self.native_block)
+        except Exception as exc:
+            self._read_failures += 1
+            if self._read_failures <= 2:
+                print("  [wakeword] transient microphone read failure; "
+                      "continuing (%s)" % exc, file=sys.stderr)
+                return np.zeros(BLOCK_SAMPLES, dtype=np.float32)
+            raise RuntimeError("microphone stream failed repeatedly: %s" % exc) from exc
+        self._read_failures = 0
         if overflowed:
             print("  [wakeword] microphone overflow; continuing", file=sys.stderr)
         return _resample_block(data[:, 0], self.native_rate)

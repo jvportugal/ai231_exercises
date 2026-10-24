@@ -3,6 +3,7 @@ import unittest
 import numpy as np
 
 import vcm_infer as V
+from vcm_action_runner.voice import Voice
 
 
 class _Session:
@@ -86,6 +87,44 @@ class VoiceSafetyTests(unittest.TestCase):
                 "intent_margin": 0.12, "slot": None}
         self.assertFalse(V.safe_decision(
             "CALL", 0.70, info, allow_wake_short=True)[0])
+
+    def test_wake_reject_rescue_accepts_one_clear_conditional_command(self):
+        info = {"span": (0.1, 1.2), "command_intent": "PAUSE",
+                "command_conf": 0.14, "command_conditional_conf": 0.78,
+                "command_conditional_margin": 0.61, "reject_conf": 0.82}
+        self.assertEqual(V.wake_reject_rescue(info), "PAUSE")
+
+    def test_wake_reject_rescue_rejects_ambiguous_or_extreme_reject(self):
+        ambiguous = {"span": (0.1, 1.2), "command_intent": "CALL",
+                     "command_conf": 0.12, "command_conditional_conf": 0.55,
+                     "command_conditional_margin": 0.20, "reject_conf": 0.84}
+        self.assertIsNone(V.wake_reject_rescue(ambiguous))
+        extreme = dict(ambiguous, command_conditional_conf=0.90,
+                       command_conditional_margin=0.80, reject_conf=0.96)
+        self.assertIsNone(V.wake_reject_rescue(extreme))
+
+    def test_voice_bridge_dispatches_calibrated_wake_reject_rescue(self):
+        probabilities = np.full(len(V.INTENT_NAMES), 0.04 / 18.0, np.float32)
+        probabilities[V.INTENT_NAMES.index("PAUSE")] = 0.14
+        probabilities[V.REJECT_IDX_A] = 0.82
+        intent_logits = np.log(probabilities)
+        slot_logits = np.zeros(len(V.VALUE_TOKENS), np.float32)
+        audio = np.zeros(V.SAMPLE_RATE, np.float32)
+        t = np.arange(6000, dtype=np.float32) / V.SAMPLE_RATE
+        audio[3000:9000] = 0.02 * np.sin(2 * np.pi * 180 * t)
+        bridge = Voice()
+        bridge._sess = _Session(intent_logits, slot_logits)
+        bridge._labels = {"intents": V.INTENT_NAMES,
+                          "value_tokens": V.VALUE_TOKENS}
+
+        strict = bridge.classify_audio(audio)
+        rescued = bridge.classify_audio(audio, allow_wake_short=True)
+
+        self.assertFalse(strict["ok"])
+        self.assertEqual(strict["rejection_reason"], "model_reject")
+        self.assertTrue(rescued["ok"])
+        self.assertEqual(rescued["intent"], "PAUSE")
+        self.assertEqual(rescued["acceptance_policy"], "wake_reject_rescue")
 
 
 if __name__ == "__main__":

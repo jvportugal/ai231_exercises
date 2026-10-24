@@ -68,6 +68,11 @@ WAKE_SHORT_INTENTS = frozenset({
     "PLAY_MUSIC", "TIME", "PAUSE", "STOP", "NEXT", "VOLUME_UP",
     "VOLUME_DOWN", "CALL", "MESSAGE", "LIST_REMINDERS",
 })
+WAKE_REJECT_RESCUE_INTENTS = WAKE_SHORT_INTENTS | frozenset({"WEATHER"})
+WAKE_REJECT_MIN_COMMAND_CONFIDENCE = 0.05
+WAKE_REJECT_MIN_CONDITIONAL_CONFIDENCE = 0.60
+WAKE_REJECT_MIN_CONDITIONAL_MARGIN = 0.50
+WAKE_REJECT_MAX_CONFIDENCE = 0.90
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 # Ship the raw .onnx. load_model() also accepts a .onnx.gz and decompresses it
@@ -353,6 +358,35 @@ def _wake_short_decision(intent, conf, info):
             info.get("intent_margin", 0.0) >= WAKE_SHORT_MIN_MARGIN)
 
 
+def wake_reject_rescue(info):
+    """Return a fixed intent hidden under REJECT in wake-armed short audio.
+
+    The command probabilities are renormalized without the REJECT class. This
+    is only safe after a valid wake word and only when they strongly agree on
+    one eligible fixed intent; generic inference keeps the original argmax.
+    """
+    span = info.get("span")
+    if span is None or len(span) != 2:
+        return None
+    speech_span = max(0.0, float(span[1]) - float(span[0]))
+    candidate = info.get("command_intent")
+    if candidate not in WAKE_REJECT_RESCUE_INTENTS:
+        return None
+    if speech_span > WAKE_SHORT_MAX_SPAN_SECONDS:
+        return None
+    if info.get("reject_conf", 1.0) > WAKE_REJECT_MAX_CONFIDENCE:
+        return None
+    if info.get("command_conf", 0.0) < WAKE_REJECT_MIN_COMMAND_CONFIDENCE:
+        return None
+    if (info.get("command_conditional_conf", 0.0) <
+            WAKE_REJECT_MIN_CONDITIONAL_CONFIDENCE):
+        return None
+    if (info.get("command_conditional_margin", 0.0) <
+            WAKE_REJECT_MIN_CONDITIONAL_MARGIN):
+        return None
+    return candidate
+
+
 def safe_decision(intent, conf, info, allow_wake_short=False):
     """Return ``(accepted, reason)`` for the demo-safe action policy.
 
@@ -407,6 +441,12 @@ def classify(sess, labels, x, verbose=False):
     vtoks = labels.get("value_tokens", VALUE_TOKENS)
     intent = intents[ia]
     rejected = ia == REJECT_IDX_A
+    command_probs = pa[:REJECT_IDX_A]
+    command_total = float(command_probs.sum())
+    command_conditional = (command_probs / command_total if command_total > 0.0
+                           else command_probs)
+    command_index = int(np.argmax(command_probs))
+    command_intent = intents[command_index]
     slot = None
     slot_conf = 0.0
     slot_margin = 0.0
@@ -429,7 +469,12 @@ def classify(sess, labels, x, verbose=False):
     info = dict(info)
     info.update(slot=slot, slot_token=slot_token, slot_conf=slot_conf,
                 slot_margin=slot_margin, intent_margin=_top_margin(pa),
-                rejected=rejected)
+                rejected=rejected,
+                command_intent=command_intent,
+                command_conf=float(command_probs[command_index]),
+                command_conditional_conf=float(command_conditional[command_index]),
+                command_conditional_margin=_top_margin(command_conditional),
+                reject_conf=float(pa[REJECT_IDX_A]))
     return intent, float(pa[ia]), pa, info
 
 

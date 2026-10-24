@@ -97,6 +97,17 @@ class _InputSoundDevice:
         return _InputStream(self, **settings)
 
 
+class _FlakyReadStream:
+    def __init__(self):
+        self.calls = 0
+
+    def read(self, frames):
+        self.calls += 1
+        if self.calls == 1:
+            raise RuntimeError("input overflowed")
+        return np.full((frames, 1), 0.01, np.float32), False
+
+
 class WakewordAudioTests(unittest.TestCase):
     def test_microphone_falls_back_when_default_input_is_minus_one(self):
         sd = _InputSoundDevice()
@@ -110,6 +121,20 @@ class WakewordAudioTests(unittest.TestCase):
             finally:
                 microphone.close()
         self.assertEqual((sd.stopped, sd.closed), (1, 1))
+
+    def test_transient_microphone_read_failure_returns_silence_then_recovers(self):
+        microphone = W.Microphone.__new__(W.Microphone)
+        microphone.stream = _FlakyReadStream()
+        microphone.native_rate = W.SAMPLE_RATE
+        microphone.native_block = W.BLOCK_SAMPLES
+        microphone._read_failures = 0
+
+        first = microphone.read()
+        second = microphone.read()
+
+        self.assertTrue(np.all(first == 0.0))
+        self.assertTrue(np.allclose(second, 0.01))
+        self.assertEqual(microphone._read_failures, 0)
 
     def test_chime_uses_native_int16_stereo_output(self):
         sd = _SoundDevice()
