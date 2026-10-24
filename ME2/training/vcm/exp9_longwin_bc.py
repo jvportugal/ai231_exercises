@@ -158,13 +158,13 @@ def specaug_mel(mel, rng, t_mask=2, t_len=20, f_mask=2, f_len=8):
     """Time + frequency masking on a (40, 250) log-mel. Applied AFTER CMVN
     (so it masks the normalized feature, standard practice)."""
     mel = mel.copy()
-    nt, nf = mel.shape
+    n_freq, n_time = mel.shape
     for _ in range(t_mask):
-        t0 = rng.randint(0, max(1, nt - t_len))
-        mel[t0:t0 + t_len, :] = 0.0
+        t0 = rng.randint(0, max(1, n_time - t_len))
+        mel[:, t0:t0 + t_len] = 0.0
     for _ in range(f_mask):
-        f0 = rng.randint(0, max(1, nf - f_len))
-        mel[:, f0:f0 + f_len] = 0.0
+        f0 = rng.randint(0, max(1, n_freq - f_len))
+        mel[f0:f0 + f_len, :] = 0.0
     return mel
 
 
