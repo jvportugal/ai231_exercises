@@ -520,7 +520,7 @@ class WakeWordSession:
                  wake_silence_seconds=0.4, wake_max_seconds=2.0,
                  model_path=DEFAULT_MODEL, melbank_path=DEFAULT_MELBANK,
                  chime=True, chime_volume=0.22, chime_path=None,
-                 chime_device=None):
+                 chime_device=None, on_wake=None):
         if not 0.0 < threshold < 1.0:
             raise ValueError("wake-word threshold must be between 0 and 1")
         self.threshold = float(threshold)
@@ -540,6 +540,7 @@ class WakeWordSession:
         self.chime_volume = float(chime_volume)
         self.chime_path = chime_path
         self.chime_device = chime_device
+        self.on_wake = on_wake
         self.chime_audio = None
         self._chime_failed = False
         self._chime_output = None
@@ -655,22 +656,38 @@ class WakeWordSession:
                     print("  [state] DESTINY DETECTED -- p=%.3f "
                           "(silence wait %d ms, model %.0f ms)" %
                           (probability, endpoint_ms, score_ms), flush=True)
+                    if self.on_wake is not None:
+                        try:
+                            self.on_wake()
+                        except Exception as exc:
+                            print("  [wakeword] wake callback failed: %s" % exc,
+                                  file=sys.stderr)
                     chime_seconds = self._play_chime()
                     # The input stream stayed open during playback. Consume
                     # only the blocks that overlap the cue before inviting the
                     # user to speak; normal reaction time supplies the margin.
                     chime_blocks = (int(math.ceil(
                         chime_seconds * 1000 / BLOCK_MS)) + 1) if chime_seconds else 0
-                    for _ in range(chime_blocks):
+                    post_chime_block = None
+                    for block_index in range(chime_blocks):
                         chime_block = self.microphone.read()
-                        self.speech_gate.update(block_rms(chime_block), False)
+                        # The final drained block starts after the short cue on
+                        # the normal 100 ms block boundary. Preserve it for
+                        # users who answer immediately instead of throwing
+                        # away the onset of a one-word command.
+                        if block_index == chime_blocks - 1:
+                            post_chime_block = chime_block
+                        else:
+                            self.speech_gate.update(block_rms(chime_block), False)
                     print("  [state] LISTENING FOR COMMAND -- speak now", flush=True)
-                    return self._capture_command(quit_flag)
+                    initial = ([post_chime_block]
+                               if post_chime_block is not None else None)
+                    return self._capture_command(quit_flag, initial_blocks=initial)
         finally:
             meter.close()
         return None
 
-    def _capture_command(self, quit_flag):
+    def _capture_command(self, quit_flag, initial_blocks=None):
         for _ in range(self.guard_blocks):
             block = self.microphone.read()
             self.speech_gate.update(block_rms(block), False)
@@ -683,10 +700,11 @@ class WakeWordSession:
         t0 = time.monotonic()
         speech_t0 = None
         meter = LiveLevelMeter("LISTENING FOR COMMAND")
+        pending = deque(initial_blocks or ())
 
         try:
             while quit_flag is None or not quit_flag.is_set():
-                block = self.microphone.read()
+                block = pending.popleft() if pending else self.microphone.read()
                 rms = meter.update(block)
                 # Command mode is explicitly armed by the wake word, so it can
                 # use a more sensitive gate than always-on wake-word mode.  A

@@ -307,6 +307,27 @@ def _wakeword_loop(vcm, app, quit_flag, args):
     try:
         print("  [voice] loading and warming VCM...")
         vcm.warmup()
+        music_duck = {"active": False}
+
+        def duck_music_for_command():
+            with DEVICE.locked():
+                should_pause = DEVICE.playing and not DEVICE.paused
+            if should_pause:
+                AUDIO.pause()
+                music_duck["active"] = True
+                print("  [audio] music paused while listening", flush=True)
+
+        def restore_ducked_music():
+            if not music_duck["active"]:
+                return
+            with DEVICE.locked():
+                should_resume = DEVICE.playing and not DEVICE.paused
+                track_idx = DEVICE.track_idx
+            if should_resume:
+                AUDIO.play(track_idx)
+                print("  [audio] music resumed", flush=True)
+            music_duck["active"] = False
+
         with wakeword_mod.WakeWordSession(
                 threshold=args.wakeword_threshold,
                 device=args.mic_device,
@@ -318,12 +339,15 @@ def _wakeword_loop(vcm, app, quit_flag, args):
                 chime=not args.no_wake_chime,
                 chime_volume=args.wake_chime_volume,
                 chime_path=args.wake_chime,
-                chime_device=args.wake_chime_device) as session:
+                chime_device=args.wake_chime_device,
+                on_wake=duck_music_for_command) as session:
             while not quit_flag.is_set():
                 audio = session.wait_for_command(quit_flag)
                 if audio is None:
+                    restore_ducked_music()
                     continue
-                result = vcm.classify_audio(audio)
+                result = vcm.classify_audio(
+                    audio, allow_wake_short=not args.strict_command_policy)
                 # Join the wake/endpoint timings to the VCM inference timing
                 # so one result line explains where the perceived delay came
                 # from on this particular Raspberry Pi.
@@ -331,6 +355,14 @@ def _wakeword_loop(vcm, app, quit_flag, args):
                 _handle_voice_result(
                     result, app,
                     "  [running -- say \"Destiny\" for a new command]")
+                # PLAY/NEXT explicitly start audio, PAUSE/STOP intentionally
+                # leave it paused/stopped, and cross-domain actions stop it.
+                # Volume-only actions and rejected attempts need restoration.
+                if (not result.get("ok") or
+                        result.get("intent") in ("VOLUME_UP", "VOLUME_DOWN")):
+                    restore_ducked_music()
+                else:
+                    music_duck["active"] = False
                 print("  [state] RETURNING TO WAKE-WORD MODE", flush=True)
     except KeyboardInterrupt:
         pass
@@ -338,6 +370,8 @@ def _wakeword_loop(vcm, app, quit_flag, args):
         print("  [wakeword] error: %s" % exc)
         print("  Run ./setup.sh, then verify the mic with: python3 tester.py")
     finally:
+        if "restore_ducked_music" in locals():
+            restore_ducked_music()
         quit_flag.set()
         if CURRENT["act"] is not None:
             CURRENT["act"].cancel()
@@ -395,6 +429,8 @@ def main(argv=None):
                         help="seconds to wait for speech after Destiny")
     parser.add_argument("--command-silence", type=float, default=0.5,
                         help="trailing silence seconds that ends a command (default: 0.5)")
+    parser.add_argument("--strict-command-policy", action="store_true",
+                        help="disable wake-armed assistance for short fixed commands")
     args = parser.parse_args(argv)
     if not 0.0 <= args.wake_chime_volume <= 1.0:
         parser.error("--wake-chime-volume must be between 0 and 1")

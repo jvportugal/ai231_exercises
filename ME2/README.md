@@ -186,9 +186,34 @@ WAITING FOR DESTINY
 
 Speak the command after the chime. The microphone remains open, but blocks
 that overlap the chime are discarded so the cue is not classified as part of
-the command. Command capture uses a sensitive short-frame gate after Destiny
-has armed it, so quick one-word commands such as **stop**, **next**, and
-**pause** are not averaged out by the stream's 100 ms blocks.
+the command. The first clean post-chime block is retained, so a user who
+answers immediately does not lose the beginning of a short word. Command
+capture uses a sensitive short-frame gate after Destiny has armed it, so quick
+one-word commands such as **stop**, **next**, **pause**, and **call** are not
+averaged out by the stream's 100 ms blocks.
+
+Wake-word mode also has a bounded short-command policy. After a valid Destiny
+activation, selected fixed non-slotted commands whose detected speech span is
+at most 1.5 seconds may pass at confidence 0.70 and top-two margin 0.35. The
+eligible intents are play music, time, pause, stop, next, volume up/down, call,
+message, and list reminders. Longer clips, slotted commands, silence,
+model-REJECT predictions, and fixed intents whose evaluation tradeoff was poor
+retain the strict 0.80 confidence and 0.50 margin policy. Assisted results are marked
+`[wake-short assist]` in the terminal. Use `--strict-command-policy` to disable
+this wake-armed assistance when evaluating the original strict operating
+point.
+
+The assisted point was selected on the 4,443-row test/selection split. Relative
+to the strict policy, it accepted 37 additional correct commands, six additional
+wrong commands, and no additional out-of-scope clips. On the separate 202-row
+holdout it accepted three additional correct commands, with no additional wrong
+or out-of-scope acceptance.
+
+If music is already playing, a successful Destiny activation temporarily
+pauses playback before the chime and command capture. This prevents the
+speaker output from masking short commands such as **pause**. Playback resumes
+after a timeout or rejected attempt; accepted play, next, pause, stop, volume,
+or cross-domain commands preserve their expected action semantics.
 
 ### Display selection
 

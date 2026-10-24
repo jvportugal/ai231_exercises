@@ -57,6 +57,18 @@ MIN_INTENT_MARGIN = 0.50
 MIN_SLOT_CONFIDENCE = 0.50
 MIN_SLOT_MARGIN = 0.10
 
+# A valid wake word substantially changes the prior probability that the next
+# short utterance is a command.  The hands-free runner may therefore use this
+# second, deliberately bounded operating point for fixed (non-slotted)
+# commands.  It is not enabled by default in the generic inference API.
+WAKE_SHORT_MIN_CONFIDENCE = 0.70
+WAKE_SHORT_MIN_MARGIN = 0.35
+WAKE_SHORT_MAX_SPAN_SECONDS = 1.50
+WAKE_SHORT_INTENTS = frozenset({
+    "PLAY_MUSIC", "TIME", "PAUSE", "STOP", "NEXT", "VOLUME_UP",
+    "VOLUME_DOWN", "CALL", "MESSAGE", "LIST_REMINDERS",
+})
+
 _HERE = os.path.dirname(os.path.abspath(__file__))
 # Ship the raw .onnx. load_model() also accepts a .onnx.gz and decompresses it
 # to a sibling .onnx on first use, but the bundle ships the plain model so it
@@ -328,7 +340,20 @@ def _top_margin(probs):
     return float(pair.max() - pair.min())
 
 
-def safe_decision(intent, conf, info):
+def _wake_short_decision(intent, conf, info):
+    """Whether a wake-armed, short fixed command is sufficiently distinct."""
+    if intent not in WAKE_SHORT_INTENTS:
+        return False
+    span = info.get("span")
+    if span is None or len(span) != 2:
+        return False
+    speech_span = max(0.0, float(span[1]) - float(span[0]))
+    return (speech_span <= WAKE_SHORT_MAX_SPAN_SECONDS and
+            conf >= WAKE_SHORT_MIN_CONFIDENCE and
+            info.get("intent_margin", 0.0) >= WAKE_SHORT_MIN_MARGIN)
+
+
+def safe_decision(intent, conf, info, allow_wake_short=False):
     """Return ``(accepted, reason)`` for the demo-safe action policy.
 
     Classification remains visible to diagnostics, but the action runner only
@@ -338,17 +363,27 @@ def safe_decision(intent, conf, info):
         return False, "model_reject"
     if info.get("span") is None:
         return False, "no_speech"
-    if conf < MIN_INTENT_CONFIDENCE:
-        return False, "low_intent_confidence"
-    if info.get("intent_margin", 0.0) < MIN_INTENT_MARGIN:
-        return False, "low_intent_margin"
     if intent in _SLOTTED_PREFIX:
+        if conf < MIN_INTENT_CONFIDENCE:
+            return False, "low_intent_confidence"
+        if info.get("intent_margin", 0.0) < MIN_INTENT_MARGIN:
+            return False, "low_intent_margin"
         if info.get("slot") is None:
             return False, "missing_slot"
         if info.get("slot_conf", 0.0) < MIN_SLOT_CONFIDENCE:
             return False, "low_slot_confidence"
         if info.get("slot_margin", 0.0) < MIN_SLOT_MARGIN:
             return False, "low_slot_margin"
+        return True, None
+    if (conf >= MIN_INTENT_CONFIDENCE and
+            info.get("intent_margin", 0.0) >= MIN_INTENT_MARGIN):
+        return True, None
+    if allow_wake_short and _wake_short_decision(intent, conf, info):
+        return True, None
+    if conf < MIN_INTENT_CONFIDENCE:
+        return False, "low_intent_confidence"
+    if info.get("intent_margin", 0.0) < MIN_INTENT_MARGIN:
+        return False, "low_intent_margin"
     return True, None
 
 

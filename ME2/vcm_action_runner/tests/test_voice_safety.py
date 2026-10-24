@@ -55,6 +55,38 @@ class VoiceSafetyTests(unittest.TestCase):
                 "intent_margin": 0.8, "slot": None}
         self.assertEqual(V.safe_decision("WEATHER", 0.9, info), (True, None))
 
+    def test_wake_short_policy_accepts_clear_short_fixed_command(self):
+        info = {"span": (0.1, 0.9), "rejected": False,
+                "intent_margin": 0.40, "slot": None}
+        self.assertEqual(V.safe_decision("PAUSE", 0.72, info),
+                         (False, "low_intent_confidence"))
+        self.assertEqual(
+            V.safe_decision("PAUSE", 0.72, info, allow_wake_short=True),
+            (True, None))
+
+    def test_wake_short_policy_does_not_relax_long_or_slotted_commands(self):
+        long_info = {"span": (0.1, 1.8), "rejected": False,
+                     "intent_margin": 0.40, "slot": None}
+        self.assertFalse(V.safe_decision(
+            "CALL", 0.72, long_info, allow_wake_short=True)[0])
+        slot_info = {"span": (0.1, 0.9), "rejected": False,
+                     "intent_margin": 0.40, "slot": "Red",
+                     "slot_conf": 0.9, "slot_margin": 0.8}
+        self.assertFalse(V.safe_decision(
+            "COLOR", 0.72, slot_info, allow_wake_short=True)[0])
+
+    def test_wake_short_policy_excludes_poorly_calibrated_fixed_intent(self):
+        info = {"span": (0.1, 0.9), "rejected": False,
+                "intent_margin": 0.40, "slot": None}
+        self.assertFalse(V.safe_decision(
+            "LIGHT_ON", 0.72, info, allow_wake_short=True)[0])
+
+    def test_wake_short_policy_still_rejects_ambiguous_audio(self):
+        info = {"span": (0.1, 0.8), "rejected": False,
+                "intent_margin": 0.12, "slot": None}
+        self.assertFalse(V.safe_decision(
+            "CALL", 0.70, info, allow_wake_short=True)[0])
+
 
 if __name__ == "__main__":
     unittest.main()

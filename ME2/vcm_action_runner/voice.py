@@ -61,7 +61,7 @@ class Voice:
         sess, _ = self._ensure_model()
         vcm.warmup(sess, n=1)
 
-    def classify_audio(self, x):
+    def classify_audio(self, x, allow_wake_short=False):
         """x = float32 @16 kHz mono -> dict {intent, slot, conf, rejected, ok}."""
         vcm = _import_vcm()
         sess, labels = self._ensure_model()
@@ -77,7 +77,9 @@ class Voice:
         #     e.g. CALL @0.53 on pure silence), OR
         #   * the winning intent is not in the golden 19 (defensive).
         no_speech = info.get("span") is None
-        accepted, rejection_reason = vcm.safe_decision(intent, conf, info)
+        strict_accepted, _ = vcm.safe_decision(intent, conf, info)
+        accepted, rejection_reason = vcm.safe_decision(
+            intent, conf, info, allow_wake_short=allow_wake_short)
         rejected = not accepted
         return {
             "ok": (not rejected) and intent is not None,
@@ -88,6 +90,8 @@ class Voice:
             "rejected": rejected,
             "no_speech": no_speech,
             "rejection_reason": rejection_reason,
+            "acceptance_policy": ("wake_short" if accepted and not strict_accepted
+                                  else "strict"),
             "intent_margin": info.get("intent_margin"),
             "slot_conf": info.get("slot_conf"),
             "slot_margin": info.get("slot_margin"),
@@ -132,6 +136,8 @@ def describe(r):
     if slot:
         line += "  (slot: %s)" % slot
     line += "   [conf %s]" % c
+    if r.get("acceptance_policy") == "wake_short":
+        line += " [wake-short assist]"
     return line + _mic_warning(r) + _latency_line(r)
 
 

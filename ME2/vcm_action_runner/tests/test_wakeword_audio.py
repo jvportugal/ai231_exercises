@@ -114,6 +114,51 @@ class WakewordAudioTests(unittest.TestCase):
         self.assertEqual(len(audio), 4 * W.BLOCK_SAMPLES)
         self.assertEqual(session.last_timing["command_endpoint_ms"], 300.0)
 
+    def test_post_chime_block_can_start_an_immediate_short_command(self):
+        speech = np.zeros(W.BLOCK_SAMPLES, np.float32)
+        speech[:W.SAMPLE_RATE * 40 // 1000] = 0.012
+        silence = np.zeros(W.BLOCK_SAMPLES, np.float32)
+
+        session = W.WakeWordSession.__new__(W.WakeWordSession)
+        session.guard_blocks = 0
+        session.silence_blocks = 3
+        session.command_timeout = 6.0
+        session.speech_start_timeout = 4.0
+        session.speech_gate = W.AdaptiveSpeechGate(minimum=0.008)
+        session.microphone = _Microphone([silence, silence, silence])
+        session.last_timing = {}
+
+        audio = session._capture_command(None, initial_blocks=[speech])
+
+        self.assertIsNotNone(audio)
+        self.assertEqual(len(audio), 4 * W.BLOCK_SAMPLES)
+        self.assertLess(session.last_timing["command_speech_wait_ms"], 50.0)
+
+    def test_wake_callback_runs_before_command_capture(self):
+        speech = np.full(W.BLOCK_SAMPLES, 0.02, np.float32)
+        silence = np.zeros(W.BLOCK_SAMPLES, np.float32)
+        events = []
+
+        session = W.WakeWordSession.__new__(W.WakeWordSession)
+        session.last_timing = {}
+        session.microphone = _Microphone([speech, silence])
+        session.speech_gate = W.AdaptiveSpeechGate(minimum=0.008)
+        session.wake_silence_blocks = 1
+        session.wake_max_blocks = 20
+        session.threshold = 0.5
+        session.detector = mock.Mock()
+        session.detector.score.return_value = 0.9
+        session.on_wake = lambda: events.append("wake")
+        session._play_chime = mock.Mock(
+            side_effect=lambda: events.append("chime") or 0.0)
+        session._capture_command = mock.Mock(
+            side_effect=lambda *_args, **_kwargs: events.append("capture") or speech)
+
+        audio = session.wait_for_command()
+
+        self.assertIs(audio, speech)
+        self.assertEqual(events, ["wake", "chime", "capture"])
+
 
 if __name__ == "__main__":
     unittest.main()
