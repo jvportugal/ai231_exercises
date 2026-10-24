@@ -746,7 +746,10 @@ table above.
 At training and inference time, the feature path is:
 
 1. Decode or resample to 16 kHz mono.
-2. Center a 2.5-second, 40,000-sample window on the speech region.
+2. Detect the active speech region, then take a 2.5-second, 40,000-sample
+   window centered on it, with symmetric zero padding at recording boundaries.
+   Thus a six-second microphone capture with 1.9 seconds of active speech uses
+   balanced local context around that speech—not an arbitrary six-second edge.
 3. Compute a 40-bin power mel spectrogram with a 400-sample FFT and Hann
    window, 160-sample hop, and 20–8,000 Hz frequency range.
 4. Apply base-10 log scaling, map the fixed −10.0 to 1.4 range into 0–1, and

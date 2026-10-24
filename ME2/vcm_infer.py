@@ -230,8 +230,8 @@ def _energy_envelope(x, frame_ms=VAD_FRAME_MS):
     return np.sqrt((seg ** 2).mean(axis=1)).astype(np.float32), fs
 
 
-def _detect_speech(x):
-    """Return (start_s, end_s) of voiced span, or None if no clear speech."""
+def _detect_speech(x, return_raw=False):
+    """Return the VAD span, optionally with the unpadded active-speech span."""
     env, fs = _energy_envelope(x)
     if env.size == 0:
         return None
@@ -255,6 +255,9 @@ def _detect_speech(x):
     # half-second utterance.
     if int(voiced.sum()) * VAD_FRAME_MS < 80:
         return None
+    raw_idx = np.where(voiced)[0]
+    raw_span = (raw_idx[0] * fs / SAMPLE_RATE,
+                (raw_idx[-1] + 1) * fs / SAMPLE_RATE)
     # hangover: extend voiced region to bridge word gaps
     hang = max(1, int(VAD_HANGOVER_MS / VAD_FRAME_MS))
     ext = voiced.copy()
@@ -270,11 +273,12 @@ def _detect_speech(x):
     end_s = (idx[-1] + 1) * fs / SAMPLE_RATE
     if (end_s - start_s) * 1000 < VAD_MIN_SPEECH_MS:
         return None
-    return start_s, end_s
+    span = (start_s, end_s)
+    return (span, raw_span) if return_raw else span
 
 
 def prepare_clip(x, verbose=False):
-    """VAD-trim + center the 2.5 s window on the speech midpoint + peak-normalize.
+    """VAD-trim speech, center it in a 2.5 s window, and peak-normalize.
 
     Returns (clip, info). clip is 16 kHz mono float32 of length N_SAMPLES.
     """
@@ -282,8 +286,8 @@ def prepare_clip(x, verbose=False):
     capture_peak = float(np.max(np.abs(x))) if x.size else 0.0
     capture_rms = float(np.sqrt(np.mean(x * x))) if x.size else 0.0
     clipping_fraction = float(np.mean(np.abs(x) >= 0.99)) if x.size else 0.0
-    span = _detect_speech(x)
-    if span is None:
+    detected = _detect_speech(x, return_raw=True)
+    if detected is None:
         # no clear speech: use the raw (zero-padded) window, flag it
         if len(x) < N_SAMPLES:
             clip = np.pad(x, (0, N_SAMPLES - len(x)))
@@ -296,35 +300,48 @@ def prepare_clip(x, verbose=False):
             print("[vad] " + info["note"])
         return clip, info
 
+    span, active_span = detected
     start_s, end_s = span
-    mid_s = 0.5 * (start_s + end_s)
-    half = 0.5 * WINDOW_SEC
-    win_start = max(0.0, mid_s - half)
-    win_end = win_start + WINDOW_SEC
-    if win_end > len(x) / float(SAMPLE_RATE):
-        win_start = max(0.0, len(x) / float(SAMPLE_RATE) - WINDOW_SEC)
-        win_end = win_start + WINDOW_SEC
-    i0 = int(win_start * SAMPLE_RATE)
-    i1 = min(len(x), int(win_end * SAMPLE_RATE))
-    seg = x[i0:i1]
-    if len(seg) < N_SAMPLES:
-        seg = np.pad(seg, (0, N_SAMPLES - len(seg)))
-    else:
-        seg = seg[:N_SAMPLES]
-    # peak-normalize the voiced content
-    j0 = max(0, int(start_s * SAMPLE_RATE) - i0)
-    j1 = min(len(seg), int(end_s * SAMPLE_RATE) - i0)
-    ref = seg[j0:j1] if j1 > j0 else seg
+    active_start_s, active_end_s = active_span
+    speech_i0 = max(0, int(round(active_start_s * SAMPLE_RATE)))
+    speech_i1 = min(len(x), int(round(active_end_s * SAMPLE_RATE)))
+    active_samples = max(0, speech_i1 - speech_i0)
+
+    # Training center_crop() symmetrically padded short recordings and chose
+    # the loudest 2.5 s region of long recordings. Runtime previously padded
+    # only on the right, so a 1.6 s command sat near the beginning of E8's
+    # window. Put the detected active-speech midpoint at the exact model
+    # midpoint, retaining only the balanced local context that fits around it.
+    speech_midpoint = (speech_i0 + speech_i1) // 2
+    source_start = speech_midpoint - N_SAMPLES // 2
+    source_end = source_start + N_SAMPLES
+    copy_i0 = max(0, source_start)
+    copy_i1 = min(len(x), source_end)
+    destination_i0 = copy_i0 - source_start
+    seg = np.zeros(N_SAMPLES, dtype=np.float32)
+    if copy_i1 > copy_i0:
+        copied = copy_i1 - copy_i0
+        seg[destination_i0:destination_i0 + copied] = x[copy_i0:copy_i1]
+    centered_start = max(0, speech_i0 - source_start)
+    centered_end = min(N_SAMPLES, speech_i1 - source_start)
+
+    # Peak-normalize using only active speech, not silence/background context.
+    ref = x[speech_i0:speech_i1]
     ref_peak = float(np.max(np.abs(ref))) if ref.size else 0.0
     gain = 1.0
     if ref_peak > 1e-6:
         gain = PEAK_TARGET / ref_peak
         seg = seg * gain
-    info = dict(span=(start_s, end_s), gain=gain,
+    active_speech_seconds = active_samples / float(SAMPLE_RATE)
+    info = dict(span=(start_s, end_s), active_span=active_span, gain=gain,
+                active_speech_seconds=active_speech_seconds,
+                centered_start_seconds=centered_start / float(SAMPLE_RATE),
                 capture_peak=capture_peak, capture_rms=capture_rms,
                 clipping_fraction=clipping_fraction)
     if verbose:
-        print(f"[vad] speech {start_s:.2f}-{end_s:.2f} s | window centered, gain x{gain:.2f}")
+        print(f"[vad] active speech {active_start_s:.2f}-{active_end_s:.2f} s | "
+              f"{active_speech_seconds:.2f} s centered in {WINDOW_SEC:.2f} s, "
+              f"gain x{gain:.2f}")
     return seg, info
 
 

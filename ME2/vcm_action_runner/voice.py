@@ -133,7 +133,8 @@ class Voice:
             "slot_conf": info.get("slot_conf"),
             "slot_margin": info.get("slot_margin"),
             "audio": {k: info.get(k) for k in
-                      ("capture_peak", "capture_rms", "clipping_fraction", "gain")},
+                      ("capture_peak", "capture_rms", "clipping_fraction", "gain",
+                       "active_speech_seconds", "centered_start_seconds")},
         }
 
     def listen_and_classify(self):
@@ -171,7 +172,7 @@ def describe(r):
             ranked = ", ".join("%s=%.2f" % (intent, confidence)
                                for intent, confidence in predictions[:3])
             line += "\n  [voice] top 3 model predictions: " + ranked
-        return line + _mic_warning(r) + _latency_line(r)
+        return line + _centering_line(r) + _mic_warning(r) + _latency_line(r)
     slot = r.get("slot")
     c = ("%.2f" % r["conf"]) if r.get("conf") is not None else "?"
     line = "  [voice] heard: %s" % r["intent"]
@@ -184,7 +185,16 @@ def describe(r):
         line += " [wake rescue: model REJECT %.2f]" % r.get("model_conf", 0.0)
     elif r.get("acceptance_policy") == "legacy_e8":
         line += " [legacy E8 policy]"
-    return line + _mic_warning(r) + _latency_line(r)
+    return line + _centering_line(r) + _mic_warning(r) + _latency_line(r)
+
+
+def _centering_line(r):
+    audio = r.get("audio") or {}
+    active = audio.get("active_speech_seconds")
+    if active is None:
+        return ""
+    return ("\n  [voice] preprocessing: %.2f s active speech centered in "
+            "2.50 s model window" % active)
 
 
 def _mic_warning(r):

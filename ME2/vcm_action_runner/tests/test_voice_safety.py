@@ -27,6 +27,24 @@ class VoiceSafetyTests(unittest.TestCase):
         audio[4000:8800] = 0.008 * np.sin(2 * np.pi * 180 * t)
         self.assertIsNotNone(V._detect_speech(audio))
 
+    def test_long_capture_centers_active_speech_in_model_window(self):
+        audio = np.zeros(6 * V.SAMPLE_RATE, np.float32)
+        speech_samples = int(1.9 * V.SAMPLE_RATE)
+        t = np.arange(speech_samples, dtype=np.float32) / V.SAMPLE_RATE
+        start = 2 * V.SAMPLE_RATE
+        audio[start:start + speech_samples] = 0.02 * np.sin(2 * np.pi * 180 * t)
+
+        clip, info = V.prepare_clip(audio)
+
+        self.assertEqual(len(clip), V.N_SAMPLES)
+        self.assertAlmostEqual(info["active_speech_seconds"], 1.9, places=2)
+        self.assertAlmostEqual(info["centered_start_seconds"], 0.3, places=2)
+        nonzero = np.flatnonzero(np.abs(clip) > 1e-5)
+        midpoint = 0.5 * (nonzero[0] + nonzero[-1]) / V.SAMPLE_RATE
+        self.assertAlmostEqual(midpoint, V.WINDOW_SEC / 2.0, places=2)
+        self.assertAlmostEqual(float(np.max(np.abs(clip))), V.PEAK_TARGET,
+                               places=4)
+
     def test_slot_decoder_only_compares_values_valid_for_intent(self):
         intent_logits = np.full(len(V.INTENT_NAMES), -8.0, np.float32)
         intent_logits[V.INTENT_NAMES.index("COLOR")] = 8.0
