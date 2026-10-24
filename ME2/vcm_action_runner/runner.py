@@ -317,7 +317,8 @@ def _wakeword_loop(vcm, app, quit_flag, args):
                 noise_floor_multiplier=args.noise_floor_multiplier,
                 chime=not args.no_wake_chime,
                 chime_volume=args.wake_chime_volume,
-                chime_path=args.wake_chime) as session:
+                chime_path=args.wake_chime,
+                chime_device=args.wake_chime_device) as session:
             while not quit_flag.is_set():
                 audio = session.wait_for_command(quit_flag)
                 if audio is None:
@@ -380,6 +381,8 @@ def main(argv=None):
                         help="use a custom PCM WAV instead of the built-in wake chime")
     parser.add_argument("--wake-chime-volume", type=float, default=0.22,
                         help="wake chime volume multiplier (default: 0.22)")
+    parser.add_argument("--wake-chime-device", default=None, metavar="ALSA_PCM",
+                        help="Linux ALSA output, e.g. default or plughw:CARD=Headphones,DEV=0")
     parser.add_argument("--mic-device", type=int, default=None,
                         help="sounddevice input device number")
     parser.add_argument("--speech-rms", type=float, default=0.008,

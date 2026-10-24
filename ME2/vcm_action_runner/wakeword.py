@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """Continuous Destiny wake-word detection and automatic command capture.
 
-This module deliberately uses only NumPy, sounddevice, and onnxruntime so it
-can run in the same lightweight Raspberry Pi virtualenv as the VCM.  One
-persistent PortAudio stream is used for both wake-word detection and command
-capture; the two models never compete for the microphone.
+This module uses NumPy, sounddevice, and onnxruntime so it can run in the same
+lightweight Raspberry Pi virtualenv as the VCM. Linux chime playback uses the
+``aplay`` command installed by setup.sh, avoiding desktop-audio assumptions in
+SSH sessions. One persistent PortAudio stream is used for microphone capture;
+the two models never compete for it.
 """
+import io
 import math
 import os
+import shutil
+import subprocess
 import sys
 import time
 import wave
@@ -461,6 +465,51 @@ def _play_audio_compatible(sd, audio, source_rate=SAMPLE_RATE):
     raise RuntimeError("no compatible output format (" + "; ".join(errors) + ")")
 
 
+def _play_audio_aplay(audio, source_rate=SAMPLE_RATE, device=None):
+    """Play a cue through native ALSA, independent of desktop audio services.
+
+    An SSH login often has no PulseAudio/PipeWire session, and PortAudio can
+    consequently expose a nominal default output whose hardware formats all
+    fail to open.  ``aplay`` talks to ALSA directly and lets the ``default`` or
+    explicitly selected ``plug*`` PCM perform the final hardware conversion.
+    """
+    executable = shutil.which("aplay")
+    if executable is None:
+        raise RuntimeError("aplay is unavailable; install the alsa-utils package")
+
+    rate = 48000
+    channels = 2
+    samples = _resample_audio(audio, source_rate, rate)
+    pcm = (np.clip(samples, -1.0, 1.0) * 32767.0).astype("<i2")
+    pcm = np.repeat(pcm[:, None], channels, axis=1)
+    encoded = io.BytesIO()
+    with wave.open(encoded, "wb") as wav:
+        wav.setnchannels(channels)
+        wav.setsampwidth(2)
+        wav.setframerate(rate)
+        wav.writeframes(pcm.tobytes())
+
+    alsa_device = device or "default"
+    command = [executable, "-q", "-D", alsa_device]
+    try:
+        result = subprocess.run(
+            command, input=encoded.getvalue(), stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE, timeout=5, check=False)
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError("aplay timed out on ALSA device %s" % alsa_device) from exc
+    if result.returncode != 0:
+        detail = result.stderr.decode("utf-8", "replace").strip()
+        raise RuntimeError("aplay could not open ALSA device %s%s" %
+                           (alsa_device, (": " + detail) if detail else ""))
+    return {
+        "rate": rate,
+        "channels": channels,
+        "dtype": "int16",
+        "device": "ALSA " + alsa_device,
+        "backend": "aplay",
+    }
+
+
 class WakeWordSession:
     """Wait for Destiny, then capture one command using silence endpointing."""
 
@@ -470,7 +519,8 @@ class WakeWordSession:
                  noise_floor_multiplier=1.65,
                  wake_silence_seconds=0.4, wake_max_seconds=2.0,
                  model_path=DEFAULT_MODEL, melbank_path=DEFAULT_MELBANK,
-                 chime=True, chime_volume=0.22, chime_path=None):
+                 chime=True, chime_volume=0.22, chime_path=None,
+                 chime_device=None):
         if not 0.0 < threshold < 1.0:
             raise ValueError("wake-word threshold must be between 0 and 1")
         self.threshold = float(threshold)
@@ -489,6 +539,7 @@ class WakeWordSession:
         self.chime_enabled = bool(chime)
         self.chime_volume = float(chime_volume)
         self.chime_path = chime_path
+        self.chime_device = chime_device
         self.chime_audio = None
         self._chime_failed = False
         self._chime_output = None
@@ -524,9 +575,15 @@ class WakeWordSession:
         if self.chime_audio is None or self._chime_failed:
             return 0.0
         try:
-            import sounddevice as sd
             started = time.perf_counter()
-            output = _play_audio_compatible(sd, self.chime_audio, SAMPLE_RATE)
+            if sys.platform.startswith("linux"):
+                # In particular, use native ALSA when launched through SSH;
+                # there may be no per-user desktop audio server for PortAudio.
+                output = _play_audio_aplay(
+                    self.chime_audio, SAMPLE_RATE, self.chime_device)
+            else:
+                import sounddevice as sd
+                output = _play_audio_compatible(sd, self.chime_audio, SAMPLE_RATE)
             elapsed = time.perf_counter() - started
             self.last_timing["wake_chime_ms"] = elapsed * 1000.0
             if self._chime_output is None:

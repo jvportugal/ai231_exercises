@@ -304,12 +304,15 @@ mathematically by **wakeword.py**, so it requires no downloaded audio file.
 python3 vcm_action_runner/runner.py --wakeword --wake-chime-volume 0.15
 python3 vcm_action_runner/runner.py --wakeword --no-wake-chime
 python3 vcm_action_runner/runner.py --wakeword --wake-chime path/to/custom.wav
+python3 vcm_action_runner/runner.py --wakeword --wake-chime-device plughw:CARD=Headphones,DEV=0
 ~~~
 
 A custom cue must be an uncompressed 8-, 16-, or 32-bit PCM WAV. The generated
 cue remains the self-contained default. Playback automatically converts the
 cue to the output device's native rate and prefers 16-bit PCM, which covers
 Raspberry Pi ALSA outputs that do not accept 16 kHz float audio.
+On Linux, the chime uses native ALSA through **aplay**. This also works from an
+SSH login where no PulseAudio or PipeWire desktop session is available.
 
 ### Weather
 
@@ -449,10 +452,21 @@ Confirm the correct input appears, then pass its sounddevice number using
 
 ### The chime or music is silent
 
-Check the selected system output and test ALSA:
+When connected through SSH, audio plays on the Raspberry Pi, not on the laptop
+running the SSH client. List the Pi's ALSA outputs and test the intended one:
 
 ~~~bash
-speaker-test -t sine -f 880 -l 1
+aplay -L
+speaker-test -D default -t sine -f 880 -l 1
+~~~
+
+If `default` is not the connected speaker, copy an output name from `aplay -L`
+and pass it explicitly. A `plughw:` device is preferred because it converts the
+chime format when the hardware has strict requirements:
+
+~~~bash
+python3 vcm_action_runner/runner.py --wakeword \
+  --wake-chime-device 'plughw:CARD=Headphones,DEV=0'
 ~~~
 
 On desktop systems, confirm that Python/Terminal has microphone permission and

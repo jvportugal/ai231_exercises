@@ -1,4 +1,7 @@
+import io
 import unittest
+import wave
+from unittest import mock
 
 import numpy as np
 
@@ -60,6 +63,26 @@ class WakewordAudioTests(unittest.TestCase):
         self.assertEqual(sd.data.dtype, np.int16)
         self.assertEqual(sd.data.shape, (4800, 2))
         self.assertEqual((sd.started, sd.stopped, sd.closed), (1, 1, 1))
+
+    @mock.patch.object(W.subprocess, "run")
+    @mock.patch.object(W.shutil, "which", return_value="/usr/bin/aplay")
+    def test_aplay_backend_sends_native_alsa_wav(self, _which, run):
+        run.return_value = mock.Mock(returncode=0, stderr=b"")
+        audio = np.linspace(-0.2, 0.2, 1600, dtype=np.float32)
+
+        result = W._play_audio_aplay(audio, device="plughw:CARD=Headphones,DEV=0")
+
+        command = run.call_args.args[0]
+        self.assertEqual(command,
+                         ["/usr/bin/aplay", "-q", "-D",
+                          "plughw:CARD=Headphones,DEV=0"])
+        payload = run.call_args.kwargs["input"]
+        with wave.open(io.BytesIO(payload), "rb") as wav:
+            self.assertEqual(wav.getframerate(), 48000)
+            self.assertEqual(wav.getnchannels(), 2)
+            self.assertEqual(wav.getsampwidth(), 2)
+            self.assertEqual(wav.getnframes(), 4800)
+        self.assertEqual(result["backend"], "aplay")
 
     def test_short_speech_level_preserves_quick_40_ms_word(self):
         block = np.zeros(W.BLOCK_SAMPLES, np.float32)
