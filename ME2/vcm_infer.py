@@ -136,8 +136,73 @@ def warmup(sess, n=2):
         sess.run(None, {"mel": np.zeros((1, 1, N_MELS, N_FRAMES), np.float32)})
 
 
+class ProbabilityEnsembleSession:
+    """Small ONNX Runtime-compatible facade for weighted model averaging.
+
+    Each member emits intent and slot logits.  We average their softmax
+    probabilities and return log probabilities, allowing the existing decoder
+    and calibration-policy path to remain unchanged.
+    """
+
+    def __init__(self, manifest_path):
+        import onnxruntime as ort
+
+        manifest_path = os.path.abspath(os.fspath(manifest_path))
+        with open(manifest_path) as handle:
+            manifest = json.load(handle)
+        if manifest.get("type") != "probability_ensemble_onnx_v1":
+            raise ValueError("unsupported ensemble manifest type")
+        root = os.path.dirname(manifest_path)
+        members = manifest.get("members", [])
+        if not members:
+            raise ValueError("ensemble manifest has no members")
+        self.members = []
+        total_weight = 0.0
+        for member in members:
+            weight = float(member["weight"])
+            if weight <= 0.0:
+                raise ValueError("ensemble weights must be positive")
+            model_path = os.path.join(root, member["model"])
+            session = ort.InferenceSession(
+                model_path, providers=["CPUExecutionProvider"])
+            self.members.append((member["name"], weight, session))
+            total_weight += weight
+        if not np.isclose(total_weight, 1.0, atol=1e-6):
+            raise ValueError("ensemble weights must sum to 1")
+
+    @staticmethod
+    def _softmax_batch(logits):
+        logits = np.asarray(logits, dtype=np.float32)
+        shifted = logits - logits.max(axis=1, keepdims=True)
+        exp = np.exp(shifted)
+        return exp / exp.sum(axis=1, keepdims=True)
+
+    def run(self, output_names, feed):
+        mixed = None
+        for _, weight, session in self.members:
+            outputs = session.run(None, feed)
+            if len(outputs) < 2:
+                raise RuntimeError("ensemble member must have two outputs")
+            probabilities = [self._softmax_batch(outputs[0]),
+                             self._softmax_batch(outputs[1])]
+            if mixed is None:
+                mixed = [weight * value for value in probabilities]
+            else:
+                for index, value in enumerate(probabilities):
+                    mixed[index] += weight * value
+        result = [np.log(np.maximum(value, 1e-12)).astype(np.float32)
+                  for value in mixed]
+        if output_names is None:
+            return result
+        raise ValueError("named ensemble outputs are not supported")
+
+
 def load_model(model_path=DEFAULT_MODEL):
     import onnxruntime as ort
+    if os.path.isdir(model_path):
+        model_path = os.path.join(model_path, "ensemble.json")
+    if model_path.lower().endswith(".json"):
+        return ProbabilityEnsembleSession(model_path)
     # The bundle ships a raw .onnx file. For compatibility with compressed
     # copies, accept .onnx.gz and decompress it once next to the archive.
     if model_path.endswith(".gz"):

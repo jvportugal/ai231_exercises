@@ -56,6 +56,8 @@ class Voice:
             self._sess = vcm.load_model(self._model) if self._model else vcm.load_model()
             self._labels = (vcm.load_labels(self._labels_path)
                             if self._labels_path else vcm.load_labels())
+            if isinstance(self._policy, (str, os.PathLike)):
+                self._policy = vcm.load_policy(os.fspath(self._policy))
         return self._sess, self._labels
 
     def warmup(self):

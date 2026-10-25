@@ -453,6 +453,8 @@ def main(argv=None):
                         help="write benchmark JSONL and suppress real actions")
     parser.add_argument("--benchmark-log", default=None, metavar="PATH",
                         help="benchmark JSONL path (implies --benchmark)")
+    parser.add_argument("--vcm-bundle", default=None, metavar="DIRECTORY",
+                        help="benchmark with an alternate VCM bundle directory")
     args = parser.parse_args(argv)
     if not 0.0 <= args.wake_chime_volume <= 1.0:
         parser.error("--wake-chime-volume must be between 0 and 1")
@@ -487,7 +489,15 @@ def main(argv=None):
     # there is nothing extra to surface here.
 
     # Build the mic->intent bridge once (model loads lazily on first listen).
-    vcm = voice_mod.Voice() if voice_mode else None
+    if voice_mode and args.vcm_bundle:
+        bundle = os.path.abspath(os.path.expanduser(args.vcm_bundle))
+        vcm = voice_mod.Voice(
+            model=bundle,
+            labels=os.path.join(bundle, "labels.json"),
+            policy=os.path.join(bundle, "policy.json"))
+        print("  [voice] benchmark VCM bundle: %s" % bundle)
+    else:
+        vcm = voice_mod.Voice() if voice_mode else None
 
     if use_gui:
         # Build the App on the MAIN thread and run its tkinter loop there.

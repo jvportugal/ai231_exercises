@@ -1,0 +1,34 @@
+{
+  "members": {
+    "kd144": {
+      "parameters": 1565256,
+      "onnx_bytes": 6292045,
+      "intent_max_abs_error": 2.86102294921875e-06,
+      "slot_max_abs_error": 1.9073486328125e-06,
+      "intent_argmax_match": true,
+      "slot_argmax_match": true
+    },
+    "rh_ep26": {
+      "parameters": 1593000,
+      "onnx_bytes": 6292045,
+      "intent_max_abs_error": 1.9073486328125e-06,
+      "slot_max_abs_error": 3.337860107421875e-06,
+      "intent_argmax_match": true,
+      "slot_argmax_match": true
+    }
+  },
+  "ensemble": {
+    "intent_argmax": 19,
+    "slot_argmax": 18,
+    "weights": {
+      "kd144": 0.52,
+      "rh_ep26": 0.48
+    },
+    "reject_log_probability_offset": -0.03534795343875885
+  },
+  "host_onnx_two_forward_pass_ms": {
+    "median": 24.350480001885444,
+    "p95": 46.55965100391767,
+    "note": "Measure again on Raspberry Pi; this host number is not portable."
+  }
+}

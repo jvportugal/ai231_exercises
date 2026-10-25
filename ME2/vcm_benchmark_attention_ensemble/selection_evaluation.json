@@ -1,0 +1,4639 @@
+{
+  "data_policy": "cached airimonda/ai231-me2-voice-commands plus approved noise only",
+  "protocol": "late-checkpoint and two-member probability-mixture selection on speaker-disjoint TEST/tune-OOS; winner frozen before HOLDOUT/final-OOS",
+  "warning": "All evaluation suites have influenced earlier experiments.",
+  "parameter_cap": 3192807,
+  "models": {
+    "kd144": {
+      "checkpoint": "/tmp/vcm_attention_kd144_s6201/vcm_attention_attention_kd144_s6201.pt",
+      "parameters": 1565256,
+      "epoch": 0
+    },
+    "kd128_words": {
+      "checkpoint": "/tmp/vcm_attention_kd128_words_s6103/vcm_attention_attention_kd128_words_s6103.pt",
+      "parameters": 1267800,
+      "epoch": 0
+    },
+    "bal_ep20": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_bal_s10251/vcm_attention_attention_w144_words_bal_s10251_ep20.pt",
+      "parameters": 1593000,
+      "epoch": 20
+    },
+    "bal_ep21": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_bal_s10251/vcm_attention_attention_w144_words_bal_s10251_ep21.pt",
+      "parameters": 1593000,
+      "epoch": 21
+    },
+    "bal_ep22": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_bal_s10251/vcm_attention_attention_w144_words_bal_s10251_ep22.pt",
+      "parameters": 1593000,
+      "epoch": 22
+    },
+    "bal_ep23": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_bal_s10251/vcm_attention_attention_w144_words_bal_s10251_ep23.pt",
+      "parameters": 1593000,
+      "epoch": 23
+    },
+    "bal_ep24": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_bal_s10251/vcm_attention_attention_w144_words_bal_s10251_ep24.pt",
+      "parameters": 1593000,
+      "epoch": 24
+    },
+    "bal_ep25": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_bal_s10251/vcm_attention_attention_w144_words_bal_s10251_ep25.pt",
+      "parameters": 1593000,
+      "epoch": 25
+    },
+    "bal_ep26": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_bal_s10251/vcm_attention_attention_w144_words_bal_s10251_ep26.pt",
+      "parameters": 1593000,
+      "epoch": 26
+    },
+    "bal_ep27": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_bal_s10251/vcm_attention_attention_w144_words_bal_s10251_ep27.pt",
+      "parameters": 1593000,
+      "epoch": 27
+    },
+    "bal_ep28": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_bal_s10251/vcm_attention_attention_w144_words_bal_s10251_ep28.pt",
+      "parameters": 1593000,
+      "epoch": 28
+    },
+    "bal_ep29": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_bal_s10251/vcm_attention_attention_w144_words_bal_s10251_ep29.pt",
+      "parameters": 1593000,
+      "epoch": 29
+    },
+    "bal_ep30": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_bal_s10251/vcm_attention_attention_w144_words_bal_s10251_ep30.pt",
+      "parameters": 1593000,
+      "epoch": 30
+    },
+    "rh_ep20": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_rh_s10251/vcm_attention_attention_w144_words_rh_s10251_ep20.pt",
+      "parameters": 1593000,
+      "epoch": 20
+    },
+    "rh_ep21": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_rh_s10251/vcm_attention_attention_w144_words_rh_s10251_ep21.pt",
+      "parameters": 1593000,
+      "epoch": 21
+    },
+    "rh_ep22": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_rh_s10251/vcm_attention_attention_w144_words_rh_s10251_ep22.pt",
+      "parameters": 1593000,
+      "epoch": 22
+    },
+    "rh_ep23": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_rh_s10251/vcm_attention_attention_w144_words_rh_s10251_ep23.pt",
+      "parameters": 1593000,
+      "epoch": 23
+    },
+    "rh_ep24": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_rh_s10251/vcm_attention_attention_w144_words_rh_s10251_ep24.pt",
+      "parameters": 1593000,
+      "epoch": 24
+    },
+    "rh_ep25": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_rh_s10251/vcm_attention_attention_w144_words_rh_s10251_ep25.pt",
+      "parameters": 1593000,
+      "epoch": 25
+    },
+    "rh_ep26": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_rh_s10251/vcm_attention_attention_w144_words_rh_s10251_ep26.pt",
+      "parameters": 1593000,
+      "epoch": 26
+    },
+    "rh_ep27": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_rh_s10251/vcm_attention_attention_w144_words_rh_s10251_ep27.pt",
+      "parameters": 1593000,
+      "epoch": 27
+    },
+    "rh_ep28": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_rh_s10251/vcm_attention_attention_w144_words_rh_s10251_ep28.pt",
+      "parameters": 1593000,
+      "epoch": 28
+    },
+    "rh_ep29": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_rh_s10251/vcm_attention_attention_w144_words_rh_s10251_ep29.pt",
+      "parameters": 1593000,
+      "epoch": 29
+    },
+    "rh_ep30": {
+      "checkpoint": "/tmp/vcm_attention_w144_words_rh_s10251/vcm_attention_attention_w144_words_rh_s10251_ep30.pt",
+      "parameters": 1593000,
+      "epoch": 30
+    }
+  },
+  "baseline": {
+    "members": {
+      "kd144": 1.0
+    },
+    "reject_offset": -0.003985060844570398,
+    "test_clean": {
+      "e2e": 92.91,
+      "real_e2e": 73.544,
+      "synthetic_e2e": 97.32,
+      "total_correct": 4128,
+      "real_correct": 606,
+      "synthetic_correct": 3522,
+      "n": 4443,
+      "real_n": 824,
+      "synthetic_n": 3619,
+      "by_source": {
+        "SLURP": {
+          "n": 403,
+          "correct": 255,
+          "e2e": 63.275
+        },
+        "real_voice": {
+          "n": 179,
+          "correct": 162,
+          "e2e": 90.503
+        },
+        "FluentSpeechCommands": {
+          "n": 144,
+          "correct": 117,
+          "e2e": 81.25
+        },
+        "SNIPS": {
+          "n": 61,
+          "correct": 38,
+          "e2e": 62.295
+        }
+      }
+    },
+    "test_channel": {
+      "e2e": 75.602,
+      "real_e2e": 54.612,
+      "synthetic_e2e": 80.381,
+      "total_correct": 3359,
+      "real_correct": 450,
+      "synthetic_correct": 2909,
+      "n": 4443,
+      "real_n": 824,
+      "synthetic_n": 3619,
+      "by_source": {
+        "SLURP": {
+          "n": 403,
+          "correct": 178,
+          "e2e": 44.169
+        },
+        "real_voice": {
+          "n": 179,
+          "correct": 121,
+          "e2e": 67.598
+        },
+        "FluentSpeechCommands": {
+          "n": 144,
+          "correct": 85,
+          "e2e": 59.028
+        },
+        "SNIPS": {
+          "n": 61,
+          "correct": 37,
+          "e2e": 60.656
+        }
+      }
+    },
+    "tune_clean_reject": 77.75,
+    "tune_channel_reject": 80.75,
+    "eligible": true
+  },
+  "n_candidates": 14100,
+  "n_broad_eligible": 170,
+  "selected": {
+    "members": {
+      "kd144": 0.52,
+      "rh_ep26": 0.48
+    },
+    "reject_offset": -0.03534795343875885,
+    "test_clean": {
+      "e2e": 93.901,
+      "real_e2e": 76.214,
+      "synthetic_e2e": 97.928,
+      "total_correct": 4172,
+      "real_correct": 628,
+      "synthetic_correct": 3544,
+      "n": 4443,
+      "real_n": 824,
+      "synthetic_n": 3619,
+      "by_source": {
+        "SLURP": {
+          "n": 403,
+          "correct": 270,
+          "e2e": 66.998
+        },
+        "real_voice": {
+          "n": 179,
+          "correct": 165,
+          "e2e": 92.179
+        },
+        "FluentSpeechCommands": {
+          "n": 144,
+          "correct": 120,
+          "e2e": 83.333
+        },
+        "SNIPS": {
+          "n": 61,
+          "correct": 38,
+          "e2e": 62.295
+        }
+      }
+    },
+    "test_channel": {
+      "e2e": 76.322,
+      "real_e2e": 56.675,
+      "synthetic_e2e": 80.796,
+      "total_correct": 3391,
+      "real_correct": 467,
+      "synthetic_correct": 2924,
+      "n": 4443,
+      "real_n": 824,
+      "synthetic_n": 3619,
+      "by_source": {
+        "SLURP": {
+          "n": 403,
+          "correct": 193,
+          "e2e": 47.891
+        },
+        "real_voice": {
+          "n": 179,
+          "correct": 121,
+          "e2e": 67.598
+        },
+        "FluentSpeechCommands": {
+          "n": 144,
+          "correct": 85,
+          "e2e": 59.028
+        },
+        "SNIPS": {
+          "n": 61,
+          "correct": 38,
+          "e2e": 62.295
+        }
+      }
+    },
+    "tune_clean_reject": 78.0,
+    "tune_channel_reject": 80.75,
+    "eligible": true,
+    "parameters": 3158256,
+    "source_gains": {
+      "SLURP": 3.723,
+      "real_voice": 1.676,
+      "FluentSpeechCommands": 2.083,
+      "SNIPS": 0.0
+    },
+    "broad": true
+  },
+  "historical_regression_evaluation": {
+    "holdout_clean": {
+      "selected": {
+        "e2e": 92.574,
+        "real_e2e": 87.5,
+        "synthetic_e2e": 97.17,
+        "total_correct": 187,
+        "real_correct": 84,
+        "synthetic_correct": 103,
+        "n": 202,
+        "real_n": 96,
+        "synthetic_n": 106,
+        "by_source": {
+          "SLURP": {
+            "n": 0,
+            "correct": 0,
+            "e2e": null
+          },
+          "real_voice": {
+            "n": 84,
+            "correct": 77,
+            "e2e": 91.667
+          },
+          "FluentSpeechCommands": {
+            "n": 9,
+            "correct": 4,
+            "e2e": 44.444
+          },
+          "SNIPS": {
+            "n": 0,
+            "correct": 0,
+            "e2e": null
+          }
+        }
+      },
+      "baseline": {
+        "e2e": 91.089,
+        "real_e2e": 86.458,
+        "synthetic_e2e": 95.283,
+        "total_correct": 184,
+        "real_correct": 83,
+        "synthetic_correct": 101,
+        "n": 202,
+        "real_n": 96,
+        "synthetic_n": 106,
+        "by_source": {
+          "SLURP": {
+            "n": 0,
+            "correct": 0,
+            "e2e": null
+          },
+          "real_voice": {
+            "n": 84,
+            "correct": 76,
+            "e2e": 90.476
+          },
+          "FluentSpeechCommands": {
+            "n": 9,
+            "correct": 4,
+            "e2e": 44.444
+          },
+          "SNIPS": {
+            "n": 0,
+            "correct": 0,
+            "e2e": null
+          }
+        }
+      }
+    },
+    "holdout_channel": {
+      "selected": {
+        "e2e": 79.208,
+        "real_e2e": 71.875,
+        "synthetic_e2e": 85.849,
+        "total_correct": 160,
+        "real_correct": 69,
+        "synthetic_correct": 91,
+        "n": 202,
+        "real_n": 96,
+        "synthetic_n": 106,
+        "by_source": {
+          "SLURP": {
+            "n": 0,
+            "correct": 0,
+            "e2e": null
+          },
+          "real_voice": {
+            "n": 84,
+            "correct": 63,
+            "e2e": 75.0
+          },
+          "FluentSpeechCommands": {
+            "n": 9,
+            "correct": 3,
+            "e2e": 33.333
+          },
+          "SNIPS": {
+            "n": 0,
+            "correct": 0,
+            "e2e": null
+          }
+        }
+      },
+      "baseline": {
+        "e2e": 78.713,
+        "real_e2e": 70.833,
+        "synthetic_e2e": 85.849,
+        "total_correct": 159,
+        "real_correct": 68,
+        "synthetic_correct": 91,
+        "n": 202,
+        "real_n": 96,
+        "synthetic_n": 106,
+        "by_source": {
+          "SLURP": {
+            "n": 0,
+            "correct": 0,
+            "e2e": null
+          },
+          "real_voice": {
+            "n": 84,
+            "correct": 61,
+            "e2e": 72.619
+          },
+          "FluentSpeechCommands": {
+            "n": 9,
+            "correct": 5,
+            "e2e": 55.556
+          },
+          "SNIPS": {
+            "n": 0,
+            "correct": 0,
+            "e2e": null
+          }
+        }
+      }
+    },
+    "final_oos_clean": {
+      "selected_reject": 90.4,
+      "baseline_reject": 90.0,
+      "n": 250
+    },
+    "final_oos_channel": {
+      "selected_reject": 91.2,
+      "baseline_reject": 90.8,
+      "n": 250
+    }
+  },
+  "frontier": [
+    {
+      "members": {
+        "kd144": 0.52,
+        "rh_ep26": 0.48
+      },
+      "reject_offset": -0.03534795343875885,
+      "test_clean": {
+        "e2e": 93.901,
+        "real_e2e": 76.214,
+        "synthetic_e2e": 97.928,
+        "total_correct": 4172,
+        "real_correct": 628,
+        "synthetic_correct": 3544,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 270,
+            "e2e": 66.998
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 165,
+            "e2e": 92.179
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 120,
+            "e2e": 83.333
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.322,
+        "real_e2e": 56.675,
+        "synthetic_e2e": 80.796,
+        "total_correct": 3391,
+        "real_correct": 467,
+        "synthetic_correct": 2924,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 193,
+            "e2e": 47.891
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 121,
+            "e2e": 67.598
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 85,
+            "e2e": 59.028
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "tune_clean_reject": 78.0,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 3.723,
+        "real_voice": 1.676,
+        "FluentSpeechCommands": 2.083,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.54,
+        "kd128_words": 0.46
+      },
+      "reject_offset": -0.06839074194431305,
+      "test_clean": {
+        "e2e": 93.518,
+        "real_e2e": 76.092,
+        "synthetic_e2e": 97.485,
+        "total_correct": 4155,
+        "real_correct": 627,
+        "synthetic_correct": 3528,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 265,
+            "e2e": 65.757
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 165,
+            "e2e": 92.179
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 121,
+            "e2e": 84.028
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 39,
+            "e2e": 63.934
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 77.988,
+        "real_e2e": 58.374,
+        "synthetic_e2e": 82.454,
+        "total_correct": 3465,
+        "real_correct": 481,
+        "synthetic_correct": 2984,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 199,
+            "e2e": 49.38
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 90,
+            "e2e": 62.5
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 81.75,
+      "eligible": true,
+      "parameters": 2833056,
+      "source_gains": {
+        "SLURP": 2.482,
+        "real_voice": 1.676,
+        "FluentSpeechCommands": 2.778,
+        "SNIPS": 1.639
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.62,
+        "kd128_words": 0.38
+      },
+      "reject_offset": -0.10493071377277374,
+      "test_clean": {
+        "e2e": 93.563,
+        "real_e2e": 75.971,
+        "synthetic_e2e": 97.568,
+        "total_correct": 4157,
+        "real_correct": 626,
+        "synthetic_correct": 3531,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 267,
+            "e2e": 66.253
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 165,
+            "e2e": 92.179
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 121,
+            "e2e": 84.028
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 77.853,
+        "real_e2e": 58.738,
+        "synthetic_e2e": 82.205,
+        "total_correct": 3459,
+        "real_correct": 484,
+        "synthetic_correct": 2975,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 200,
+            "e2e": 49.628
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 124,
+            "e2e": 69.274
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 92,
+            "e2e": 63.889
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 2833056,
+      "source_gains": {
+        "SLURP": 2.978,
+        "real_voice": 1.676,
+        "FluentSpeechCommands": 2.778,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.52,
+        "kd128_words": 0.48
+      },
+      "reject_offset": -0.08539898693561554,
+      "test_clean": {
+        "e2e": 93.518,
+        "real_e2e": 75.971,
+        "synthetic_e2e": 97.513,
+        "total_correct": 4155,
+        "real_correct": 626,
+        "synthetic_correct": 3529,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 265,
+            "e2e": 65.757
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 165,
+            "e2e": 92.179
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 120,
+            "e2e": 83.333
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 39,
+            "e2e": 63.934
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 77.943,
+        "real_e2e": 58.131,
+        "synthetic_e2e": 82.454,
+        "total_correct": 3463,
+        "real_correct": 479,
+        "synthetic_correct": 2984,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 196,
+            "e2e": 48.635
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 91,
+            "e2e": 63.194
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 82.0,
+      "eligible": true,
+      "parameters": 2833056,
+      "source_gains": {
+        "SLURP": 2.482,
+        "real_voice": 1.676,
+        "FluentSpeechCommands": 2.083,
+        "SNIPS": 1.639
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.6,
+        "kd128_words": 0.4
+      },
+      "reject_offset": -0.10840083658695221,
+      "test_clean": {
+        "e2e": 93.563,
+        "real_e2e": 75.85,
+        "synthetic_e2e": 97.596,
+        "total_correct": 4157,
+        "real_correct": 625,
+        "synthetic_correct": 3532,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 266,
+            "e2e": 66.005
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 165,
+            "e2e": 92.179
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 121,
+            "e2e": 84.028
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 77.92,
+        "real_e2e": 58.495,
+        "synthetic_e2e": 82.343,
+        "total_correct": 3462,
+        "real_correct": 482,
+        "synthetic_correct": 2980,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 199,
+            "e2e": 49.38
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 92,
+            "e2e": 63.889
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 81.25,
+      "eligible": true,
+      "parameters": 2833056,
+      "source_gains": {
+        "SLURP": 2.73,
+        "real_voice": 1.676,
+        "FluentSpeechCommands": 2.778,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.56,
+        "kd128_words": 0.44
+      },
+      "reject_offset": -0.08006753027439117,
+      "test_clean": {
+        "e2e": 93.495,
+        "real_e2e": 75.85,
+        "synthetic_e2e": 97.513,
+        "total_correct": 4154,
+        "real_correct": 625,
+        "synthetic_correct": 3529,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 265,
+            "e2e": 65.757
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 165,
+            "e2e": 92.179
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 121,
+            "e2e": 84.028
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 77.898,
+        "real_e2e": 58.374,
+        "synthetic_e2e": 82.343,
+        "total_correct": 3461,
+        "real_correct": 481,
+        "synthetic_correct": 2980,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 200,
+            "e2e": 49.628
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 122,
+            "e2e": 68.156
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 90,
+            "e2e": 62.5
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 81.5,
+      "eligible": true,
+      "parameters": 2833056,
+      "source_gains": {
+        "SLURP": 2.482,
+        "real_voice": 1.676,
+        "FluentSpeechCommands": 2.778,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.5,
+        "rh_ep26": 0.5
+      },
+      "reject_offset": -0.07281924784183502,
+      "test_clean": {
+        "e2e": 93.81,
+        "real_e2e": 75.85,
+        "synthetic_e2e": 97.9,
+        "total_correct": 4168,
+        "real_correct": 625,
+        "synthetic_correct": 3543,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 269,
+            "e2e": 66.749
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 165,
+            "e2e": 92.179
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.3,
+        "real_e2e": 56.553,
+        "synthetic_e2e": 80.796,
+        "total_correct": 3390,
+        "real_correct": 466,
+        "synthetic_correct": 2924,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 193,
+            "e2e": 47.891
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 121,
+            "e2e": 67.598
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 85,
+            "e2e": 59.028
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 3.474,
+        "real_voice": 1.676,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.58,
+        "kd128_words": 0.42
+      },
+      "reject_offset": -0.0973907858133316,
+      "test_clean": {
+        "e2e": 93.54,
+        "real_e2e": 75.728,
+        "synthetic_e2e": 97.596,
+        "total_correct": 4156,
+        "real_correct": 624,
+        "synthetic_correct": 3532,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 264,
+            "e2e": 65.509
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 165,
+            "e2e": 92.179
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 121,
+            "e2e": 84.028
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 77.898,
+        "real_e2e": 58.738,
+        "synthetic_e2e": 82.26,
+        "total_correct": 3461,
+        "real_correct": 484,
+        "synthetic_correct": 2977,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 200,
+            "e2e": 49.628
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 92,
+            "e2e": 63.889
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 81.25,
+      "eligible": true,
+      "parameters": 2833056,
+      "source_gains": {
+        "SLURP": 2.234,
+        "real_voice": 1.676,
+        "FluentSpeechCommands": 2.778,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.64,
+        "kd128_words": 0.36
+      },
+      "reject_offset": -0.09146322309970856,
+      "test_clean": {
+        "e2e": 93.518,
+        "real_e2e": 75.728,
+        "synthetic_e2e": 97.568,
+        "total_correct": 4155,
+        "real_correct": 624,
+        "synthetic_correct": 3531,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 266,
+            "e2e": 66.005
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 165,
+            "e2e": 92.179
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 120,
+            "e2e": 83.333
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 77.74,
+        "real_e2e": 58.617,
+        "synthetic_e2e": 82.095,
+        "total_correct": 3454,
+        "real_correct": 483,
+        "synthetic_correct": 2971,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 199,
+            "e2e": 49.38
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 126,
+            "e2e": 70.391
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 90,
+            "e2e": 62.5
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 2833056,
+      "source_gains": {
+        "SLURP": 2.73,
+        "real_voice": 1.676,
+        "FluentSpeechCommands": 2.083,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.66,
+        "kd128_words": 0.34
+      },
+      "reject_offset": -0.07877780497074127,
+      "test_clean": {
+        "e2e": 93.45,
+        "real_e2e": 75.728,
+        "synthetic_e2e": 97.485,
+        "total_correct": 4152,
+        "real_correct": 624,
+        "synthetic_correct": 3528,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 266,
+            "e2e": 66.005
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 165,
+            "e2e": 92.179
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 120,
+            "e2e": 83.333
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 77.538,
+        "real_e2e": 58.374,
+        "synthetic_e2e": 81.901,
+        "total_correct": 3445,
+        "real_correct": 481,
+        "synthetic_correct": 2964,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 196,
+            "e2e": 48.635
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 126,
+            "e2e": 70.391
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 91,
+            "e2e": 63.194
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 81.0,
+      "eligible": true,
+      "parameters": 2833056,
+      "source_gains": {
+        "SLURP": 2.73,
+        "real_voice": 1.676,
+        "FluentSpeechCommands": 2.083,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.54,
+        "rh_ep26": 0.46
+      },
+      "reject_offset": -0.017426980659365654,
+      "test_clean": {
+        "e2e": 93.81,
+        "real_e2e": 75.728,
+        "synthetic_e2e": 97.928,
+        "total_correct": 4168,
+        "real_correct": 624,
+        "synthetic_correct": 3544,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 267,
+            "e2e": 66.253
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 165,
+            "e2e": 92.179
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 120,
+            "e2e": 83.333
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.277,
+        "real_e2e": 56.675,
+        "synthetic_e2e": 80.741,
+        "total_correct": 3389,
+        "real_correct": 467,
+        "synthetic_correct": 2922,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 191,
+            "e2e": 47.395
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 121,
+            "e2e": 67.598
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 86,
+            "e2e": 59.722
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "tune_clean_reject": 78.5,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 2.978,
+        "real_voice": 1.676,
+        "FluentSpeechCommands": 2.083,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.48,
+        "kd128_words": 0.52
+      },
+      "reject_offset": -0.06160880625247955,
+      "test_clean": {
+        "e2e": 93.45,
+        "real_e2e": 75.607,
+        "synthetic_e2e": 97.513,
+        "total_correct": 4152,
+        "real_correct": 623,
+        "synthetic_correct": 3529,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 264,
+            "e2e": 65.509
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 163,
+            "e2e": 91.061
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 120,
+            "e2e": 83.333
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 39,
+            "e2e": 63.934
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 77.898,
+        "real_e2e": 57.888,
+        "synthetic_e2e": 82.454,
+        "total_correct": 3461,
+        "real_correct": 477,
+        "synthetic_correct": 2984,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 199,
+            "e2e": 49.38
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 90,
+            "e2e": 62.5
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 34,
+            "e2e": 55.738
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 82.0,
+      "eligible": true,
+      "parameters": 2833056,
+      "source_gains": {
+        "SLURP": 2.234,
+        "real_voice": 0.558,
+        "FluentSpeechCommands": 2.083,
+        "SNIPS": 1.639
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.68,
+        "kd128_words": 0.32
+      },
+      "reject_offset": -0.05710424482822418,
+      "test_clean": {
+        "e2e": 93.405,
+        "real_e2e": 75.485,
+        "synthetic_e2e": 97.485,
+        "total_correct": 4150,
+        "real_correct": 622,
+        "synthetic_correct": 3528,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 265,
+            "e2e": 65.757
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 164,
+            "e2e": 91.62
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 120,
+            "e2e": 83.333
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 77.448,
+        "real_e2e": 58.252,
+        "synthetic_e2e": 81.818,
+        "total_correct": 3441,
+        "real_correct": 480,
+        "synthetic_correct": 2961,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 196,
+            "e2e": 48.635
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 126,
+            "e2e": 70.391
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 90,
+            "e2e": 62.5
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 2833056,
+      "source_gains": {
+        "SLURP": 2.482,
+        "real_voice": 1.117,
+        "FluentSpeechCommands": 2.083,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.5,
+        "kd128_words": 0.5
+      },
+      "reject_offset": -0.06595779955387115,
+      "test_clean": {
+        "e2e": 93.473,
+        "real_e2e": 75.485,
+        "synthetic_e2e": 97.568,
+        "total_correct": 4153,
+        "real_correct": 622,
+        "synthetic_correct": 3531,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 263,
+            "e2e": 65.261
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 163,
+            "e2e": 91.061
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 120,
+            "e2e": 83.333
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 39,
+            "e2e": 63.934
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 77.965,
+        "real_e2e": 58.131,
+        "synthetic_e2e": 82.481,
+        "total_correct": 3464,
+        "real_correct": 479,
+        "synthetic_correct": 2985,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 198,
+            "e2e": 49.132
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 91,
+            "e2e": 63.194
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 36,
+            "e2e": 59.016
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 82.25,
+      "eligible": true,
+      "parameters": 2833056,
+      "source_gains": {
+        "SLURP": 1.986,
+        "real_voice": 0.558,
+        "FluentSpeechCommands": 2.083,
+        "SNIPS": 1.639
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.56,
+        "rh_ep26": 0.44
+      },
+      "reject_offset": -0.03430946171283722,
+      "test_clean": {
+        "e2e": 93.698,
+        "real_e2e": 75.364,
+        "synthetic_e2e": 97.872,
+        "total_correct": 4163,
+        "real_correct": 621,
+        "synthetic_correct": 3542,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 264,
+            "e2e": 65.509
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 165,
+            "e2e": 92.179
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 120,
+            "e2e": 83.333
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.39,
+        "real_e2e": 56.796,
+        "synthetic_e2e": 80.851,
+        "total_correct": 3394,
+        "real_correct": 468,
+        "synthetic_correct": 2926,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 192,
+            "e2e": 47.643
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 121,
+            "e2e": 67.598
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 86,
+            "e2e": 59.722
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "tune_clean_reject": 78.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 2.234,
+        "real_voice": 1.676,
+        "FluentSpeechCommands": 2.083,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.58,
+        "rh_ep26": 0.42
+      },
+      "reject_offset": -0.009711637161672115,
+      "test_clean": {
+        "e2e": 93.653,
+        "real_e2e": 75.364,
+        "synthetic_e2e": 97.817,
+        "total_correct": 4161,
+        "real_correct": 621,
+        "synthetic_correct": 3540,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 264,
+            "e2e": 65.509
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 165,
+            "e2e": 92.179
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 120,
+            "e2e": 83.333
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.255,
+        "real_e2e": 56.432,
+        "synthetic_e2e": 80.768,
+        "total_correct": 3388,
+        "real_correct": 465,
+        "synthetic_correct": 2923,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 191,
+            "e2e": 47.395
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 121,
+            "e2e": 67.598
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 84,
+            "e2e": 58.333
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "tune_clean_reject": 79.25,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 2.234,
+        "real_voice": 1.676,
+        "FluentSpeechCommands": 2.083,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.54,
+        "rh_ep21": 0.46
+      },
+      "reject_offset": -0.11968524754047394,
+      "test_clean": {
+        "e2e": 93.608,
+        "real_e2e": 75.243,
+        "synthetic_e2e": 97.789,
+        "total_correct": 4159,
+        "real_correct": 620,
+        "synthetic_correct": 3539,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 266,
+            "e2e": 66.005
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 163,
+            "e2e": 91.061
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 75.917,
+        "real_e2e": 56.432,
+        "synthetic_e2e": 80.354,
+        "total_correct": 3373,
+        "real_correct": 465,
+        "synthetic_correct": 2908,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 192,
+            "e2e": 47.643
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 119,
+            "e2e": 66.48
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 87,
+            "e2e": 60.417
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 78.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 2.73,
+        "real_voice": 0.558,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.6,
+        "rh_ep20": 0.4
+      },
+      "reject_offset": -0.02714909426867962,
+      "test_clean": {
+        "e2e": 93.405,
+        "real_e2e": 75.0,
+        "synthetic_e2e": 97.596,
+        "total_correct": 4150,
+        "real_correct": 618,
+        "synthetic_correct": 3532,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 264,
+            "e2e": 65.509
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 162,
+            "e2e": 90.503
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 120,
+            "e2e": 83.333
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.142,
+        "real_e2e": 56.189,
+        "synthetic_e2e": 80.685,
+        "total_correct": 3383,
+        "real_correct": 463,
+        "synthetic_correct": 2920,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 189,
+            "e2e": 46.898
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 121,
+            "e2e": 67.598
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 86,
+            "e2e": 59.722
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "tune_clean_reject": 78.0,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 2.234,
+        "real_voice": 0.0,
+        "FluentSpeechCommands": 2.083,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.56,
+        "rh_ep21": 0.44
+      },
+      "reject_offset": -0.13548196852207184,
+      "test_clean": {
+        "e2e": 93.495,
+        "real_e2e": 74.879,
+        "synthetic_e2e": 97.734,
+        "total_correct": 4154,
+        "real_correct": 617,
+        "synthetic_correct": 3537,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 263,
+            "e2e": 65.261
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 163,
+            "e2e": 91.061
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.007,
+        "real_e2e": 56.553,
+        "synthetic_e2e": 80.437,
+        "total_correct": 3377,
+        "real_correct": 466,
+        "synthetic_correct": 2911,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 194,
+            "e2e": 48.139
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 120,
+            "e2e": 67.039
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 85,
+            "e2e": 59.028
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 79.0,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 1.986,
+        "real_voice": 0.558,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.62,
+        "rh_ep20": 0.38
+      },
+      "reject_offset": 0.023203717544674873,
+      "test_clean": {
+        "e2e": 93.36,
+        "real_e2e": 74.879,
+        "synthetic_e2e": 97.568,
+        "total_correct": 4148,
+        "real_correct": 617,
+        "synthetic_correct": 3531,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 263,
+            "e2e": 65.261
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 162,
+            "e2e": 90.503
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 120,
+            "e2e": 83.333
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 75.917,
+        "real_e2e": 55.583,
+        "synthetic_e2e": 80.547,
+        "total_correct": 3373,
+        "real_correct": 458,
+        "synthetic_correct": 2915,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 188,
+            "e2e": 46.65
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 118,
+            "e2e": 65.922
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 85,
+            "e2e": 59.028
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "tune_clean_reject": 78.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 1.986,
+        "real_voice": 0.0,
+        "FluentSpeechCommands": 2.083,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.58,
+        "rh_ep20": 0.42
+      },
+      "reject_offset": -0.008761062286794186,
+      "test_clean": {
+        "e2e": 93.405,
+        "real_e2e": 74.757,
+        "synthetic_e2e": 97.651,
+        "total_correct": 4150,
+        "real_correct": 616,
+        "synthetic_correct": 3534,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 264,
+            "e2e": 65.509
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 162,
+            "e2e": 90.503
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.165,
+        "real_e2e": 56.189,
+        "synthetic_e2e": 80.713,
+        "total_correct": 3384,
+        "real_correct": 463,
+        "synthetic_correct": 2921,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 190,
+            "e2e": 47.146
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 120,
+            "e2e": 67.039
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 86,
+            "e2e": 59.722
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 2.234,
+        "real_voice": 0.0,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.64,
+        "rh_ep20": 0.36
+      },
+      "reject_offset": 0.0628834217786789,
+      "test_clean": {
+        "e2e": 93.338,
+        "real_e2e": 74.757,
+        "synthetic_e2e": 97.568,
+        "total_correct": 4147,
+        "real_correct": 616,
+        "synthetic_correct": 3531,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 262,
+            "e2e": 65.012
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 162,
+            "e2e": 90.503
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 120,
+            "e2e": 83.333
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 75.805,
+        "real_e2e": 55.34,
+        "synthetic_e2e": 80.464,
+        "total_correct": 3368,
+        "real_correct": 456,
+        "synthetic_correct": 2912,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 186,
+            "e2e": 46.154
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 118,
+            "e2e": 65.922
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 85,
+            "e2e": 59.028
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "tune_clean_reject": 79.5,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 1.737,
+        "real_voice": 0.0,
+        "FluentSpeechCommands": 2.083,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.6,
+        "rh_ep21": 0.4
+      },
+      "reject_offset": -0.13501502573490143,
+      "test_clean": {
+        "e2e": 93.36,
+        "real_e2e": 74.636,
+        "synthetic_e2e": 97.624,
+        "total_correct": 4148,
+        "real_correct": 615,
+        "synthetic_correct": 3533,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 262,
+            "e2e": 65.012
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 162,
+            "e2e": 90.503
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.277,
+        "real_e2e": 56.917,
+        "synthetic_e2e": 80.685,
+        "total_correct": 3389,
+        "real_correct": 469,
+        "synthetic_correct": 2920,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 196,
+            "e2e": 48.635
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 120,
+            "e2e": 67.039
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 83,
+            "e2e": 57.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 39,
+            "e2e": 63.934
+          }
+        }
+      },
+      "tune_clean_reject": 78.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 1.737,
+        "real_voice": 0.0,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.62,
+        "rh_ep21": 0.38
+      },
+      "reject_offset": -0.10935832560062408,
+      "test_clean": {
+        "e2e": 93.36,
+        "real_e2e": 74.636,
+        "synthetic_e2e": 97.624,
+        "total_correct": 4148,
+        "real_correct": 615,
+        "synthetic_correct": 3533,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 262,
+            "e2e": 65.012
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 162,
+            "e2e": 90.503
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.21,
+        "real_e2e": 56.796,
+        "synthetic_e2e": 80.63,
+        "total_correct": 3386,
+        "real_correct": 468,
+        "synthetic_correct": 2918,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 195,
+            "e2e": 48.387
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 120,
+            "e2e": 67.039
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 83,
+            "e2e": 57.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 39,
+            "e2e": 63.934
+          }
+        }
+      },
+      "tune_clean_reject": 78.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 1.737,
+        "real_voice": 0.0,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.58,
+        "rh_ep21": 0.42
+      },
+      "reject_offset": -0.12444289028644562,
+      "test_clean": {
+        "e2e": 93.405,
+        "real_e2e": 74.636,
+        "synthetic_e2e": 97.679,
+        "total_correct": 4150,
+        "real_correct": 615,
+        "synthetic_correct": 3535,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 262,
+            "e2e": 65.012
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 162,
+            "e2e": 90.503
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.142,
+        "real_e2e": 56.553,
+        "synthetic_e2e": 80.602,
+        "total_correct": 3383,
+        "real_correct": 466,
+        "synthetic_correct": 2917,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 194,
+            "e2e": 48.139
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 121,
+            "e2e": 67.598
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 83,
+            "e2e": 57.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 79.25,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 1.737,
+        "real_voice": 0.0,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.64,
+        "rh_ep21": 0.36
+      },
+      "reject_offset": -0.07816828787326813,
+      "test_clean": {
+        "e2e": 93.293,
+        "real_e2e": 74.272,
+        "synthetic_e2e": 97.624,
+        "total_correct": 4145,
+        "real_correct": 612,
+        "synthetic_correct": 3533,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 259,
+            "e2e": 64.268
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 162,
+            "e2e": 90.503
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.142,
+        "real_e2e": 56.432,
+        "synthetic_e2e": 80.63,
+        "total_correct": 3383,
+        "real_correct": 465,
+        "synthetic_correct": 2918,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 193,
+            "e2e": 47.891
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 119,
+            "e2e": 66.48
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 83,
+            "e2e": 57.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 39,
+            "e2e": 63.934
+          }
+        }
+      },
+      "tune_clean_reject": 78.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.993,
+        "real_voice": 0.0,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.84,
+        "bal_ep30": 0.16
+      },
+      "reject_offset": -0.05109007656574249,
+      "test_clean": {
+        "e2e": 93.27,
+        "real_e2e": 74.272,
+        "synthetic_e2e": 97.596,
+        "total_correct": 4144,
+        "real_correct": 612,
+        "synthetic_correct": 3532,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 257,
+            "e2e": 63.772
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 164,
+            "e2e": 91.62
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.165,
+        "real_e2e": 55.825,
+        "synthetic_e2e": 80.796,
+        "total_correct": 3384,
+        "real_correct": 460,
+        "synthetic_correct": 2924,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 185,
+            "e2e": 45.906
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 86,
+            "e2e": 59.722
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.497,
+        "real_voice": 1.117,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.88,
+        "kd128_words": 0.12
+      },
+      "reject_offset": 0.014931664802134037,
+      "test_clean": {
+        "e2e": 93.113,
+        "real_e2e": 74.272,
+        "synthetic_e2e": 97.403,
+        "total_correct": 4137,
+        "real_correct": 612,
+        "synthetic_correct": 3525,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 257,
+            "e2e": 63.772
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 163,
+            "e2e": 91.061
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 39,
+            "e2e": 63.934
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.187,
+        "real_e2e": 55.704,
+        "synthetic_e2e": 80.851,
+        "total_correct": 3385,
+        "real_correct": 459,
+        "synthetic_correct": 2926,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 182,
+            "e2e": 45.161
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 124,
+            "e2e": 69.274
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 87,
+            "e2e": 60.417
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 2833056,
+      "source_gains": {
+        "SLURP": 0.497,
+        "real_voice": 0.558,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 1.639
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.84,
+        "bal_ep22": 0.16
+      },
+      "reject_offset": 0.019024716690182686,
+      "test_clean": {
+        "e2e": 93.248,
+        "real_e2e": 74.15,
+        "synthetic_e2e": 97.596,
+        "total_correct": 4143,
+        "real_correct": 611,
+        "synthetic_correct": 3532,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 256,
+            "e2e": 63.524
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 164,
+            "e2e": 91.62
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.052,
+        "real_e2e": 55.947,
+        "synthetic_e2e": 80.63,
+        "total_correct": 3379,
+        "real_correct": 461,
+        "synthetic_correct": 2918,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 185,
+            "e2e": 45.906
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 87,
+            "e2e": 60.417
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 78.0,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.249,
+        "real_voice": 1.117,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.84,
+        "bal_ep28": 0.16
+      },
+      "reject_offset": -0.03245563805103302,
+      "test_clean": {
+        "e2e": 93.18,
+        "real_e2e": 74.15,
+        "synthetic_e2e": 97.513,
+        "total_correct": 4140,
+        "real_correct": 611,
+        "synthetic_correct": 3529,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 256,
+            "e2e": 63.524
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 164,
+            "e2e": 91.62
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.12,
+        "real_e2e": 55.947,
+        "synthetic_e2e": 80.713,
+        "total_correct": 3382,
+        "real_correct": 461,
+        "synthetic_correct": 2921,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 186,
+            "e2e": 46.154
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 86,
+            "e2e": 59.722
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 78.0,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.249,
+        "real_voice": 1.117,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.84,
+        "bal_ep26": 0.16
+      },
+      "reject_offset": -0.03131385147571564,
+      "test_clean": {
+        "e2e": 93.248,
+        "real_e2e": 74.15,
+        "synthetic_e2e": 97.596,
+        "total_correct": 4143,
+        "real_correct": 611,
+        "synthetic_correct": 3532,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 256,
+            "e2e": 63.524
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 164,
+            "e2e": 91.62
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.097,
+        "real_e2e": 55.825,
+        "synthetic_e2e": 80.713,
+        "total_correct": 3381,
+        "real_correct": 460,
+        "synthetic_correct": 2921,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 185,
+            "e2e": 45.906
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 86,
+            "e2e": 59.722
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 78.0,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.249,
+        "real_voice": 1.117,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.86,
+        "bal_ep26": 0.14
+      },
+      "reject_offset": -0.0234078299254179,
+      "test_clean": {
+        "e2e": 93.225,
+        "real_e2e": 74.15,
+        "synthetic_e2e": 97.568,
+        "total_correct": 4142,
+        "real_correct": 611,
+        "synthetic_correct": 3531,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 256,
+            "e2e": 63.524
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 164,
+            "e2e": 91.62
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.097,
+        "real_e2e": 55.825,
+        "synthetic_e2e": 80.713,
+        "total_correct": 3381,
+        "real_correct": 460,
+        "synthetic_correct": 2921,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 185,
+            "e2e": 45.906
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 86,
+            "e2e": 59.722
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 78.0,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.249,
+        "real_voice": 1.117,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.9,
+        "kd128_words": 0.1
+      },
+      "reject_offset": -0.016175640746951103,
+      "test_clean": {
+        "e2e": 93.09,
+        "real_e2e": 74.15,
+        "synthetic_e2e": 97.403,
+        "total_correct": 4136,
+        "real_correct": 611,
+        "synthetic_correct": 3525,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 257,
+            "e2e": 63.772
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 163,
+            "e2e": 91.061
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 118,
+            "e2e": 81.944
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 39,
+            "e2e": 63.934
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.12,
+        "real_e2e": 55.461,
+        "synthetic_e2e": 80.823,
+        "total_correct": 3382,
+        "real_correct": 457,
+        "synthetic_correct": 2925,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 180,
+            "e2e": 44.665
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 124,
+            "e2e": 69.274
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 87,
+            "e2e": 60.417
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 2833056,
+      "source_gains": {
+        "SLURP": 0.497,
+        "real_voice": 0.558,
+        "FluentSpeechCommands": 0.694,
+        "SNIPS": 1.639
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.84,
+        "bal_ep23": 0.16
+      },
+      "reject_offset": 0.02657841332256794,
+      "test_clean": {
+        "e2e": 93.248,
+        "real_e2e": 74.15,
+        "synthetic_e2e": 97.596,
+        "total_correct": 4143,
+        "real_correct": 611,
+        "synthetic_correct": 3532,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 256,
+            "e2e": 63.524
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 164,
+            "e2e": 91.62
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 75.872,
+        "real_e2e": 55.34,
+        "synthetic_e2e": 80.547,
+        "total_correct": 3371,
+        "real_correct": 456,
+        "synthetic_correct": 2915,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 181,
+            "e2e": 44.913
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 86,
+            "e2e": 59.722
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 78.0,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.249,
+        "real_voice": 1.117,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.72,
+        "rh_ep20": 0.28
+      },
+      "reject_offset": 0.06746761500835419,
+      "test_clean": {
+        "e2e": 93.203,
+        "real_e2e": 74.15,
+        "synthetic_e2e": 97.541,
+        "total_correct": 4141,
+        "real_correct": 611,
+        "synthetic_correct": 3530,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 257,
+            "e2e": 63.772
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 162,
+            "e2e": 90.503
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 120,
+            "e2e": 83.333
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 75.737,
+        "real_e2e": 55.218,
+        "synthetic_e2e": 80.409,
+        "total_correct": 3365,
+        "real_correct": 455,
+        "synthetic_correct": 2910,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 185,
+            "e2e": 45.906
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 118,
+            "e2e": 65.922
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 86,
+            "e2e": 59.722
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "tune_clean_reject": 78.5,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.497,
+        "real_voice": 0.0,
+        "FluentSpeechCommands": 2.083,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.88,
+        "rh_ep21": 0.12
+      },
+      "reject_offset": -0.07458581030368805,
+      "test_clean": {
+        "e2e": 93.068,
+        "real_e2e": 74.15,
+        "synthetic_e2e": 97.375,
+        "total_correct": 4135,
+        "real_correct": 611,
+        "synthetic_correct": 3524,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 257,
+            "e2e": 63.772
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 162,
+            "e2e": 90.503
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 118,
+            "e2e": 81.944
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 40,
+            "e2e": 65.574
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 75.895,
+        "real_e2e": 55.218,
+        "synthetic_e2e": 80.602,
+        "total_correct": 3372,
+        "real_correct": 455,
+        "synthetic_correct": 2917,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 181,
+            "e2e": 44.913
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 85,
+            "e2e": 59.028
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.497,
+        "real_voice": 0.0,
+        "FluentSpeechCommands": 0.694,
+        "SNIPS": 3.279
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.84,
+        "bal_ep29": 0.16
+      },
+      "reject_offset": -0.03382785618305206,
+      "test_clean": {
+        "e2e": 93.18,
+        "real_e2e": 74.029,
+        "synthetic_e2e": 97.541,
+        "total_correct": 4140,
+        "real_correct": 610,
+        "synthetic_correct": 3530,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 256,
+            "e2e": 63.524
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 163,
+            "e2e": 91.061
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.165,
+        "real_e2e": 55.947,
+        "synthetic_e2e": 80.768,
+        "total_correct": 3384,
+        "real_correct": 461,
+        "synthetic_correct": 2923,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 186,
+            "e2e": 46.154
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 86,
+            "e2e": 59.722
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.249,
+        "real_voice": 0.558,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.84,
+        "bal_ep20": 0.16
+      },
+      "reject_offset": 0.007056282367557287,
+      "test_clean": {
+        "e2e": 93.158,
+        "real_e2e": 74.029,
+        "synthetic_e2e": 97.513,
+        "total_correct": 4139,
+        "real_correct": 610,
+        "synthetic_correct": 3529,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 256,
+            "e2e": 63.524
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 164,
+            "e2e": 91.62
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 118,
+            "e2e": 81.944
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.03,
+        "real_e2e": 55.947,
+        "synthetic_e2e": 80.602,
+        "total_correct": 3378,
+        "real_correct": 461,
+        "synthetic_correct": 2917,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 186,
+            "e2e": 46.154
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 86,
+            "e2e": 59.722
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 78.0,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.249,
+        "real_voice": 1.117,
+        "FluentSpeechCommands": 0.694,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.88,
+        "bal_ep29": 0.12
+      },
+      "reject_offset": -0.06096310913562775,
+      "test_clean": {
+        "e2e": 93.135,
+        "real_e2e": 74.029,
+        "synthetic_e2e": 97.485,
+        "total_correct": 4138,
+        "real_correct": 610,
+        "synthetic_correct": 3528,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 256,
+            "e2e": 63.524
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 163,
+            "e2e": 91.061
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.075,
+        "real_e2e": 55.947,
+        "synthetic_e2e": 80.658,
+        "total_correct": 3380,
+        "real_correct": 461,
+        "synthetic_correct": 2919,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 183,
+            "e2e": 45.409
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 124,
+            "e2e": 69.274
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 88,
+            "e2e": 61.111
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.249,
+        "real_voice": 0.558,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.88,
+        "bal_ep30": 0.12
+      },
+      "reject_offset": -0.06408537924289703,
+      "test_clean": {
+        "e2e": 93.135,
+        "real_e2e": 74.029,
+        "synthetic_e2e": 97.485,
+        "total_correct": 4138,
+        "real_correct": 610,
+        "synthetic_correct": 3528,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 256,
+            "e2e": 63.524
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 163,
+            "e2e": 91.061
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.052,
+        "real_e2e": 55.947,
+        "synthetic_e2e": 80.63,
+        "total_correct": 3379,
+        "real_correct": 461,
+        "synthetic_correct": 2918,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 184,
+            "e2e": 45.658
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 124,
+            "e2e": 69.274
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 87,
+            "e2e": 60.417
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 78.0,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.249,
+        "real_voice": 0.558,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.88,
+        "bal_ep26": 0.12
+      },
+      "reject_offset": -0.06407292187213898,
+      "test_clean": {
+        "e2e": 93.225,
+        "real_e2e": 74.029,
+        "synthetic_e2e": 97.596,
+        "total_correct": 4142,
+        "real_correct": 610,
+        "synthetic_correct": 3532,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 256,
+            "e2e": 63.524
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 163,
+            "e2e": 91.061
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.007,
+        "real_e2e": 55.825,
+        "synthetic_e2e": 80.602,
+        "total_correct": 3377,
+        "real_correct": 460,
+        "synthetic_correct": 2917,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 184,
+            "e2e": 45.658
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 124,
+            "e2e": 69.274
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 86,
+            "e2e": 59.722
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.249,
+        "real_voice": 0.558,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.86,
+        "bal_ep22": 0.14
+      },
+      "reject_offset": 0.020228134468197823,
+      "test_clean": {
+        "e2e": 93.203,
+        "real_e2e": 74.029,
+        "synthetic_e2e": 97.568,
+        "total_correct": 4141,
+        "real_correct": 610,
+        "synthetic_correct": 3531,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 256,
+            "e2e": 63.524
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 164,
+            "e2e": 91.62
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 118,
+            "e2e": 81.944
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.03,
+        "real_e2e": 55.825,
+        "synthetic_e2e": 80.63,
+        "total_correct": 3378,
+        "real_correct": 460,
+        "synthetic_correct": 2918,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 184,
+            "e2e": 45.658
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 87,
+            "e2e": 60.417
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 78.25,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.249,
+        "real_voice": 1.117,
+        "FluentSpeechCommands": 0.694,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.78,
+        "rh_ep21": 0.22
+      },
+      "reject_offset": -0.08238567411899567,
+      "test_clean": {
+        "e2e": 93.158,
+        "real_e2e": 74.029,
+        "synthetic_e2e": 97.513,
+        "total_correct": 4139,
+        "real_correct": 610,
+        "synthetic_correct": 3529,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 257,
+            "e2e": 63.772
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 162,
+            "e2e": 90.503
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.12,
+        "real_e2e": 55.825,
+        "synthetic_e2e": 80.741,
+        "total_correct": 3382,
+        "real_correct": 460,
+        "synthetic_correct": 2922,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 187,
+            "e2e": 46.402
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 84,
+            "e2e": 58.333
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.497,
+        "real_voice": 0.0,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.88,
+        "bal_ep28": 0.12
+      },
+      "reject_offset": -0.054092422127723694,
+      "test_clean": {
+        "e2e": 93.135,
+        "real_e2e": 74.029,
+        "synthetic_e2e": 97.485,
+        "total_correct": 4138,
+        "real_correct": 610,
+        "synthetic_correct": 3528,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 256,
+            "e2e": 63.524
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 163,
+            "e2e": 91.061
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.052,
+        "real_e2e": 55.825,
+        "synthetic_e2e": 80.658,
+        "total_correct": 3379,
+        "real_correct": 460,
+        "synthetic_correct": 2919,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 183,
+            "e2e": 45.409
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 124,
+            "e2e": 69.274
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 87,
+            "e2e": 60.417
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.249,
+        "real_voice": 0.558,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.86,
+        "bal_ep28": 0.14
+      },
+      "reject_offset": -0.03572709858417511,
+      "test_clean": {
+        "e2e": 93.135,
+        "real_e2e": 74.029,
+        "synthetic_e2e": 97.485,
+        "total_correct": 4138,
+        "real_correct": 610,
+        "synthetic_correct": 3528,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 256,
+            "e2e": 63.524
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 163,
+            "e2e": 91.061
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.03,
+        "real_e2e": 55.704,
+        "synthetic_e2e": 80.658,
+        "total_correct": 3378,
+        "real_correct": 459,
+        "synthetic_correct": 2919,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 184,
+            "e2e": 45.658
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 86,
+            "e2e": 59.722
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.249,
+        "real_voice": 0.558,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.86,
+        "bal_ep30": 0.14
+      },
+      "reject_offset": -0.02355964295566082,
+      "test_clean": {
+        "e2e": 93.135,
+        "real_e2e": 74.029,
+        "synthetic_e2e": 97.485,
+        "total_correct": 4138,
+        "real_correct": 610,
+        "synthetic_correct": 3528,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 256,
+            "e2e": 63.524
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 163,
+            "e2e": 91.061
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.052,
+        "real_e2e": 55.704,
+        "synthetic_e2e": 80.685,
+        "total_correct": 3379,
+        "real_correct": 459,
+        "synthetic_correct": 2920,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 184,
+            "e2e": 45.658
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 86,
+            "e2e": 59.722
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.249,
+        "real_voice": 0.558,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.86,
+        "bal_ep29": 0.14
+      },
+      "reject_offset": -0.025616241618990898,
+      "test_clean": {
+        "e2e": 93.135,
+        "real_e2e": 74.029,
+        "synthetic_e2e": 97.485,
+        "total_correct": 4138,
+        "real_correct": 610,
+        "synthetic_correct": 3528,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 256,
+            "e2e": 63.524
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 163,
+            "e2e": 91.061
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 76.007,
+        "real_e2e": 55.583,
+        "synthetic_e2e": 80.658,
+        "total_correct": 3377,
+        "real_correct": 458,
+        "synthetic_correct": 2919,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 183,
+            "e2e": 45.409
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 86,
+            "e2e": 59.722
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.249,
+        "real_voice": 0.558,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.84,
+        "rh_ep21": 0.16
+      },
+      "reject_offset": -0.06755615770816803,
+      "test_clean": {
+        "e2e": 93.045,
+        "real_e2e": 74.029,
+        "synthetic_e2e": 97.375,
+        "total_correct": 4134,
+        "real_correct": 610,
+        "synthetic_correct": 3524,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 258,
+            "e2e": 64.02
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 162,
+            "e2e": 90.503
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 118,
+            "e2e": 81.944
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 75.94,
+        "real_e2e": 55.583,
+        "synthetic_e2e": 80.575,
+        "total_correct": 3374,
+        "real_correct": 458,
+        "synthetic_correct": 2916,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 185,
+            "e2e": 45.906
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 122,
+            "e2e": 68.156
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 85,
+            "e2e": 59.028
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.745,
+        "real_voice": 0.0,
+        "FluentSpeechCommands": 0.694,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.82,
+        "rh_ep21": 0.18
+      },
+      "reject_offset": -0.05527491867542267,
+      "test_clean": {
+        "e2e": 93.068,
+        "real_e2e": 74.029,
+        "synthetic_e2e": 97.403,
+        "total_correct": 4135,
+        "real_correct": 610,
+        "synthetic_correct": 3525,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 258,
+            "e2e": 64.02
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 162,
+            "e2e": 90.503
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 118,
+            "e2e": 81.944
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 75.962,
+        "real_e2e": 55.461,
+        "synthetic_e2e": 80.63,
+        "total_correct": 3375,
+        "real_correct": 457,
+        "synthetic_correct": 2918,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 183,
+            "e2e": 45.409
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 123,
+            "e2e": 68.715
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 85,
+            "e2e": 59.028
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 78.0,
+      "tune_channel_reject": 80.75,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.745,
+        "real_voice": 0.0,
+        "FluentSpeechCommands": 0.694,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    },
+    {
+      "members": {
+        "kd144": 0.86,
+        "bal_ep25": 0.14
+      },
+      "reject_offset": 0.005477414932101965,
+      "test_clean": {
+        "e2e": 93.158,
+        "real_e2e": 74.029,
+        "synthetic_e2e": 97.513,
+        "total_correct": 4139,
+        "real_correct": 610,
+        "synthetic_correct": 3529,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 256,
+            "e2e": 63.524
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 163,
+            "e2e": 91.061
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 119,
+            "e2e": 82.639
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 38,
+            "e2e": 62.295
+          }
+        }
+      },
+      "test_channel": {
+        "e2e": 75.782,
+        "real_e2e": 55.34,
+        "synthetic_e2e": 80.437,
+        "total_correct": 3367,
+        "real_correct": 456,
+        "synthetic_correct": 2911,
+        "n": 4443,
+        "real_n": 824,
+        "synthetic_n": 3619,
+        "by_source": {
+          "SLURP": {
+            "n": 403,
+            "correct": 182,
+            "e2e": 45.161
+          },
+          "real_voice": {
+            "n": 179,
+            "correct": 122,
+            "e2e": 68.156
+          },
+          "FluentSpeechCommands": {
+            "n": 144,
+            "correct": 86,
+            "e2e": 59.722
+          },
+          "SNIPS": {
+            "n": 61,
+            "correct": 37,
+            "e2e": 60.656
+          }
+        }
+      },
+      "tune_clean_reject": 77.75,
+      "tune_channel_reject": 81.0,
+      "eligible": true,
+      "parameters": 3158256,
+      "source_gains": {
+        "SLURP": 0.249,
+        "real_voice": 0.558,
+        "FluentSpeechCommands": 1.389,
+        "SNIPS": 0.0
+      },
+      "broad": true
+    }
+  ]
+}

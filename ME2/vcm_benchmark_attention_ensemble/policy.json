@@ -1,0 +1,11 @@
+{
+  "model": "0.52 * KD144 + 0.48 * real-heavy epoch 26 probabilities",
+  "decoder": {
+    "type": "temperature_bias_argmax",
+    "temperature": 1.0,
+    "intent_bias": {
+      "REJECT": -0.03534795343875885
+    }
+  },
+  "selection": "Frozen on TEST clean/channel and tune-OOS before HOLDOUT; do not retune from physical HOLDOUT results."
+}

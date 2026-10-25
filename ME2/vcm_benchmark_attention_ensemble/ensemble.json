@@ -1,0 +1,35 @@
+{
+  "type": "probability_ensemble_onnx_v1",
+  "selection": "TEST clean/channel plus tune-OOS; HOLDOUT excluded",
+  "input": {
+    "name": "mel",
+    "shape": [
+      "batch",
+      1,
+      40,
+      250
+    ]
+  },
+  "outputs": [
+    "logits_a",
+    "logits_b"
+  ],
+  "members": [
+    {
+      "name": "kd144",
+      "model": "kd144.onnx",
+      "weight": 0.52,
+      "parameters": 1565256,
+      "source_checkpoint": "vcm_attention_attention_kd144_s6201.pt"
+    },
+    {
+      "name": "rh_ep26",
+      "model": "rh_ep26.onnx",
+      "weight": 0.48,
+      "parameters": 1593000,
+      "source_checkpoint": "vcm_attention_attention_w144_words_rh_s10251_ep26.pt"
+    }
+  ],
+  "total_parameters": 3158256,
+  "reject_log_probability_offset": -0.03534795343875885
+}
