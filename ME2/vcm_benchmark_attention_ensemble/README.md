@@ -15,10 +15,17 @@ physical HOLDOUT benchmark.
 From the `ME2` directory, run:
 
 ```bash
+# Exact KD144 selection baseline
+python3 vcm_action_runner/runner.py --voice --benchmark \
+  --vcm-bundle vcm_benchmark_attention_ensemble/baseline_kd144
+
+# Frozen 52/48 candidate
 python3 vcm_action_runner/runner.py --voice --benchmark \
   --vcm-bundle vcm_benchmark_attention_ensemble
 ```
 
 For wake-word benchmarking, replace `--voice` with `--wakeword`. The benchmark
-mode logs decisions and suppresses real device actions. Compare against the
-unchanged bundled baseline using the exact same captured audio.
+mode logs decisions and suppresses real device actions. Use the same physical
+setup and playback order for both runs. The `baseline_kd144` entry reuses the
+parent directory's KD144 ONNX file and applies its frozen TEST-selected reject
+offset.

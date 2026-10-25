@@ -1,0 +1,19 @@
+{
+  "type": "probability_ensemble_onnx_v1",
+  "selection": "Exact KD144 baseline used by the TEST-only ensemble screen",
+  "input": {
+    "name": "mel",
+    "shape": ["batch", 1, 40, 250]
+  },
+  "outputs": ["logits_a", "logits_b"],
+  "members": [
+    {
+      "name": "kd144",
+      "model": "../kd144.onnx",
+      "weight": 1.0,
+      "parameters": 1565256
+    }
+  ],
+  "total_parameters": 1565256,
+  "reject_log_probability_offset": -0.003985060844570398
+}

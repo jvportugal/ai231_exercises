@@ -1,0 +1,11 @@
+{
+  "model": "KD144 TEST-selection baseline",
+  "decoder": {
+    "type": "temperature_bias_argmax",
+    "temperature": 1.0,
+    "intent_bias": {
+      "REJECT": -0.003985060844570398
+    }
+  },
+  "selection": "Frozen TEST/tune-OOS baseline; do not retune from physical HOLDOUT results."
+}
