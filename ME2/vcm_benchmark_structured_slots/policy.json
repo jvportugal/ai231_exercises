@@ -1,0 +1,43 @@
+{
+  "model": "structured-slot attention ensemble",
+  "decoder": {
+    "type": "joint_intent_slot_v1",
+    "temperature": 1.0,
+    "intent_bias": {
+      "REJECT": 0.2
+    },
+    "local_slot_weight": 0.75,
+    "slot_acceptance": {
+      "per_intent": {
+        "TIMER": {
+          "min_confidence": 0.693167,
+          "min_margin": 0.41009
+        },
+        "ALARM": {
+          "min_confidence": 0.645848,
+          "min_margin": 0.374947
+        },
+        "TEMPERATURE": {
+          "min_confidence": 0.620284,
+          "min_margin": 0.255895
+        },
+        "BRIGHTNESS": {
+          "min_confidence": 0.612768,
+          "min_margin": 0.271888
+        },
+        "COLOR": {
+          "min_confidence": 0.557547,
+          "min_margin": 0.176976
+        },
+        "CREATE_REMINDER": {
+          "min_confidence": 0.6676,
+          "min_margin": 0.381003
+        }
+      }
+    },
+    "joint_slot_rescue": {
+      "enabled": false
+    }
+  },
+  "selection": "Frozen on TEST clean/deployment/channel and tune-OOS; HOLDOUT excluded"
+}

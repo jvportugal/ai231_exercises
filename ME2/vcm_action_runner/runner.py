@@ -443,8 +443,8 @@ def main(argv=None):
                         help="maximum command speech seconds")
     parser.add_argument("--speech-start-timeout", type=float, default=4.0,
                         help="seconds to wait for speech after Destiny")
-    parser.add_argument("--command-silence", type=float, default=0.5,
-                        help="trailing silence seconds that ends a command (default: 0.5)")
+    parser.add_argument("--command-silence", type=float, default=0.8,
+                        help="trailing silence seconds that ends a command (default: 0.8)")
     parser.add_argument("--strict-command-policy", action="store_true",
                         help="disable wake-armed assistance for short fixed commands")
     parser.add_argument("--legacy-e8", action="store_true",

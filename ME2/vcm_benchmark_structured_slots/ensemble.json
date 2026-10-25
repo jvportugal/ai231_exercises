@@ -1,0 +1,32 @@
+{
+  "type": "probability_ensemble_onnx_v1",
+  "selection": "TEST clean/deployment/channel plus tune-OOS; HOLDOUT excluded",
+  "outputs": [
+    "logits_a",
+    "logits_b",
+    "local_slot_logits",
+    "word_logits"
+  ],
+  "output_activations": [
+    "softmax",
+    "softmax",
+    "grouped_softmax_3",
+    "sigmoid"
+  ],
+  "members": [
+    {
+      "name": "structured_a",
+      "model": "structured_a.onnx",
+      "weight": 0.25,
+      "source_checkpoint": "/tmp/vcm_frontend_color_rh_s13251/vcm_attention_frontend_color_rh_s13251.pt"
+    },
+    {
+      "name": "structured_b",
+      "model": "structured_b.onnx",
+      "weight": 0.75,
+      "source_checkpoint": "/tmp/vcm_frontend_color_kd_s13252/vcm_attention_frontend_color_kd_s13252.pt"
+    }
+  ],
+  "total_parameters": 3110872,
+  "parameter_cap": 3192807
+}

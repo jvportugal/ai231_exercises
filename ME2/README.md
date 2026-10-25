@@ -170,6 +170,19 @@ After activating the virtual environment:
 python3 vcm_action_runner/runner.py --wakeword
 ~~~
 
+To evaluate the structured-slot ensemble produced by the improvement round,
+point the same runner at its self-contained bundle:
+
+~~~bash
+python3 vcm_action_runner/runner.py --wakeword --benchmark \
+  --vcm-bundle vcm_benchmark_structured_slots
+~~~
+
+This bundle uses six intent-specific three-way slot heads, calibrated slot
+acceptance gates, and an optional guarded joint intent/slot decoder. Its
+selection report and file hashes are included in the bundle. `--benchmark`
+suppresses real actions; remove it only when you are ready to control devices.
+
 The normal interaction is:
 
 ~~~text
@@ -179,7 +192,7 @@ WAITING FOR DESTINY
 → two-note acknowledgement chime
 → LISTENING FOR COMMAND
 → user speaks one command
-→ trailing silence ends recording
+→ 0.8 seconds of trailing silence ends recording
 → PROCESSING COMMAND
 → intent and optional slot are predicted
 → action runs

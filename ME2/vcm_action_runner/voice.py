@@ -83,8 +83,8 @@ class Voice:
         #     e.g. CALL @0.53 on pure silence), OR
         #   * the winning intent is not in the golden 19 (defensive).
         no_speech = info.get("span") is None
-        model_intent = intent
-        model_conf = conf
+        model_intent = info.get("raw_intent", intent)
+        model_conf = info.get("raw_intent_conf", conf)
         rescued_intent = (vcm.wake_reject_rescue(info)
                           if allow_wake_short and not legacy_e8 and
                           intent == "REJECT" else None)
@@ -124,6 +124,8 @@ class Voice:
             "rejection_reason": rejection_reason,
             "acceptance_policy": ("legacy_e8" if legacy_e8
                                   else "wake_reject_rescue" if rescued_intent
+                                  else "joint_slot_rescue"
+                                  if info.get("joint_slot_rescued")
                                   else "wake_short" if accepted and not strict_accepted
                                   else "calibrated_argmax"
                                   if info.get("decision_calibrated")
@@ -144,6 +146,9 @@ class Voice:
             "intent_margin": info.get("intent_margin"),
             "slot_conf": info.get("slot_conf"),
             "slot_margin": info.get("slot_margin"),
+            "global_slot_conf": info.get("global_slot_conf"),
+            "global_slot_margin": info.get("global_slot_margin"),
+            "joint_slot_rescued": info.get("joint_slot_rescued", False),
             "decoder_type": info.get("decoder_type"),
             "audio": {k: info.get(k) for k in
                       ("capture_peak", "capture_rms", "clipping_fraction", "gain",
@@ -196,6 +201,8 @@ def describe(r):
         line += " [wake-short assist]"
     elif r.get("acceptance_policy") == "wake_reject_rescue":
         line += " [wake rescue: model REJECT %.2f]" % r.get("model_conf", 0.0)
+    elif r.get("acceptance_policy") == "joint_slot_rescue":
+        line += " [joint intent-slot rescue from %s]" % r.get("model_intent", "?")
     elif r.get("acceptance_policy") == "legacy_e8":
         line += " [legacy E8 policy]"
     return line + _centering_line(r) + _mic_warning(r) + _latency_line(r)

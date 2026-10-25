@@ -32,6 +32,20 @@ class _FakeOnnxSession:
         return intent, slot
 
 
+class _FakeStructuredSession(_FakeOnnxSession):
+    def run(self, output_names, feed):
+        intent, slot = super().run(output_names, feed)
+        local = [
+            np.asarray([[2.0, 0.0, -1.0, 0.0, 1.0, 2.0]], np.float32),
+            np.asarray([[0.0, 2.0, -1.0, 2.0, 1.0, 0.0]], np.float32),
+        ][self.index]
+        words = [
+            np.asarray([[2.0, -2.0]], np.float32),
+            np.asarray([[0.0, 1.0]], np.float32),
+        ][self.index]
+        return intent, slot, local, words
+
+
 class EnsembleModelTests(unittest.TestCase):
     def test_probability_ensemble_matches_weighted_softmax(self):
         fake_ort = types.SimpleNamespace(InferenceSession=_FakeOnnxSession)
@@ -72,6 +86,37 @@ class EnsembleModelTests(unittest.TestCase):
             with mock.patch.dict(sys.modules, {"onnxruntime": fake_ort}):
                 with self.assertRaisesRegex(ValueError, "sum to 1"):
                     V.load_model(directory)
+
+    def test_structured_outputs_use_grouped_softmax_and_sigmoid(self):
+        fake_ort = types.SimpleNamespace(InferenceSession=_FakeStructuredSession)
+        with tempfile.TemporaryDirectory() as directory:
+            manifest = {
+                "type": "probability_ensemble_onnx_v1",
+                "output_activations": [
+                    "softmax", "softmax", "grouped_softmax_3", "sigmoid"],
+                "members": [
+                    {"name": "a", "model": "a.onnx", "weight": 0.25},
+                    {"name": "b", "model": "b.onnx", "weight": 0.75},
+                ],
+            }
+            path = os.path.join(directory, "ensemble.json")
+            with open(path, "w") as handle:
+                json.dump(manifest, handle)
+            with mock.patch.dict(sys.modules, {"onnxruntime": fake_ort}):
+                session = V.load_model(directory)
+                actual = session.run(
+                    None, {"mel": np.zeros((1, 1, 40, 250), np.float32)})
+
+        self.assertEqual(len(actual), 4)
+        local_probabilities = np.exp(actual[2]).reshape(1, 2, 3)
+        np.testing.assert_allclose(local_probabilities.sum(axis=2), 1.0,
+                                   rtol=1e-6)
+        expected_words = (0.25 * session._sigmoid_batch(
+            np.asarray([[2.0, -2.0]], np.float32))
+            + 0.75 * session._sigmoid_batch(
+                np.asarray([[0.0, 1.0]], np.float32)))
+        np.testing.assert_allclose(V._sigmoid(actual[3]), expected_words,
+                                   rtol=1e-6)
 
 
 if __name__ == "__main__":

@@ -28,12 +28,14 @@ import numpy as np
 # ---------------------------------------------------------------------------
 SAMPLE_RATE = 16000
 WINDOW_SEC = 2.5
-N_SAMPLES = int(SAMPLE_RATE * WINDOW_SEC)      # 40000
 N_MELS = 40
 N_FRAMES = 250
 HOP = 160                                       # 10 ms @ 16 kHz
 N_FFT = 400                                     # 25 ms @ 16 kHz
 WIN = 400
+# Exact number of samples consumed by 250 frames.  The previous extra nominal
+# 159 samples made deployment's final STFT frame differ from training.
+N_SAMPLES = 1 + (N_FRAMES - 1) * HOP           # 39841 (~2.49 s)
 FMIN = 20.0
 FMAX = 8000.0
 MEL_LO = -10.0
@@ -157,6 +159,7 @@ class ProbabilityEnsembleSession:
         if not members:
             raise ValueError("ensemble manifest has no members")
         self.members = []
+        self.output_activations = manifest.get("output_activations", [])
         total_weight = 0.0
         for member in members:
             weight = float(member["weight"])
@@ -177,21 +180,52 @@ class ProbabilityEnsembleSession:
         exp = np.exp(shifted)
         return exp / exp.sum(axis=1, keepdims=True)
 
+    @staticmethod
+    def _sigmoid_batch(logits):
+        logits = np.asarray(logits, dtype=np.float32)
+        return 1.0 / (1.0 + np.exp(-np.clip(logits, -30.0, 30.0)))
+
+    @classmethod
+    def _activate(cls, logits, activation):
+        if activation == "sigmoid":
+            return cls._sigmoid_batch(logits)
+        if activation == "grouped_softmax_3":
+            values = np.asarray(logits, dtype=np.float32)
+            grouped = values.reshape(values.shape[0], -1, 3)
+            shifted = grouped - grouped.max(axis=2, keepdims=True)
+            exp = np.exp(shifted)
+            return (exp / exp.sum(axis=2, keepdims=True)).reshape(values.shape)
+        return cls._softmax_batch(logits)
+
     def run(self, output_names, feed):
         mixed = None
         for _, weight, session in self.members:
             outputs = session.run(None, feed)
             if len(outputs) < 2:
                 raise RuntimeError("ensemble member must have two outputs")
-            probabilities = [self._softmax_batch(outputs[0]),
-                             self._softmax_batch(outputs[1])]
+            if mixed is not None and len(outputs) != len(mixed):
+                raise RuntimeError("ensemble members must expose the same outputs")
+            probabilities = [
+                self._activate(value,
+                               self.output_activations[index]
+                               if index < len(self.output_activations)
+                               else "softmax")
+                for index, value in enumerate(outputs)
+            ]
             if mixed is None:
                 mixed = [weight * value for value in probabilities]
             else:
                 for index, value in enumerate(probabilities):
                     mixed[index] += weight * value
-        result = [np.log(np.maximum(value, 1e-12)).astype(np.float32)
-                  for value in mixed]
+        result = []
+        for index, value in enumerate(mixed):
+            activation = (self.output_activations[index]
+                          if index < len(self.output_activations) else "softmax")
+            if activation == "sigmoid":
+                clipped = np.clip(value, 1e-6, 1.0 - 1e-6)
+                result.append(np.log(clipped / (1.0 - clipped)).astype(np.float32))
+            else:
+                result.append(np.log(np.maximum(value, 1e-12)).astype(np.float32))
         if output_names is None:
             return result
         raise ValueError("named ensemble outputs are not supported")
@@ -271,7 +305,9 @@ def audio_to_mel(x):
         x = np.pad(x, (0, N_SAMPLES - len(x)))
     else:
         x = x[:N_SAMPLES]
-    win = np.hanning(WIN).astype(np.float32)
+    # scipy.signal.get_window("hann", WIN, fftbins=True), used in training,
+    # is a periodic Hann. np.hanning(WIN) is symmetric and is not identical.
+    win = np.hanning(WIN + 1)[:-1].astype(np.float32)
     mags = np.empty((N_FRAMES, N_FFT // 2 + 1), dtype=np.float32)
     for t in range(N_FRAMES):
         seg = x[t * HOP: t * HOP + WIN]
@@ -430,6 +466,95 @@ def _softmax(z):
     return e / e.sum()
 
 
+def _sigmoid(z):
+    z = np.asarray(z, dtype=np.float32)
+    return 1.0 / (1.0 + np.exp(-np.clip(z, -30.0, 30.0)))
+
+
+def _slot_family(token):
+    for intent, prefix in _SLOTTED_PREFIX.items():
+        if token.startswith(prefix):
+            return intent
+    return None
+
+
+def _joint_slot_rescue(pa, pb, intents, value_tokens, word_probabilities,
+                       word_names, decoder):
+    """Use clear global slot evidence to resolve a close intent decision.
+
+    This never relies on the conditional three-way slot confidence: that
+    quantity always has a winner, even for unrelated audio.  Rescue instead
+    uses the slot token's probability among every value and REJECT.
+    """
+    config = decoder.get("joint_slot_rescue", {}) if decoder else {}
+    if not config.get("enabled", False):
+        return None
+    value_indices = [index for index, token in enumerate(value_tokens)
+                     if token != "REJECT" and _slot_family(token) is not None]
+    if not value_indices:
+        return None
+    best_slot = max(value_indices, key=lambda index: float(pb[index]))
+    token = value_tokens[best_slot]
+    candidate_name = _slot_family(token)
+    if candidate_name not in intents:
+        return None
+    allowed_intents = config.get("allowed_intents")
+    if allowed_intents is not None and candidate_name not in allowed_intents:
+        return None
+    candidate = intents.index(candidate_name)
+    original = int(np.argmax(pa))
+    if candidate == original:
+        return None
+    reject_index = intents.index("REJECT") if "REJECT" in intents else len(pa) - 1
+    if original == reject_index and not config.get("allow_from_reject", False):
+        return None
+    other_slot = max(float(pb[index]) for index in range(len(pb))
+                     if index != best_slot)
+    slot_conf = float(pb[best_slot])
+    slot_margin = slot_conf - other_slot
+    intent_conf = float(pa[candidate])
+    top_conf = float(pa[original])
+    rank = int(np.sum(pa > intent_conf)) + 1
+    if slot_conf < float(config.get("min_global_slot_conf", 1.0)):
+        return None
+    if slot_margin < float(config.get("min_global_slot_margin", 1.0)):
+        return None
+    if intent_conf < float(config.get("min_intent_conf", 1.0)):
+        return None
+    if intent_conf < float(config.get("min_intent_ratio", 1.0)) * top_conf:
+        return None
+    if rank > int(config.get("max_intent_rank", 2)):
+        return None
+    if float(pa[reject_index]) > float(config.get("max_reject_conf", 0.35)):
+        return None
+
+    requirements = config.get("word_requirements", {}).get(token, [])
+    any_requirements = config.get("word_requirement_any", {}).get(token, [])
+    if requirements:
+        lookup = {name: float(probability)
+                  for name, probability in zip(word_names, word_probabilities)}
+        threshold = float(config.get("min_word_conf", 0.70))
+        if any(lookup.get(word, 0.0) < threshold for word in requirements):
+            return None
+    elif any_requirements:
+        lookup = {name: float(probability)
+                  for name, probability in zip(word_names, word_probabilities)}
+        threshold = float(config.get("min_word_conf", 0.70))
+        if not any(lookup.get(word, 0.0) >= threshold
+                   for word in any_requirements):
+            return None
+    elif config.get("require_word_support", False):
+        return None
+    return {
+        "intent_index": candidate,
+        "slot_index": best_slot,
+        "slot_token": token,
+        "global_slot_conf": slot_conf,
+        "global_slot_margin": slot_margin,
+        "original_intent": intents[original],
+    }
+
+
 def _top_margin(probs):
     """Return top-1 minus top-2 probability for a one-dimensional vector."""
     if len(probs) < 2:
@@ -498,6 +623,19 @@ def safe_decision(intent, conf, info, allow_wake_short=False):
     if info.get("decision_calibrated"):
         if intent in _SLOTTED_PREFIX and info.get("slot") is None:
             return False, "missing_slot"
+        if intent in _SLOTTED_PREFIX:
+            if info.get("slot_conf", 0.0) < info.get(
+                    "min_slot_confidence", 0.0):
+                return False, "low_slot_confidence"
+            if info.get("slot_margin", 0.0) < info.get(
+                    "min_slot_margin", 0.0):
+                return False, "low_slot_margin"
+            if info.get("global_slot_conf", 0.0) < info.get(
+                    "min_global_slot_confidence", 0.0):
+                return False, "low_global_slot_confidence"
+            if info.get("global_slot_margin", 0.0) < info.get(
+                    "min_global_slot_margin", -1.0):
+                return False, "low_global_slot_margin"
         return True, None
     if intent in _SLOTTED_PREFIX:
         if conf < MIN_INTENT_CONFIDENCE:
@@ -534,7 +672,12 @@ def classify(sess, labels, x, verbose=False, policy=None):
     """
     prep, info = prepare_clip(x, verbose=verbose)
     mel = audio_to_mel(prep)
-    la, lb = sess.run(None, {"mel": mel})
+    outputs = sess.run(None, {"mel": mel})
+    if len(outputs) < 2:
+        raise RuntimeError("VCM must expose intent and global slot outputs")
+    la, lb = outputs[:2]
+    local_slot_logits = outputs[2] if len(outputs) >= 3 else None
+    word_logits = outputs[3] if len(outputs) >= 4 else None
     # New bundles use a calibration learned on clean speech, procedural
     # speaker/microphone playback, and out-of-scope audio. It replaces the
     # universal confidence/margin thresholds with one calibrated argmax over
@@ -543,7 +686,8 @@ def classify(sess, labels, x, verbose=False, policy=None):
     if policy is None:
         policy = load_policy()
     decoder = policy.get("decoder", {}) if policy else {}
-    decision_calibrated = decoder.get("type") == "temperature_bias_argmax"
+    decision_calibrated = decoder.get("type") in {
+        "temperature_bias_argmax", "joint_intent_slot_v1"}
     intent_logits = la[0]
     if decision_calibrated:
         temperature = max(float(decoder.get("temperature", 1.0)), 1e-6)
@@ -557,6 +701,19 @@ def classify(sess, labels, x, verbose=False, policy=None):
     ib = int(np.argmax(pb))
     intents = labels.get("intents", INTENT_NAMES)
     vtoks = labels.get("value_tokens", VALUE_TOKENS)
+    word_names = labels.get("words", [])
+    word_probabilities = (_sigmoid(word_logits[0])
+                          if word_logits is not None and word_names else
+                          np.asarray([], dtype=np.float32))
+    if len(word_probabilities) != len(word_names):
+        word_names = []
+        word_probabilities = np.asarray([], dtype=np.float32)
+    raw_ia = ia
+    raw_intent = intents[raw_ia]
+    rescue = _joint_slot_rescue(
+        pa, pb, intents, vtoks, word_probabilities, word_names, decoder)
+    if rescue is not None:
+        ia = int(rescue["intent_index"])
     intent = intents[ia]
     rejected = ia == REJECT_IDX_A
     command_probs = pa[:REJECT_IDX_A]
@@ -574,6 +731,10 @@ def classify(sess, labels, x, verbose=False, policy=None):
     # argmax here used to turn e.g. COLOR_RED into COLOR_GREEN/None when an
     # unrelated token narrowly won the head.
     prefix = _SLOTTED_PREFIX.get(intent)
+    global_slot_index = int(np.argmax(pb))
+    global_slot_conf = float(pb[global_slot_index])
+    global_slot_margin = _top_margin(pb)
+    global_slot_token = vtoks[global_slot_index]
     if not rejected and prefix:
         valid = [i for i, token in enumerate(vtoks) if token.startswith(prefix)]
         if valid:
@@ -581,17 +742,54 @@ def classify(sess, labels, x, verbose=False, policy=None):
             # legal slot values compete. A valid slot no longer loses mass to
             # the other fifteen unrelated slot tokens.
             valid_probs = _softmax(lb[0][valid])
-            local = int(np.argmax(valid_probs))
+            if local_slot_logits is not None and local_slot_logits.shape[1] >= max(valid) + 1:
+                local_probs = _softmax(local_slot_logits[0][valid])
+                local_weight = float(decoder.get("local_slot_weight", 0.5))
+                local_weight = min(1.0, max(0.0, local_weight))
+                valid_probs = ((1.0 - local_weight) * valid_probs
+                               + local_weight * local_probs)
+            forced_slot = (int(rescue["slot_index"])
+                           if rescue is not None else None)
+            local = (valid.index(forced_slot)
+                     if forced_slot in valid else int(np.argmax(valid_probs)))
             ib = valid[local]
             slot_token = vtoks[ib]
             slot = _SLOT_TEXT.get(slot_token)
             slot_conf = float(valid_probs[local])
-            slot_margin = _top_margin(valid_probs)
+            slot_margin = float(valid_probs[local] - max(
+                probability for index, probability in enumerate(valid_probs)
+                if index != local))
+            global_slot_token = slot_token
+            global_slot_conf = float(pb[ib])
+            global_slot_margin = global_slot_conf - max(
+                float(pb[index]) for index in range(len(pb)) if index != ib)
     info = dict(info)
+    slot_policy = decoder.get("slot_acceptance", {})
+    per_intent_slot_policy = slot_policy.get("per_intent", {}).get(intent, {})
     info.update(slot=slot, slot_token=slot_token, slot_conf=slot_conf,
                 slot_margin=slot_margin, intent_margin=_top_margin(pa),
                 rejected=rejected, decision_calibrated=decision_calibrated,
                 decoder_type=decoder.get("type") if decoder else "raw_logits",
+                raw_intent=raw_intent,
+                raw_intent_conf=float(pa[raw_ia]),
+                joint_slot_rescued=rescue is not None,
+                joint_slot_rescue=rescue,
+                global_slot_token=global_slot_token,
+                global_slot_conf=global_slot_conf,
+                global_slot_margin=global_slot_margin,
+                word_probabilities={name: float(probability)
+                                    for name, probability in zip(
+                                        word_names, word_probabilities)},
+                min_slot_confidence=float(per_intent_slot_policy.get(
+                    "min_confidence", slot_policy.get("min_confidence", 0.0))),
+                min_slot_margin=float(per_intent_slot_policy.get(
+                    "min_margin", slot_policy.get("min_margin", 0.0))),
+                min_global_slot_confidence=float(per_intent_slot_policy.get(
+                    "min_global_confidence",
+                    slot_policy.get("min_global_confidence", 0.0))),
+                min_global_slot_margin=float(per_intent_slot_policy.get(
+                    "min_global_margin",
+                    slot_policy.get("min_global_margin", -1.0))),
                 command_intent=command_intent,
                 command_conf=float(command_probs[command_index]),
                 command_conditional_conf=float(command_conditional[command_index]),

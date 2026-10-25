@@ -7,9 +7,11 @@ from vcm_action_runner.voice import Voice, describe
 
 
 class _Session:
-    def __init__(self, intent_logits, slot_logits):
+    def __init__(self, intent_logits, slot_logits, *extra_outputs):
         self.outputs = (np.asarray([intent_logits], np.float32),
-                        np.asarray([slot_logits], np.float32))
+                        np.asarray([slot_logits], np.float32),
+                        *(np.asarray([value], np.float32)
+                          for value in extra_outputs))
 
     def run(self, _outputs, _inputs):
         return self.outputs
@@ -38,10 +40,13 @@ class VoiceSafetyTests(unittest.TestCase):
 
         self.assertEqual(len(clip), V.N_SAMPLES)
         self.assertAlmostEqual(info["active_speech_seconds"], 1.9, places=2)
-        self.assertAlmostEqual(info["centered_start_seconds"], 0.3, places=2)
+        expected_start = (V.N_SAMPLES / V.SAMPLE_RATE - 1.9) / 2.0
+        self.assertAlmostEqual(info["centered_start_seconds"], expected_start,
+                               places=2)
         nonzero = np.flatnonzero(np.abs(clip) > 1e-5)
         midpoint = 0.5 * (nonzero[0] + nonzero[-1]) / V.SAMPLE_RATE
-        self.assertAlmostEqual(midpoint, V.WINDOW_SEC / 2.0, places=2)
+        self.assertAlmostEqual(midpoint,
+                               V.N_SAMPLES / (2.0 * V.SAMPLE_RATE), places=2)
         self.assertAlmostEqual(float(np.max(np.abs(clip))), V.PEAK_TARGET,
                                places=4)
 
@@ -68,6 +73,78 @@ class VoiceSafetyTests(unittest.TestCase):
                 "slot_conf": 0.8, "slot_margin": 0.03}
         self.assertEqual(V.safe_decision("COLOR", 0.9, info),
                          (False, "low_slot_margin"))
+
+    def test_calibrated_policy_applies_fitted_slot_gate(self):
+        info = {"span": (0.1, 0.7), "rejected": False,
+                "decision_calibrated": True, "slot": "Red",
+                "slot_conf": 0.72, "slot_margin": 0.06,
+                "global_slot_conf": 0.60, "global_slot_margin": 0.30,
+                "min_slot_confidence": 0.60, "min_slot_margin": 0.10,
+                "min_global_slot_confidence": 0.40,
+                "min_global_slot_margin": 0.20}
+        self.assertEqual(V.safe_decision("COLOR", 0.70, info),
+                         (False, "low_slot_margin"))
+
+    def test_clear_global_color_slot_can_resolve_close_wrong_intent(self):
+        intent_probs = np.full(len(V.INTENT_NAMES), 0.01, np.float32)
+        intent_probs[V.INTENT_NAMES.index("VOLUME_DOWN")] = 0.34
+        intent_probs[V.INTENT_NAMES.index("COLOR")] = 0.30
+        intent_probs[V.REJECT_IDX_A] = 0.05
+        intent_probs /= intent_probs.sum()
+        slot_probs = np.full(len(V.VALUE_TOKENS), 0.15 / 18.0, np.float32)
+        slot_probs[V.VALUE_TOKENS.index("COLOR_RED")] = 0.85
+        slot_probs /= slot_probs.sum()
+        audio = np.zeros(V.SAMPLE_RATE, np.float32)
+        t = np.arange(7000, dtype=np.float32) / V.SAMPLE_RATE
+        audio[2500:9500] = 0.02 * np.sin(2 * np.pi * 180 * t)
+        policy = {"decoder": {
+            "type": "joint_intent_slot_v1",
+            "joint_slot_rescue": {
+                "enabled": True, "min_global_slot_conf": 0.70,
+                "min_global_slot_margin": 0.60, "min_intent_conf": 0.20,
+                "min_intent_ratio": 0.70, "max_intent_rank": 2,
+                "max_reject_conf": 0.20,
+            },
+        }}
+
+        label, _, _, info = V.classify(
+            _Session(np.log(intent_probs), np.log(slot_probs)),
+            {"intents": V.INTENT_NAMES, "value_tokens": V.VALUE_TOKENS},
+            audio, policy=policy)
+
+        self.assertEqual(label, "COLOR")
+        self.assertEqual(info["slot"], "Red")
+        self.assertEqual(info["raw_intent"], "VOLUME_DOWN")
+        self.assertTrue(info["joint_slot_rescued"])
+
+    def test_slot_rescue_never_overrides_reject_by_default(self):
+        intent_probs = np.full(len(V.INTENT_NAMES), 0.01, np.float32)
+        intent_probs[V.REJECT_IDX_A] = 0.45
+        intent_probs[V.INTENT_NAMES.index("COLOR")] = 0.30
+        intent_probs /= intent_probs.sum()
+        slot_probs = np.full(len(V.VALUE_TOKENS), 0.15 / 18.0, np.float32)
+        slot_probs[V.VALUE_TOKENS.index("COLOR_RED")] = 0.85
+        slot_probs /= slot_probs.sum()
+        audio = np.zeros(V.SAMPLE_RATE, np.float32)
+        t = np.arange(7000, dtype=np.float32) / V.SAMPLE_RATE
+        audio[2500:9500] = 0.02 * np.sin(2 * np.pi * 180 * t)
+        policy = {"decoder": {
+            "type": "joint_intent_slot_v1",
+            "joint_slot_rescue": {
+                "enabled": True, "min_global_slot_conf": 0.70,
+                "min_global_slot_margin": 0.60, "min_intent_conf": 0.20,
+                "min_intent_ratio": 0.50, "max_intent_rank": 2,
+                "max_reject_conf": 0.50,
+            },
+        }}
+
+        label, _, _, info = V.classify(
+            _Session(np.log(intent_probs), np.log(slot_probs)),
+            {"intents": V.INTENT_NAMES, "value_tokens": V.VALUE_TOKENS},
+            audio, policy=policy)
+
+        self.assertEqual(label, "REJECT")
+        self.assertFalse(info["joint_slot_rescued"])
 
     def test_safe_policy_accepts_clear_fixed_command(self):
         info = {"span": (0.1, 0.7), "rejected": False,

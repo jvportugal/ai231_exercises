@@ -193,6 +193,100 @@ def add_playback_channel(x, rng):
     return y.astype(np.float32)
 
 
+def insert_natural_pause(x, rng, minimum=0.20, maximum=0.80):
+    """Insert silence near a low-energy, word-like boundary.
+
+    A uniformly selected sample often cuts a phoneme in half.  Search the
+    middle 70% of the utterance for the quietest 20 ms frame instead, then
+    insert a realistic hesitation there.  The later centered crop keeps the
+    augmented command in the fixed model window.
+    """
+    x = np.asarray(x, dtype=np.float32)
+    frame = max(1, int(0.020 * C.SR))
+    if len(x) < 5 * frame:
+        return x
+    lo = max(frame, int(0.15 * len(x)))
+    hi = min(len(x) - frame, int(0.85 * len(x)))
+    starts = np.arange(lo, hi, frame, dtype=np.int64)
+    if not len(starts):
+        return x
+    energy = np.asarray([
+        np.mean(np.square(x[start:start + frame]), dtype=np.float64)
+        for start in starts
+    ])
+    # Pick among the quietest few boundaries so repeated samples do not all
+    # receive exactly the same pause placement.
+    candidates = starts[np.argsort(energy)[:min(5, len(starts))]]
+    cut = int(candidates[int(rng.randint(len(candidates)))])
+    duration = float(rng.uniform(minimum, maximum))
+    silence = np.zeros(max(1, int(round(duration * C.SR))), np.float32)
+    return np.concatenate((x[:cut], silence, x[cut:])).astype(np.float32)
+
+
+def deployment_prepare_waveform(x, n_frames=250):
+    """Mirror ``vcm_infer.prepare_clip`` for train/development features.
+
+    Long source recordings often contain seconds of silence.  The deployed
+    runtime locates active speech, centers its midpoint, and peak-normalizes
+    it; training only used the loudest fixed crop.  This helper closes that
+    mismatch without importing the runtime module into DataLoader workers.
+    """
+    x = np.asarray(x, dtype=np.float32)
+    need = _need(n_frames)
+    frame = max(1, int(0.020 * C.SR))
+    count = len(x) // frame
+    if count == 0:
+        return center_crop(x, n=need)
+    segments = x[:count * frame].reshape(count, frame)
+    envelope = np.sqrt(np.mean(np.square(segments), axis=1)).astype(np.float32)
+    peak = float(envelope.max())
+    if peak >= 0.008:
+        threshold = max(0.008, 0.12 * peak)
+    else:
+        floor = float(np.percentile(envelope, 20))
+        robust_peak = float(np.percentile(envelope, 95))
+        if robust_peak < 0.001 or robust_peak < floor * 1.8:
+            return center_crop(x, n=need)
+        threshold = max(0.001, floor * 1.8,
+                        floor + 0.25 * (robust_peak - floor))
+    voiced = envelope >= threshold
+    if int(voiced.sum()) * 20 < 80:
+        return center_crop(x, n=need)
+    indices = np.flatnonzero(voiced)
+    first = int(indices[0] * frame)
+    last = int(min(len(x), (indices[-1] + 1) * frame))
+    if last - first < int(0.08 * C.SR):
+        return center_crop(x, n=need)
+    midpoint = (first + last) // 2
+    source_start = midpoint - need // 2
+    copy_start = max(0, source_start)
+    copy_end = min(len(x), source_start + need)
+    destination = copy_start - source_start
+    result = np.zeros(need, dtype=np.float32)
+    if copy_end > copy_start:
+        result[destination:destination + copy_end - copy_start] = x[copy_start:copy_end]
+    active = x[first:last]
+    active_peak = float(np.max(np.abs(active))) if active.size else 0.0
+    if active_peak > 1e-6:
+        result *= 0.9 / active_peak
+    return result
+
+
+def build_deployment_features(frame, n_frames=250):
+    """Build deterministic runtime-aligned features from a parquet frame."""
+    output = np.empty((len(frame), 1, C.N_MELS, n_frames), dtype=np.float32)
+    for index in range(len(frame)):
+        audio = frame["audio"].iloc[index]
+        raw = audio["bytes"] if isinstance(audio, dict) else audio
+        try:
+            waveform = decode_wav(raw)
+        except Exception:
+            waveform = np.zeros(_need(n_frames), dtype=np.float32)
+        prepared = deployment_prepare_waveform(waveform, n_frames=n_frames)
+        output[index, 0] = wav_to_mel(prepared, n_frames)
+    return output
+
+
 # ============================================================ dataset ==========
 class BatDataset(CenteredAugDataset):
     """LongWinDataset + optional reverb / babble (waveform) and SpecAug (mel)."""
@@ -202,7 +296,8 @@ class BatDataset(CenteredAugDataset):
                  n_frames=250, reverb_p=0.0, babble_p=0.0, specaug_p=0.0,
                  spec_tmask=1, spec_tlen=10, spec_fmask=1, spec_flen=4,
                  speed_p=0.0, speed_lo=0.9, speed_hi=1.1,
-                 channel_p=0.0):
+                 channel_p=0.0, pause_p=0.0, pause_min=0.20,
+                 pause_max=0.80, deployment_frontend_p=0.0):
         super().__init__(rows, noise_bank, aug=aug, seed=seed, weights=weights,
                          snr_min=snr_min, snr_max=snr_max, gain_db=gain_db,
                          shift=shift)
@@ -212,6 +307,10 @@ class BatDataset(CenteredAugDataset):
         self.specaug_p = specaug_p
         self.speed_p = speed_p
         self.channel_p = channel_p
+        self.pause_p = pause_p
+        self.pause_min = pause_min
+        self.pause_max = pause_max
+        self.deployment_frontend_p = deployment_frontend_p
         self.speed_lo, self.speed_hi = speed_lo, speed_hi
         self.spec_tmask = spec_tmask
         self.spec_tlen = spec_tlen
@@ -227,6 +326,13 @@ class BatDataset(CenteredAugDataset):
     def __getitem__(self, i):
         x, ya, yb, _ = self.rows[i]
         if self.aug:
+            # Insert the hesitation before room-noise augmentation so the
+            # pause contains the same ambient floor as the surrounding speech
+            # instead of becoming an unrealistic digital-zero gap.
+            if (ya != C.N_INTENT and self.pause_p > 0
+                    and self.rng.random() < self.pause_p):
+                x = insert_natural_pause(
+                    x, self.rng, self.pause_min, self.pause_max)
             if self.rng.random() < 0.5:
                 x = add_noise(x, self.noise, self.rng, self.snr_min, self.snr_max)
             x = random_gain(x, self.rng, self.gain_db)
@@ -239,7 +345,11 @@ class BatDataset(CenteredAugDataset):
                 x = add_babble(x, self.rng, p=self.babble_p)
             if self.channel_p > 0 and self.rng.random() < self.channel_p:
                 x = add_playback_channel(x, self.rng)
-        x = center_crop(x, n=_need(self.n_frames))
+        if (self.deployment_frontend_p > 0
+                and self.rng.random() < self.deployment_frontend_p):
+            x = deployment_prepare_waveform(x, n_frames=self.n_frames)
+        else:
+            x = center_crop(x, n=_need(self.n_frames))
         mel = wav_to_mel(x, self.n_frames)
         if self.aug and self.specaug_p > 0 and self.rng.random() < self.specaug_p:
             mel = specaug_mel(mel, self.rng, t_mask=self.spec_tmask,

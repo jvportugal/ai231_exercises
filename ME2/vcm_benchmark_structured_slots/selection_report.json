@@ -1,0 +1,68 @@
+{
+  "protocol": "TEST clean/deployment/channel + tune-OOS only; HOLDOUT never loaded",
+  "selected": {
+    "weight_a": 0.25,
+    "local_slot_weight": 0.75,
+    "reject_bias": 0.2,
+    "clean": {
+      "intent": 94.57573711456223,
+      "e2e": 93.9680396128742,
+      "real_e2e": 75.8495145631068,
+      "synthetic_e2e": 98.09339596573639,
+      "slot_exact_when_intent_right": 98.91783567134269,
+      "short_color_e2e": 78.57142857142857,
+      "short_color_n": 14
+    },
+    "deployment": {
+      "intent": 94.2381273914022,
+      "e2e": 93.63042988971416,
+      "real_e2e": 75.0,
+      "synthetic_e2e": 97.87234042553192,
+      "slot_exact_when_intent_right": 98.91566265060241,
+      "short_color_e2e": 85.71428571428571,
+      "short_color_n": 14
+    },
+    "channel": {
+      "intent": 86.94575737114563,
+      "e2e": 85.12266486608148,
+      "real_e2e": 62.74271844660194,
+      "synthetic_e2e": 90.21829234595192,
+      "slot_exact_when_intent_right": 96.55465759251382,
+      "short_color_e2e": 57.14285714285714,
+      "short_color_n": 14
+    },
+    "clean_oos_reject": 79.0,
+    "channel_oos_reject": 76.5,
+    "objective": 89.13219108710331
+  },
+  "slot_gates": {
+    "TIMER": {
+      "min_confidence": 0.693167,
+      "min_margin": 0.41009
+    },
+    "ALARM": {
+      "min_confidence": 0.645848,
+      "min_margin": 0.374947
+    },
+    "TEMPERATURE": {
+      "min_confidence": 0.620284,
+      "min_margin": 0.255895
+    },
+    "BRIGHTNESS": {
+      "min_confidence": 0.612768,
+      "min_margin": 0.271888
+    },
+    "COLOR": {
+      "min_confidence": 0.557547,
+      "min_margin": 0.176976
+    },
+    "CREATE_REMINDER": {
+      "min_confidence": 0.6676,
+      "min_margin": 0.381003
+    }
+  },
+  "joint_rescue": {
+    "gain": 0.0,
+    "changes": 0
+  }
+}
