@@ -1,0 +1,527 @@
+{
+  "candidate": {
+    "predictions": "/tmp/vcm_long_improve_20261026/continuation_s28101/predictions_ep06.npz",
+    "checkpoint": "/tmp/vcm_long_improve_20261026/continuation_s28101/model_ep06.pt",
+    "blend": {
+      "mode": "fixed",
+      "weight": 0.5
+    },
+    "decoder": {
+      "type": "joint_intent_slot_v1",
+      "temperature": 1.0,
+      "intent_bias": {
+        "REJECT": 0.0,
+        "PLAY_MUSIC": -0.15,
+        "LIGHT_OFF": 0.3,
+        "NEXT": -0.3,
+        "VOLUME_UP": 0.3,
+        "VOLUME_DOWN": 0.0,
+        "CALL": 0.3,
+        "MESSAGE": 0.15,
+        "ALARM": 0.3,
+        "TEMPERATURE": -0.15,
+        "COLOR": 0.3,
+        "CREATE_REMINDER": 0.3,
+        "WEATHER": -0.3,
+        "BRIGHTNESS": -0.3
+      },
+      "local_slot_weight": 0.75,
+      "slot_acceptance": {
+        "per_intent": {
+          "TIMER": {
+            "min_confidence": 0.6229994350000001,
+            "min_margin": 0.33012245
+          },
+          "ALARM": {
+            "min_confidence": 0.58490764,
+            "min_margin": 0.3018323349999999
+          },
+          "TEMPERATURE": {
+            "min_confidence": 0.56432862,
+            "min_margin": 0.20599547499999996
+          },
+          "BRIGHTNESS": {
+            "min_confidence": 0.5582782399999999,
+            "min_margin": 0.21886983999999998
+          },
+          "COLOR": {
+            "min_confidence": 0.5138253349999999,
+            "min_margin": 0.14246567999999998
+          },
+          "CREATE_REMINDER": {
+            "min_confidence": 0.6024179999999999,
+            "min_margin": 0.3067074149999999
+          }
+        }
+      },
+      "joint_slot_rescue": {
+        "enabled": false
+      },
+      "intent_acceptance": {
+        "per_intent": {
+          "PLAY_MUSIC": {
+            "min_confidence": 0.4,
+            "min_margin": 0.0
+          },
+          "TIME": {
+            "min_confidence": 0.4,
+            "min_margin": 0.0
+          },
+          "NEXT": {
+            "min_confidence": 0.4,
+            "min_margin": 0.0
+          },
+          "VOLUME_UP": {
+            "min_confidence": 0.0,
+            "min_margin": 0.1
+          },
+          "MESSAGE": {
+            "min_confidence": 0.4,
+            "min_margin": 0.0
+          },
+          "TIMER": {
+            "min_confidence": 0.0,
+            "min_margin": 0.3
+          },
+          "TEMPERATURE": {
+            "min_confidence": 0.0,
+            "min_margin": 0.2
+          },
+          "CREATE_REMINDER": {
+            "min_confidence": 0.4,
+            "min_margin": 0.0
+          },
+          "LIGHT_OFF": {
+            "min_confidence": 0.4,
+            "min_margin": 0.0
+          },
+          "CALL": {
+            "min_confidence": 0.0,
+            "min_margin": 0.05
+          },
+          "LIST_REMINDERS": {
+            "min_confidence": 0.0,
+            "min_margin": 0.1
+          },
+          "ALARM": {
+            "min_confidence": 0.0,
+            "min_margin": 0.05
+          },
+          "COLOR": {
+            "min_confidence": 0.4,
+            "min_margin": 0.0
+          }
+        }
+      }
+    },
+    "fit": {
+      "deployment": {
+        "command": 93.92265193370166,
+        "real_command": 81.43607705779334,
+        "synthetic_command": 97.55476311767703,
+        "real_all": 81.07202680067002,
+        "short_real": 83.75733855185909,
+        "long_real": 61.66666666666667,
+        "native_oos": 80.43478260869566,
+        "tune_oos": 85.6655290102389
+      },
+      "channel": {
+        "command": 91.91002367797948,
+        "real_command": 76.70753064798599,
+        "synthetic_command": 96.33214467651554,
+        "real_all": 76.54941373534339,
+        "short_real": 77.88649706457925,
+        "long_real": 66.66666666666666,
+        "native_oos": 80.43478260869566,
+        "tune_oos": 89.07849829351537
+      }
+    },
+    "utility": 83.74083591047656,
+    "objective": 83.74083591047656,
+    "eligible": true,
+    "checkpoint_sha256": "e470fc961bca4e59972613b667fabf221bb91ff7c1b4b856227cbdde106ac84a",
+    "predictions_sha256": "3402e32ca3ae03c84b9d1237be6702c7e4f99c0f745861693a9a60f7bbc012e5"
+  },
+  "selection_reason": "Best current balance of TEST accuracy and OOS rejection; user requested shipping for physical Pi testing.",
+  "evaluation_context": "Offline clip metrics. TEST is development data; HOLDOUT has been examined previously. Physical Pi latency and accuracy are not yet measured.",
+  "metrics": {
+    "test": {
+      "candidate": {
+        "overall_e2e": {
+          "n": 4443,
+          "correct": 4177,
+          "percent": 94.01305424262885
+        },
+        "real_e2e": {
+          "n": 824,
+          "correct": 637,
+          "percent": 77.30582524271844
+        },
+        "synthetic_e2e": {
+          "n": 3619,
+          "correct": 3540,
+          "percent": 97.8170765404808
+        },
+        "command_e2e": {
+          "n": 4367,
+          "correct": 4117,
+          "percent": 94.27524616441492
+        },
+        "real_command_e2e": {
+          "n": 777,
+          "correct": 601,
+          "percent": 77.34877734877735
+        },
+        "synthetic_command_e2e": {
+          "n": 3590,
+          "correct": 3516,
+          "percent": 97.93871866295265
+        },
+        "oos_rejection": {
+          "n": 76,
+          "correct": 60,
+          "percent": 78.94736842105263
+        },
+        "oos_false_accept_percent": 21.05263157894737,
+        "unscorable_slot_label_n": 0
+      },
+      "prior": {
+        "overall_e2e": {
+          "n": 4443,
+          "correct": 4172,
+          "percent": 93.90051766824217
+        },
+        "real_e2e": {
+          "n": 824,
+          "correct": 629,
+          "percent": 76.33495145631068
+        },
+        "synthetic_e2e": {
+          "n": 3619,
+          "correct": 3543,
+          "percent": 97.89997236805748
+        },
+        "command_e2e": {
+          "n": 4367,
+          "correct": 4120,
+          "percent": 94.34394321044195
+        },
+        "real_command_e2e": {
+          "n": 777,
+          "correct": 598,
+          "percent": 76.96267696267697
+        },
+        "synthetic_command_e2e": {
+          "n": 3590,
+          "correct": 3522,
+          "percent": 98.1058495821727
+        },
+        "oos_rejection": {
+          "n": 76,
+          "correct": 52,
+          "percent": 68.42105263157895
+        },
+        "oos_false_accept_percent": 31.578947368421055,
+        "unscorable_slot_label_n": 0
+      },
+      "shipped": {
+        "overall_e2e": {
+          "n": 4443,
+          "correct": 4148,
+          "percent": 93.36034211118614
+        },
+        "real_e2e": {
+          "n": 824,
+          "correct": 614,
+          "percent": 74.51456310679612
+        },
+        "synthetic_e2e": {
+          "n": 3619,
+          "correct": 3534,
+          "percent": 97.65128488532744
+        },
+        "command_e2e": {
+          "n": 4367,
+          "correct": 4101,
+          "percent": 93.90886191893749
+        },
+        "real_command_e2e": {
+          "n": 777,
+          "correct": 584,
+          "percent": 75.16087516087516
+        },
+        "synthetic_command_e2e": {
+          "n": 3590,
+          "correct": 3517,
+          "percent": 97.96657381615599
+        },
+        "oos_rejection": {
+          "n": 76,
+          "correct": 47,
+          "percent": 61.8421052631579
+        },
+        "oos_false_accept_percent": 38.1578947368421,
+        "unscorable_slot_label_n": 0
+      }
+    },
+    "holdout": {
+      "candidate": {
+        "overall_e2e": {
+          "n": 202,
+          "correct": 186,
+          "percent": 92.07920792079207
+        },
+        "real_e2e": {
+          "n": 96,
+          "correct": 82,
+          "percent": 85.41666666666667
+        },
+        "synthetic_e2e": {
+          "n": 106,
+          "correct": 104,
+          "percent": 98.11320754716981
+        },
+        "command_e2e": {
+          "n": 186,
+          "correct": 175,
+          "percent": 94.08602150537635
+        },
+        "real_command_e2e": {
+          "n": 86,
+          "correct": 76,
+          "percent": 88.37209302325581
+        },
+        "synthetic_command_e2e": {
+          "n": 100,
+          "correct": 99,
+          "percent": 99.0
+        },
+        "oos_rejection": {
+          "n": 16,
+          "correct": 11,
+          "percent": 68.75
+        },
+        "oos_false_accept_percent": 31.25,
+        "unscorable_slot_label_n": 0
+      },
+      "prior": {
+        "overall_e2e": {
+          "n": 202,
+          "correct": 187,
+          "percent": 92.57425742574257
+        },
+        "real_e2e": {
+          "n": 96,
+          "correct": 83,
+          "percent": 86.45833333333333
+        },
+        "synthetic_e2e": {
+          "n": 106,
+          "correct": 104,
+          "percent": 98.11320754716981
+        },
+        "command_e2e": {
+          "n": 186,
+          "correct": 177,
+          "percent": 95.16129032258064
+        },
+        "real_command_e2e": {
+          "n": 86,
+          "correct": 78,
+          "percent": 90.69767441860465
+        },
+        "synthetic_command_e2e": {
+          "n": 100,
+          "correct": 99,
+          "percent": 99.0
+        },
+        "oos_rejection": {
+          "n": 16,
+          "correct": 10,
+          "percent": 62.5
+        },
+        "oos_false_accept_percent": 37.5,
+        "unscorable_slot_label_n": 0
+      },
+      "shipped": {
+        "overall_e2e": {
+          "n": 202,
+          "correct": 186,
+          "percent": 92.07920792079207
+        },
+        "real_e2e": {
+          "n": 96,
+          "correct": 82,
+          "percent": 85.41666666666667
+        },
+        "synthetic_e2e": {
+          "n": 106,
+          "correct": 104,
+          "percent": 98.11320754716981
+        },
+        "command_e2e": {
+          "n": 186,
+          "correct": 176,
+          "percent": 94.6236559139785
+        },
+        "real_command_e2e": {
+          "n": 86,
+          "correct": 77,
+          "percent": 89.53488372093024
+        },
+        "synthetic_command_e2e": {
+          "n": 100,
+          "correct": 99,
+          "percent": 99.0
+        },
+        "oos_rejection": {
+          "n": 16,
+          "correct": 10,
+          "percent": 62.5
+        },
+        "oos_false_accept_percent": 37.5,
+        "unscorable_slot_label_n": 0
+      }
+    },
+    "additional_oos_test": {
+      "candidate": {
+        "overall_e2e": {
+          "n": 250,
+          "correct": 230,
+          "percent": 92.0
+        },
+        "real_e2e": {
+          "n": 0,
+          "correct": 0,
+          "percent": null
+        },
+        "synthetic_e2e": {
+          "n": 250,
+          "correct": 230,
+          "percent": 92.0
+        },
+        "command_e2e": {
+          "n": 0,
+          "correct": 0,
+          "percent": null
+        },
+        "real_command_e2e": {
+          "n": 0,
+          "correct": 0,
+          "percent": null
+        },
+        "synthetic_command_e2e": {
+          "n": 0,
+          "correct": 0,
+          "percent": null
+        },
+        "oos_rejection": {
+          "n": 250,
+          "correct": 230,
+          "percent": 92.0
+        },
+        "oos_false_accept_percent": 8.0,
+        "unscorable_slot_label_n": 0
+      },
+      "prior": {
+        "overall_e2e": {
+          "n": 250,
+          "correct": 226,
+          "percent": 90.4
+        },
+        "real_e2e": {
+          "n": 0,
+          "correct": 0,
+          "percent": null
+        },
+        "synthetic_e2e": {
+          "n": 250,
+          "correct": 226,
+          "percent": 90.4
+        },
+        "command_e2e": {
+          "n": 0,
+          "correct": 0,
+          "percent": null
+        },
+        "real_command_e2e": {
+          "n": 0,
+          "correct": 0,
+          "percent": null
+        },
+        "synthetic_command_e2e": {
+          "n": 0,
+          "correct": 0,
+          "percent": null
+        },
+        "oos_rejection": {
+          "n": 250,
+          "correct": 226,
+          "percent": 90.4
+        },
+        "oos_false_accept_percent": 9.599999999999994,
+        "unscorable_slot_label_n": 0
+      },
+      "shipped": {
+        "overall_e2e": {
+          "n": 250,
+          "correct": 220,
+          "percent": 88.0
+        },
+        "real_e2e": {
+          "n": 0,
+          "correct": 0,
+          "percent": null
+        },
+        "synthetic_e2e": {
+          "n": 250,
+          "correct": 220,
+          "percent": 88.0
+        },
+        "command_e2e": {
+          "n": 0,
+          "correct": 0,
+          "percent": null
+        },
+        "real_command_e2e": {
+          "n": 0,
+          "correct": 0,
+          "percent": null
+        },
+        "synthetic_command_e2e": {
+          "n": 0,
+          "correct": 0,
+          "percent": null
+        },
+        "oos_rejection": {
+          "n": 250,
+          "correct": 220,
+          "percent": 88.0
+        },
+        "oos_false_accept_percent": 12.0,
+        "unscorable_slot_label_n": 0
+      }
+    }
+  },
+  "verification": {
+    "test_n": 4443,
+    "test_decision_mismatches": 0,
+    "max_probability_error": 5.71575517160916e-06,
+    "max_raw_logit_error": 7.62939453125e-06,
+    "waveform_checks": {
+      "holdout": {
+        "n": 202,
+        "decision_mismatches": [],
+        "no_speech": 0,
+        "host_cpu_median_ms": 20.601383002940565
+      },
+      "additional_oos_test": {
+        "n": 250,
+        "decision_mismatches": [],
+        "no_speech": 50,
+        "host_cpu_median_ms": 20.981874025892466
+      }
+    }
+  },
+  "parameter_count": 3110872
+}

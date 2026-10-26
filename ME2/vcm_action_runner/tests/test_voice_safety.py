@@ -18,6 +18,27 @@ class _Session:
 
 
 class VoiceSafetyTests(unittest.TestCase):
+    def test_calibrated_intent_gates_use_biased_probabilities(self):
+        probabilities = np.full(len(V.INTENT_NAMES), 1e-9, np.float32)
+        probabilities[0], probabilities[1], probabilities[-1] = .6, .2, .2
+        session = _Session(np.log(probabilities), np.zeros(len(V.VALUE_TOKENS)))
+        labels = {"intents": V.INTENT_NAMES, "value_tokens": V.VALUE_TOKENS}
+        audio = .1 * np.sin(2 * np.pi * 180 * np.arange(16000) / 16000)
+        decoder = {"type": "joint_intent_slot_v1", "intent_bias": {"REJECT": np.log(2)},
+                   "intent_acceptance": {"per_intent": {
+                       "PLAY_MUSIC": {"min_confidence": .55}}}}
+        intent, conf, _, info = V.classify(session, labels, audio, policy={"decoder": decoder})
+        self.assertEqual(intent, "PLAY_MUSIC")
+        self.assertAlmostEqual(conf, .5, places=6)
+        self.assertEqual(V.safe_decision(intent, conf, info, allow_wake_short=True),
+                         (False, "low_intent_confidence"))
+        decoder["intent_acceptance"]["per_intent"]["PLAY_MUSIC"] = {"min_margin": .2}
+        intent, conf, _, info = V.classify(session, labels, audio, policy={"decoder": decoder})
+        self.assertEqual(V.safe_decision(intent, conf, info), (False, "low_intent_margin"))
+        decoder.pop("intent_acceptance")
+        intent, conf, _, info = V.classify(session, labels, audio, policy={"decoder": decoder})
+        self.assertEqual(V.safe_decision(intent, conf, info), (True, None))
+
     def test_isolated_impulse_is_not_speech(self):
         audio = np.zeros(V.SAMPLE_RATE, np.float32)
         audio[4000:4010] = 0.9

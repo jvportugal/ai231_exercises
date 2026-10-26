@@ -135,7 +135,11 @@ def intent_schema():
 def warmup(sess, n=2):
     """Run a couple of dummy inferences so the first real clip isn't slow."""
     for _ in range(n):
-        sess.run(None, {"mel": np.zeros((1, 1, N_MELS, N_FRAMES), np.float32)})
+        if hasattr(sess, "prepare_feed"):
+            feed, _ = sess.prepare_feed(np.zeros(N_SAMPLES, np.float32))
+        else:
+            feed = {"mel": np.zeros((1, 1, N_MELS, N_FRAMES), np.float32)}
+        sess.run(None, feed)
 
 
 class ProbabilityEnsembleSession:
@@ -236,6 +240,11 @@ def load_model(model_path=DEFAULT_MODEL):
     if os.path.isdir(model_path):
         model_path = os.path.join(model_path, "ensemble.json")
     if model_path.lower().endswith(".json"):
+        with open(model_path) as handle:
+            manifest_type = json.load(handle).get("type")
+        if manifest_type == "long_window_ensemble_onnx_v1":
+            from vcm_long_window import LongWindowSession
+            return LongWindowSession(model_path)
         return ProbabilityEnsembleSession(model_path)
     # The bundle ships a raw .onnx file. For compatibility with compressed
     # copies, accept .onnx.gz and decompress it once next to the archive.
@@ -298,18 +307,25 @@ def _get_fb():
     return _FB
 
 
-def audio_to_mel(x):
-    """x = 16 kHz mono float32, length >= N_SAMPLES -> (1,1,40,250) float32."""
+def audio_to_mel(x, n_frames=N_FRAMES, normalization_mask=None):
+    """16 kHz mono to mel features; defaults preserve the shipped frontend.
+
+    Experimental longer-window models can explicitly supply a frame count
+    and a speech/context mask for normalization. No default bundle changes.
+    """
+    if not isinstance(n_frames, (int, np.integer)) or n_frames < 2:
+        raise ValueError("n_frames must be an integer >= 2")
+    n_samples = 1 + (n_frames - 1) * HOP
     x = np.asarray(x, dtype=np.float32)
-    if len(x) < N_SAMPLES:
-        x = np.pad(x, (0, N_SAMPLES - len(x)))
+    if len(x) < n_samples:
+        x = np.pad(x, (0, n_samples - len(x)))
     else:
-        x = x[:N_SAMPLES]
+        x = x[:n_samples]
     # scipy.signal.get_window("hann", WIN, fftbins=True), used in training,
     # is a periodic Hann. np.hanning(WIN) is symmetric and is not identical.
     win = np.hanning(WIN + 1)[:-1].astype(np.float32)
-    mags = np.empty((N_FRAMES, N_FFT // 2 + 1), dtype=np.float32)
-    for t in range(N_FRAMES):
+    mags = np.empty((n_frames, N_FFT // 2 + 1), dtype=np.float32)
+    for t in range(n_frames):
         seg = x[t * HOP: t * HOP + WIN]
         if len(seg) < WIN:
             seg = np.pad(seg, (0, WIN - len(seg)))
@@ -322,8 +338,16 @@ def audio_to_mel(x):
     logmel = (logmel - MEL_LO) / (MEL_HI - MEL_LO)
     logmel = np.clip(logmel, 0.0, 1.0).astype(np.float32)
     # per-utt CMVN (per-mel mean/std) then rescale to ~[0,1]
-    mu = logmel.mean(axis=1, keepdims=True)
-    sd = logmel.std(axis=1, keepdims=True) + 1e-6
+    if normalization_mask is None:
+        mu = logmel.mean(axis=1, keepdims=True)
+        sd = logmel.std(axis=1, keepdims=True) + 1e-6
+    else:
+        mask = np.asarray(normalization_mask, dtype=np.float32)
+        if mask.shape != (n_frames,) or not np.isfinite(mask).all() or np.any(mask < 0) or mask.sum() <= 0:
+            raise ValueError("normalization_mask must have positive finite frame weights")
+        weights = mask[None] / mask.sum()
+        mu = (logmel * weights).sum(axis=1, keepdims=True)
+        sd = np.sqrt(((logmel - mu) ** 2 * weights).sum(axis=1, keepdims=True)) + 1e-6
     logmel = (logmel - mu) / sd
     logmel = (logmel + 3.0) / 6.0
     logmel = np.clip(logmel, 0.0, 1.0).astype(np.float32)
@@ -389,11 +413,14 @@ def _detect_speech(x, return_raw=False):
     return (span, raw_span) if return_raw else span
 
 
-def prepare_clip(x, verbose=False):
+def prepare_clip(x, verbose=False, n_frames=N_FRAMES):
     """VAD-trim speech, center it in a 2.5 s window, and peak-normalize.
 
     Returns (clip, info). clip is 16 kHz mono float32 of length N_SAMPLES.
     """
+    if not isinstance(n_frames, (int, np.integer)) or n_frames < 2:
+        raise ValueError("n_frames must be an integer >= 2")
+    n_samples = 1 + (n_frames - 1) * HOP
     x = np.asarray(x, dtype=np.float32)
     capture_peak = float(np.max(np.abs(x))) if x.size else 0.0
     capture_rms = float(np.sqrt(np.mean(x * x))) if x.size else 0.0
@@ -401,10 +428,10 @@ def prepare_clip(x, verbose=False):
     detected = _detect_speech(x, return_raw=True)
     if detected is None:
         # no clear speech: use the raw (zero-padded) window, flag it
-        if len(x) < N_SAMPLES:
-            clip = np.pad(x, (0, N_SAMPLES - len(x)))
+        if len(x) < n_samples:
+            clip = np.pad(x, (0, n_samples - len(x)))
         else:
-            clip = x[:N_SAMPLES]
+            clip = x[:n_samples]
         info = dict(span=None, gain=1.0, note="no clear speech detected",
                     capture_peak=capture_peak, capture_rms=capture_rms,
                     clipping_fraction=clipping_fraction)
@@ -425,17 +452,17 @@ def prepare_clip(x, verbose=False):
     # window. Put the detected active-speech midpoint at the exact model
     # midpoint, retaining only the balanced local context that fits around it.
     speech_midpoint = (speech_i0 + speech_i1) // 2
-    source_start = speech_midpoint - N_SAMPLES // 2
-    source_end = source_start + N_SAMPLES
+    source_start = speech_midpoint - n_samples // 2
+    source_end = source_start + n_samples
     copy_i0 = max(0, source_start)
     copy_i1 = min(len(x), source_end)
     destination_i0 = copy_i0 - source_start
-    seg = np.zeros(N_SAMPLES, dtype=np.float32)
+    seg = np.zeros(n_samples, dtype=np.float32)
     if copy_i1 > copy_i0:
         copied = copy_i1 - copy_i0
         seg[destination_i0:destination_i0 + copied] = x[copy_i0:copy_i1]
     centered_start = max(0, speech_i0 - source_start)
-    centered_end = min(N_SAMPLES, speech_i1 - source_start)
+    centered_end = min(n_samples, speech_i1 - source_start)
 
     # Peak-normalize using only active speech, not silence/background context.
     ref = x[speech_i0:speech_i1]
@@ -452,7 +479,7 @@ def prepare_clip(x, verbose=False):
                 clipping_fraction=clipping_fraction)
     if verbose:
         print(f"[vad] active speech {active_start_s:.2f}-{active_end_s:.2f} s | "
-              f"{active_speech_seconds:.2f} s centered in {WINDOW_SEC:.2f} s, "
+              f"{active_speech_seconds:.2f} s centered in {n_samples / SAMPLE_RATE:.2f} s, "
               f"gain x{gain:.2f}")
     return seg, info
 
@@ -621,6 +648,10 @@ def safe_decision(intent, conf, info, allow_wake_short=False):
     if info.get("span") is None:
         return False, "no_speech"
     if info.get("decision_calibrated"):
+        if conf < info.get("min_intent_confidence", 0.0):
+            return False, "low_intent_confidence"
+        if info.get("intent_margin", 0.0) < info.get("min_intent_margin", 0.0):
+            return False, "low_intent_margin"
         if intent in _SLOTTED_PREFIX and info.get("slot") is None:
             return False, "missing_slot"
         if intent in _SLOTTED_PREFIX:
@@ -670,9 +701,12 @@ def classify(sess, labels, x, verbose=False, policy=None):
       probs = intent-head softmax array (len 20)
       info  = dict with slot, slot_conf, vad span/gain, rejected flag
     """
-    prep, info = prepare_clip(x, verbose=verbose)
-    mel = audio_to_mel(prep)
-    outputs = sess.run(None, {"mel": mel})
+    if hasattr(sess, "prepare_feed"):
+        feed, info = sess.prepare_feed(x, verbose=verbose)
+    else:
+        prep, info = prepare_clip(x, verbose=verbose)
+        feed = {"mel": audio_to_mel(prep)}
+    outputs = sess.run(None, feed)
     if len(outputs) < 2:
         raise RuntimeError("VCM must expose intent and global slot outputs")
     la, lb = outputs[:2]
@@ -766,7 +800,10 @@ def classify(sess, labels, x, verbose=False, policy=None):
     info = dict(info)
     slot_policy = decoder.get("slot_acceptance", {})
     per_intent_slot_policy = slot_policy.get("per_intent", {}).get(intent, {})
+    intent_gate = decoder.get("intent_acceptance", {}).get("per_intent", {}).get(intent, {})
     info.update(slot=slot, slot_token=slot_token, slot_conf=slot_conf,
+                min_intent_confidence=float(intent_gate.get("min_confidence", 0.0)),
+                min_intent_margin=float(intent_gate.get("min_margin", 0.0)),
                 slot_margin=slot_margin, intent_margin=_top_margin(pa),
                 rejected=rejected, decision_calibrated=decision_calibrated,
                 decoder_type=decoder.get("type") if decoder else "raw_logits",

@@ -1,0 +1,13 @@
+{
+  "type": "long_window_ensemble_onnx_v1",
+  "n_frames": 500,
+  "masked": true,
+  "weight_a": 0.5,
+  "adaptive": false,
+  "long_model": "long.onnx",
+  "short_model": "short.onnx",
+  "total_parameters": 3110872,
+  "parameter_cap": 3192807,
+  "long_checkpoint_sha256": "e470fc961bca4e59972613b667fabf221bb91ff7c1b4b856227cbdde106ac84a",
+  "short_model_sha256": "31132a480e93866dc0c6edcbf4695015446e8f697354b850fe40218a8836ea00"
+}

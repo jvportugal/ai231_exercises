@@ -1,0 +1,111 @@
+{
+  "model": "short/long attention ensemble, continuation seed 28101 epoch 6",
+  "decoder": {
+    "type": "joint_intent_slot_v1",
+    "temperature": 1.0,
+    "intent_bias": {
+      "REJECT": 0.0,
+      "PLAY_MUSIC": -0.15,
+      "LIGHT_OFF": 0.3,
+      "NEXT": -0.3,
+      "VOLUME_UP": 0.3,
+      "VOLUME_DOWN": 0.0,
+      "CALL": 0.3,
+      "MESSAGE": 0.15,
+      "ALARM": 0.3,
+      "TEMPERATURE": -0.15,
+      "COLOR": 0.3,
+      "CREATE_REMINDER": 0.3,
+      "WEATHER": -0.3,
+      "BRIGHTNESS": -0.3
+    },
+    "local_slot_weight": 0.75,
+    "slot_acceptance": {
+      "per_intent": {
+        "TIMER": {
+          "min_confidence": 0.6229994350000001,
+          "min_margin": 0.33012245
+        },
+        "ALARM": {
+          "min_confidence": 0.58490764,
+          "min_margin": 0.3018323349999999
+        },
+        "TEMPERATURE": {
+          "min_confidence": 0.56432862,
+          "min_margin": 0.20599547499999996
+        },
+        "BRIGHTNESS": {
+          "min_confidence": 0.5582782399999999,
+          "min_margin": 0.21886983999999998
+        },
+        "COLOR": {
+          "min_confidence": 0.5138253349999999,
+          "min_margin": 0.14246567999999998
+        },
+        "CREATE_REMINDER": {
+          "min_confidence": 0.6024179999999999,
+          "min_margin": 0.3067074149999999
+        }
+      }
+    },
+    "joint_slot_rescue": {
+      "enabled": false
+    },
+    "intent_acceptance": {
+      "per_intent": {
+        "PLAY_MUSIC": {
+          "min_confidence": 0.4,
+          "min_margin": 0.0
+        },
+        "TIME": {
+          "min_confidence": 0.4,
+          "min_margin": 0.0
+        },
+        "NEXT": {
+          "min_confidence": 0.4,
+          "min_margin": 0.0
+        },
+        "VOLUME_UP": {
+          "min_confidence": 0.0,
+          "min_margin": 0.1
+        },
+        "MESSAGE": {
+          "min_confidence": 0.4,
+          "min_margin": 0.0
+        },
+        "TIMER": {
+          "min_confidence": 0.0,
+          "min_margin": 0.3
+        },
+        "TEMPERATURE": {
+          "min_confidence": 0.0,
+          "min_margin": 0.2
+        },
+        "CREATE_REMINDER": {
+          "min_confidence": 0.4,
+          "min_margin": 0.0
+        },
+        "LIGHT_OFF": {
+          "min_confidence": 0.4,
+          "min_margin": 0.0
+        },
+        "CALL": {
+          "min_confidence": 0.0,
+          "min_margin": 0.05
+        },
+        "LIST_REMINDERS": {
+          "min_confidence": 0.0,
+          "min_margin": 0.1
+        },
+        "ALARM": {
+          "min_confidence": 0.0,
+          "min_margin": 0.05
+        },
+        "COLOR": {
+          "min_confidence": 0.4,
+          "min_margin": 0.0
+        }
+      }
+    }
+  }
+}
