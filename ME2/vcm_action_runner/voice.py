@@ -162,7 +162,8 @@ class Voice:
             "decoder_type": info.get("decoder_type"),
             "audio": {k: info.get(k) for k in
                       ("capture_peak", "capture_rms", "clipping_fraction", "gain",
-                       "active_speech_seconds", "centered_start_seconds")},
+                       "active_speech_seconds", "centered_start_seconds",
+                       "model_window_seconds", "model_windows_seconds")},
         }
         if self._diagnostics is not None:
             self._diagnostics.record(x, result, info, legacy_e8=legacy_e8)
@@ -226,8 +227,11 @@ def _centering_line(r):
     active = audio.get("active_speech_seconds")
     if active is None:
         return ""
+    windows = audio.get("model_windows_seconds") or [
+        audio.get("model_window_seconds") or _import_vcm().N_SAMPLES / 16000.0]
+    description = " + ".join("%.2f s" % seconds for seconds in windows)
     return ("\n  [voice] preprocessing: %.2f s active speech centered in "
-            "2.50 s model window" % active)
+            "%s model window%s" % (active, description, "s" if len(windows) > 1 else ""))
 
 
 def _mic_warning(r):

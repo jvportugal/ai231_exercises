@@ -59,6 +59,9 @@ class LongWindowSession:
             short, _ = runtime.prepare_clip(waveform)
             feed["short"] = runtime.audio_to_mel(short)
         info["model_window_seconds"] = (1 + (self.n_frames-1)*runtime.HOP)/runtime.SAMPLE_RATE
+        info["model_windows_seconds"] = (
+            [runtime.N_SAMPLES / runtime.SAMPLE_RATE] if self.short is not None else []
+        ) + [info["model_window_seconds"]]
         return feed, info
 
     def run(self, output_names, feed):
