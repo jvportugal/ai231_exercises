@@ -39,7 +39,8 @@ def _import_capture():
 class Voice:
     """One-shot 'listen -> classify' helper with a cached model."""
 
-    def __init__(self, model=None, labels=None, policy=None, verbose=False):
+    def __init__(self, model=None, labels=None, policy=None, verbose=False,
+                 diagnostics_dir=None):
         self.verbose = verbose
         self._sess = None
         self._labels = None
@@ -48,6 +49,9 @@ class Voice:
         # A custom model must opt into a matching calibration policy. The
         # bundled model automatically uses vcm_model/policy.json.
         self._policy = False if model is not None and policy is None else policy
+        self._diagnostics_dir = diagnostics_dir
+        self._diagnostics = None
+        self._policy_path = policy
 
     def _ensure_model(self):
         if self._sess is None:
@@ -58,6 +62,12 @@ class Voice:
                             if self._labels_path else vcm.load_labels())
             if isinstance(self._policy, (str, os.PathLike)):
                 self._policy = vcm.load_policy(os.fspath(self._policy))
+            if self._diagnostics_dir is not None:
+                from vcm_action_runner.diagnostics import DiagnosticRecorder
+                self._diagnostics = DiagnosticRecorder(
+                    self._diagnostics_dir, self._model or vcm.DEFAULT_MODEL,
+                    self._labels_path or vcm.DEFAULT_LABELS,
+                    self._policy_path if self._model else vcm.DEFAULT_POLICY, _ROOT)
         return self._sess, self._labels
 
     def warmup(self):
@@ -109,7 +119,7 @@ class Voice:
                 intent, conf, info, allow_wake_short=allow_wake_short)
         rejected = not accepted
         top_indices = probs.argsort()[::-1][:3]
-        return {
+        result = {
             "ok": (not rejected) and intent is not None,
             "latency": lat,
             # The wake-word and keyboard capture paths both supply 16 kHz mono
@@ -154,6 +164,9 @@ class Voice:
                       ("capture_peak", "capture_rms", "clipping_fraction", "gain",
                        "active_speech_seconds", "centered_start_seconds")},
         }
+        if self._diagnostics is not None:
+            self._diagnostics.record(x, result, info, legacy_e8=legacy_e8)
+        return result
 
     def listen_and_classify(self):
         """SPACE to record, SPACE to stop, classify. Returns the result dict,

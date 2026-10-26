@@ -48,7 +48,7 @@ from train_centered import load_audio_split, load_noise_bank
 STOPWORDS = {
     "a", "an", "and", "are", "at", "be", "can", "could", "do", "for",
     "from", "get", "give", "i", "in", "is", "it", "me", "my", "of",
-    "on", "please", "some", "the", "this", "to", "what", "whats",
+    "please", "some", "the", "this", "to", "what", "whats",
     "would", "you",
 }
 
@@ -59,6 +59,7 @@ SCHEMA_KEYWORDS = {
     "alarm", "brightness", "color", "degrees", "exercise", "green",
     "minute", "percent", "red", "reminder", "seconds", "study",
     "temperature", "timer", "water", "blue",
+    "on", "off", "up", "down", "play", "pause", "stop",
 }
 
 
@@ -82,7 +83,11 @@ def words(text):
 
 
 def make_vocabulary(texts, rows, size):
-    """Choose frequent content words from real, in-scope training speech."""
+    """Reserve observed command keywords, then fill with frequent real words.
+
+    This defines NEW training runs only. Existing checkpoints must retain
+    their stored vocabulary and word-head ordering.
+    """
     counts = Counter()
     for text, (_, intent, _, is_real) in zip(texts, rows):
         if not is_real or intent == C.N_INTENT:
@@ -90,8 +95,9 @@ def make_vocabulary(texts, rows, size):
         counts.update(token for token in words(text)
                       if token not in STOPWORDS and len(token) > 1)
     candidates = [(count, token) for token, count in counts.items()
-                  if count >= 3]
-    candidates.sort(key=lambda item: (-item[0], item[1]))
+                  if count >= 3 or token in SCHEMA_KEYWORDS]
+    candidates.sort(key=lambda item: (item[1] not in SCHEMA_KEYWORDS,
+                                      -item[0], item[1]))
     return [token for _, token in candidates[:size]]
 
 

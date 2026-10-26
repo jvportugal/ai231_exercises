@@ -455,6 +455,8 @@ def main(argv=None):
                         help="benchmark JSONL path (implies --benchmark)")
     parser.add_argument("--vcm-bundle", default=None, metavar="DIRECTORY",
                         help="benchmark with an alternate VCM bundle directory")
+    parser.add_argument("--diagnostics-dir", default=None, metavar="DIRECTORY",
+                        help="save exact command audio, detailed decisions, and model hashes")
     args = parser.parse_args(argv)
     if not 0.0 <= args.wake_chime_volume <= 1.0:
         parser.error("--wake-chime-volume must be between 0 and 1")
@@ -494,10 +496,12 @@ def main(argv=None):
         vcm = voice_mod.Voice(
             model=bundle,
             labels=os.path.join(bundle, "labels.json"),
-            policy=os.path.join(bundle, "policy.json"))
+            policy=os.path.join(bundle, "policy.json"),
+            diagnostics_dir=args.diagnostics_dir)
         print("  [voice] benchmark VCM bundle: %s" % bundle)
     else:
-        vcm = voice_mod.Voice() if voice_mode else None
+        vcm = (voice_mod.Voice(diagnostics_dir=args.diagnostics_dir)
+               if voice_mode else None)
 
     if use_gui:
         # Build the App on the MAIN thread and run its tkinter loop there.
