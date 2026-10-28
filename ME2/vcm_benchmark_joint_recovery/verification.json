@@ -1,0 +1,171 @@
+{
+  "candidate": "11_time_mask epoch64; class-constrained selective recovery",
+  "data": "previously examined TEST audit and HOLDOUT, procedural non-speech noise; HOLDOUT informed the design",
+  "independent_speech_test": false,
+  "physical_pi_test": false,
+  "mean_delta_pp": {
+    "new_noise": {
+      "command": 2.6420388122515734,
+      "real_command": 2.0804438280166457,
+      "synthetic_command": 2.7131442620072,
+      "native_oos": 6.666666666666667,
+      "tune_oos": 0.8010680907877149
+    },
+    "historical_holdout": {
+      "command": 0.7680491551459282,
+      "real_command": -2.0301221021717147e-15,
+      "synthetic_command": 1.4285714285714286,
+      "native_oos": 1.7857142857142858,
+      "tune_oos": 0.3999999999999996
+    }
+  },
+  "per_view": {
+    "new_noise": {
+      "clean": {
+        "command": 0.6546644844517147,
+        "real_command": 1.9417475728155296,
+        "synthetic_command": 0.49170251997541925,
+        "native_oos": 10.0,
+        "tune_oos": 0.0
+      },
+      "room": {
+        "command": 1.9094380796508545,
+        "real_command": 1.9417475728155367,
+        "synthetic_command": 1.9053472649047336,
+        "native_oos": 10.0,
+        "tune_oos": 3.738317757009341
+      },
+      "quiet": {
+        "command": 0.7637752318603361,
+        "real_command": 2.4271844660194333,
+        "synthetic_command": 0.5531653349723342,
+        "native_oos": 6.666666666666671,
+        "tune_oos": -0.9345794392523459
+      },
+      "snr6": {
+        "command": 10.91107474086197,
+        "real_command": 3.398058252427184,
+        "synthetic_command": 11.862323294406885,
+        "native_oos": 0.0,
+        "tune_oos": 2.803738317757009
+      },
+      "snr12": {
+        "command": 2.4004364429896157,
+        "real_command": 1.4563106796116472,
+        "synthetic_command": 2.519975414873997,
+        "native_oos": 0.0,
+        "tune_oos": 0.9345794392523459
+      },
+      "snr20": {
+        "command": 1.0365521003818827,
+        "real_command": 1.9417475728155367,
+        "synthetic_command": 0.9219422249539093,
+        "native_oos": 6.666666666666671,
+        "tune_oos": -0.9345794392523459
+      },
+      "snr30": {
+        "command": 0.8183306055646398,
+        "real_command": 1.4563106796116543,
+        "synthetic_command": 0.7375537799631218,
+        "native_oos": 13.333333333333329,
+        "tune_oos": 0.0
+      },
+      "snr3": {
+        "command": 14.184397163120565,
+        "real_command": 2.912621359223298,
+        "synthetic_command": 15.611555009219416,
+        "native_oos": 0.0,
+        "tune_oos": 0.9345794392523459
+      },
+      "snr9": {
+        "command": 5.837424986361171,
+        "real_command": 1.9417475728155296,
+        "synthetic_command": 6.330669944683464,
+        "native_oos": 3.3333333333333286,
+        "tune_oos": 2.803738317757009
+      },
+      "snr16": {
+        "command": 1.2547735951991257,
+        "real_command": 1.9417475728155438,
+        "synthetic_command": 1.1677934849415976,
+        "native_oos": 6.666666666666671,
+        "tune_oos": 0.0
+      },
+      "snr25": {
+        "command": 0.9819967266775649,
+        "real_command": 1.4563106796116543,
+        "synthetic_command": 0.9219422249538951,
+        "native_oos": 10.0,
+        "tune_oos": 0.0
+      }
+    },
+    "historical_holdout": {
+      "clean": {
+        "command": -0.5376344086021589,
+        "real_command": -1.1627906976744242,
+        "synthetic_command": 0.0,
+        "native_oos": 0.0,
+        "tune_oos": 0.0
+      },
+      "room": {
+        "command": 2.688172043010752,
+        "real_command": 2.3255813953488342,
+        "synthetic_command": 3.0,
+        "native_oos": -6.25,
+        "tune_oos": 0.7999999999999972
+      },
+      "quiet": {
+        "command": 0.0,
+        "real_command": 0.0,
+        "synthetic_command": 0.0,
+        "native_oos": 0.0,
+        "tune_oos": 0.0
+      },
+      "snr6": {
+        "command": 1.6129032258064555,
+        "real_command": -1.1627906976744242,
+        "synthetic_command": 4.0,
+        "native_oos": 18.75,
+        "tune_oos": 0.3999999999999915
+      },
+      "snr12": {
+        "command": 2.150537634408593,
+        "real_command": 1.1627906976744242,
+        "synthetic_command": 3.0,
+        "native_oos": 12.5,
+        "tune_oos": 0.7999999999999972
+      },
+      "snr20": {
+        "command": 0.0,
+        "real_command": 0.0,
+        "synthetic_command": 0.0,
+        "native_oos": -12.5,
+        "tune_oos": 0.8000000000000114
+      },
+      "snr30": {
+        "command": -0.5376344086021447,
+        "real_command": -1.1627906976744242,
+        "synthetic_command": 0.0,
+        "native_oos": 0.0,
+        "tune_oos": 0.0
+      }
+    }
+  },
+  "onnx_spot_parity": {
+    "expert_logit_max_error": 5.340576171875e-05,
+    "baseline_probability_max_error": 1.0371208190917969e-05,
+    "dynamic_batches": [
+      1,
+      3,
+      28
+    ],
+    "examples_per_view": 4,
+    "onnx_sha256": "12191b37c4c1219b324d3758f8ec04d66ee890c2e002e22f5e076532089b67d3",
+    "full_onnx_every_waveform": false
+  },
+  "runtime_cached_decision_cases": 16954,
+  "runtime_cached_decision_mismatches": 0,
+  "runtime_clean_holdout_waveform_cases": 452,
+  "runtime_clean_holdout_decision_mismatches": 0,
+  "runner_unittests_passed": 44
+}

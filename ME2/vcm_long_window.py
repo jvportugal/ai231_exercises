@@ -31,7 +31,7 @@ class LongWindowSession:
         import onnxruntime as ort
         path = Path(manifest_path)
         self.manifest = json.loads(path.read_text())
-        if self.manifest.get("type") != "long_window_ensemble_onnx_v1":
+        if self.manifest.get("type") not in ("long_window_ensemble_onnx_v1", "selective_scope_onnx_v1"):
             raise ValueError("unsupported long-window manifest")
         self.n_frames = int(self.manifest["n_frames"])
         self.masked = bool(self.manifest["masked"])

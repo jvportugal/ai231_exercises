@@ -245,6 +245,9 @@ def load_model(model_path=DEFAULT_MODEL):
         if manifest_type == "long_window_ensemble_onnx_v1":
             from vcm_long_window import LongWindowSession
             return LongWindowSession(model_path)
+        if manifest_type == "selective_scope_onnx_v1":
+            from vcm_selective_scope import SelectiveScopeSession
+            return SelectiveScopeSession(model_path)
         return ProbabilityEnsembleSession(model_path)
     # The bundle ships a raw .onnx file. For compatibility with compressed
     # copies, accept .onnx.gz and decompress it once next to the archive.
@@ -701,6 +704,8 @@ def classify(sess, labels, x, verbose=False, policy=None):
       probs = intent-head softmax array (len 20)
       info  = dict with slot, slot_conf, vad span/gain, rejected flag
     """
+    if hasattr(sess, "classify_audio") and policy is not False:
+        return sess.classify_audio(labels, x, verbose=verbose, policy=policy)
     if hasattr(sess, "prepare_feed"):
         feed, info = sess.prepare_feed(x, verbose=verbose)
     else:
