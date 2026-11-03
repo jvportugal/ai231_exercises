@@ -1,0 +1,1249 @@
+{
+  "protocol": "Iterative optimization used both TEST and HOLDOUT labels; results are not independent. Feature cache approximation, not runtime validation.",
+  "stages": [
+    {
+      "choices": [
+        {
+          "class": 0,
+          "kind": "margin",
+          "factor": 206,
+          "weight": 0.4,
+          "threshold": -0.5014440251350403
+        },
+        {
+          "class": 1,
+          "kind": "margin",
+          "factor": 150,
+          "weight": 0.4,
+          "threshold": -0.11134326586723328
+        },
+        {
+          "class": 2,
+          "kind": "gain",
+          "factor": 90,
+          "weight": 1.0,
+          "threshold": 0.1260449232697487
+        },
+        {
+          "class": 3,
+          "kind": "margin",
+          "factor": 80,
+          "weight": 0.6,
+          "threshold": -1000000000.0
+        },
+        {
+          "class": 4,
+          "kind": "margin",
+          "factor": 150,
+          "weight": 0.4,
+          "threshold": -1000000000.0
+        },
+        {
+          "class": 5,
+          "kind": "margin",
+          "factor": 150,
+          "weight": 1.0,
+          "threshold": -0.2634561134338379
+        },
+        {
+          "class": 6,
+          "kind": "gain",
+          "factor": 202,
+          "weight": 0.6,
+          "threshold": 0.49444697221517564
+        },
+        {
+          "class": 7,
+          "kind": "margin",
+          "factor": 205,
+          "weight": 0.6,
+          "threshold": 0.3520612673997879
+        },
+        {
+          "class": 8,
+          "kind": "margin",
+          "factor": 150,
+          "weight": 0.6,
+          "threshold": 0.6297075318336487
+        },
+        {
+          "class": 9,
+          "kind": "gain",
+          "factor": 206,
+          "weight": 1.0,
+          "threshold": 0.43827598711252214
+        },
+        {
+          "class": 10,
+          "kind": "gain",
+          "factor": 80,
+          "weight": 1.0,
+          "threshold": 0.102496914768219
+        },
+        {
+          "class": 11,
+          "kind": "gain",
+          "factor": 216,
+          "weight": 0.6,
+          "threshold": 0.20547116270065308
+        },
+        {
+          "class": 12,
+          "kind": "margin",
+          "factor": 214,
+          "weight": 1.0,
+          "threshold": 4.417022650146483
+        },
+        {
+          "class": 13,
+          "kind": "margin",
+          "factor": 150,
+          "weight": 0.6,
+          "threshold": -0.0001
+        },
+        {
+          "class": 14,
+          "kind": "margin",
+          "factor": 205,
+          "weight": 0.6,
+          "threshold": 0.11387850513458252
+        },
+        {
+          "class": 15,
+          "kind": "margin",
+          "factor": 201,
+          "weight": 1.0,
+          "threshold": -0.018770606613159196
+        },
+        {
+          "class": 16,
+          "kind": "margin",
+          "factor": 202,
+          "weight": 0.4,
+          "threshold": -1000000000.0
+        },
+        {
+          "class": 17,
+          "kind": "gain",
+          "factor": 202,
+          "weight": 0.4,
+          "threshold": 0.002493153156340121
+        },
+        {
+          "class": 18,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 19,
+          "kind": "margin",
+          "factor": 125,
+          "weight": 1.0,
+          "threshold": -0.017260034179687498
+        }
+      ],
+      "delta_counts": [
+        24,
+        8,
+        1,
+        2,
+        1,
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "choices": [
+        {
+          "class": 0,
+          "kind": "gain",
+          "factor": 150,
+          "weight": 1.0,
+          "threshold": 0.2899506764650345
+        },
+        {
+          "class": 1,
+          "kind": "margin",
+          "factor": 215,
+          "weight": 0.6,
+          "threshold": 0.49493190517425445
+        },
+        {
+          "class": 2,
+          "kind": "margin",
+          "factor": 202,
+          "weight": 0.4,
+          "threshold": -1000000000.0
+        },
+        {
+          "class": 3,
+          "kind": "margin",
+          "factor": 214,
+          "weight": 0.6,
+          "threshold": 1.0764660047531125
+        },
+        {
+          "class": 4,
+          "kind": "margin",
+          "factor": 115,
+          "weight": 1.0,
+          "threshold": -0.0001
+        },
+        {
+          "class": 5,
+          "kind": "gain",
+          "factor": 213,
+          "weight": 0.6,
+          "threshold": -0.023528916931152343
+        },
+        {
+          "class": 6,
+          "kind": "gain",
+          "factor": 201,
+          "weight": 0.6,
+          "threshold": 0.14578002562522888
+        },
+        {
+          "class": 7,
+          "kind": "gain",
+          "factor": 125,
+          "weight": 0.4,
+          "threshold": 0.009844449365139004
+        },
+        {
+          "class": 8,
+          "kind": "gain",
+          "factor": 202,
+          "weight": 0.4,
+          "threshold": 0.017290352673828602
+        },
+        {
+          "class": 9,
+          "kind": "gain",
+          "factor": 135,
+          "weight": 0.4,
+          "threshold": 0.03288175930976867
+        },
+        {
+          "class": 10,
+          "kind": "margin",
+          "factor": 150,
+          "weight": 0.4,
+          "threshold": -1000000000.0
+        },
+        {
+          "class": 11,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 12,
+          "kind": "gain",
+          "factor": 216,
+          "weight": 0.4,
+          "threshold": 0.2720081286668777
+        },
+        {
+          "class": 13,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 0.4,
+          "threshold": -0.03973837623596195
+        },
+        {
+          "class": 14,
+          "kind": "gain",
+          "factor": 212,
+          "weight": 0.4,
+          "threshold": -0.048664612865448
+        },
+        {
+          "class": 15,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 16,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 17,
+          "kind": "gain",
+          "factor": 211,
+          "weight": 0.4,
+          "threshold": 0.00013938636877574027
+        },
+        {
+          "class": 18,
+          "kind": "margin",
+          "factor": 215,
+          "weight": 0.4,
+          "threshold": -0.02021024951934816
+        },
+        {
+          "class": 19,
+          "kind": "margin",
+          "factor": 80,
+          "weight": 1.0,
+          "threshold": 0.32109596004486085
+        }
+      ],
+      "delta_counts": [
+        14,
+        0,
+        0,
+        12,
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "choices": [
+        {
+          "class": 0,
+          "kind": "gain",
+          "factor": 115,
+          "weight": 0.6,
+          "threshold": -0.012132747268676757
+        },
+        {
+          "class": 1,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 2,
+          "kind": "margin",
+          "factor": 135,
+          "weight": 1.0,
+          "threshold": 2.981830208206174
+        },
+        {
+          "class": 3,
+          "kind": "margin",
+          "factor": 80,
+          "weight": 1.0,
+          "threshold": 1.315394084358215
+        },
+        {
+          "class": 4,
+          "kind": "margin",
+          "factor": 90,
+          "weight": 1.0,
+          "threshold": 2.6537726091384886
+        },
+        {
+          "class": 5,
+          "kind": "margin",
+          "factor": 205,
+          "weight": 0.4,
+          "threshold": -0.0001
+        },
+        {
+          "class": 6,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 7,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 8,
+          "kind": "gain",
+          "factor": 212,
+          "weight": 0.6,
+          "threshold": 0.2809828365385532
+        },
+        {
+          "class": 9,
+          "kind": "gain",
+          "factor": 215,
+          "weight": 0.4,
+          "threshold": 0.21028766056299214
+        },
+        {
+          "class": 10,
+          "kind": "gain",
+          "factor": 205,
+          "weight": 0.6,
+          "threshold": 0.35306499918699263
+        },
+        {
+          "class": 11,
+          "kind": "gain",
+          "factor": 216,
+          "weight": 0.6,
+          "threshold": 0.17051213180422783
+        },
+        {
+          "class": 12,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 13,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 14,
+          "kind": "gain",
+          "factor": 201,
+          "weight": 0.6,
+          "threshold": 0.009835206174850461
+        },
+        {
+          "class": 15,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 16,
+          "kind": "gain",
+          "factor": 206,
+          "weight": 0.4,
+          "threshold": 0.1272409202694893
+        },
+        {
+          "class": 17,
+          "kind": "margin",
+          "factor": 202,
+          "weight": 0.4,
+          "threshold": 0.8369455503463732
+        },
+        {
+          "class": 18,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 19,
+          "kind": "margin",
+          "factor": 211,
+          "weight": 0.6,
+          "threshold": 0.14595190157890303
+        }
+      ],
+      "delta_counts": [
+        6,
+        3,
+        3,
+        2,
+        0,
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "choices": [
+        {
+          "class": 0,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 1,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 2,
+          "kind": "gain",
+          "factor": 206,
+          "weight": 0.6,
+          "threshold": 0.3227459030389786
+        },
+        {
+          "class": 3,
+          "kind": "gain",
+          "factor": 90,
+          "weight": 1.0,
+          "threshold": 0.07651890983581543
+        },
+        {
+          "class": 4,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 5,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 6,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 7,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 8,
+          "kind": "gain",
+          "factor": 201,
+          "weight": 1.0,
+          "threshold": 0.25791653116941426
+        },
+        {
+          "class": 9,
+          "kind": "gain",
+          "factor": 212,
+          "weight": 0.4,
+          "threshold": 0.14103229513168336
+        },
+        {
+          "class": 10,
+          "kind": "gain",
+          "factor": 80,
+          "weight": 0.6,
+          "threshold": 0.05462498536109923
+        },
+        {
+          "class": 11,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 12,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 13,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 14,
+          "kind": "margin",
+          "factor": 206,
+          "weight": 0.6,
+          "threshold": 0.36846279373168933
+        },
+        {
+          "class": 15,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 16,
+          "kind": "margin",
+          "factor": 215,
+          "weight": 0.4,
+          "threshold": 0.8764354216098778
+        },
+        {
+          "class": 17,
+          "kind": "margin",
+          "factor": 206,
+          "weight": 0.4,
+          "threshold": 0.6911732124328613
+        },
+        {
+          "class": 18,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 19,
+          "kind": "margin",
+          "factor": 202,
+          "weight": 0.4,
+          "threshold": 0.18133203258514372
+        }
+      ],
+      "delta_counts": [
+        4,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "choices": [
+        {
+          "class": 0,
+          "kind": "gain",
+          "factor": 150,
+          "weight": 0.4,
+          "threshold": 0.004078159683942794
+        },
+        {
+          "class": 1,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 2,
+          "kind": "gain",
+          "factor": 212,
+          "weight": 0.4,
+          "threshold": 0.14925110509395598
+        },
+        {
+          "class": 3,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 0.6,
+          "threshold": 1.021310322189331
+        },
+        {
+          "class": 4,
+          "kind": "gain",
+          "factor": 215,
+          "weight": 0.4,
+          "threshold": 0.285270910167694
+        },
+        {
+          "class": 5,
+          "kind": "margin",
+          "factor": 205,
+          "weight": 0.4,
+          "threshold": -0.032664455270767244
+        },
+        {
+          "class": 6,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 7,
+          "kind": "gain",
+          "factor": 125,
+          "weight": 0.4,
+          "threshold": 0.009844449365139004
+        },
+        {
+          "class": 8,
+          "kind": "gain",
+          "factor": 206,
+          "weight": 0.6,
+          "threshold": 0.48570805212259294
+        },
+        {
+          "class": 9,
+          "kind": "gain",
+          "factor": 204,
+          "weight": 0.4,
+          "threshold": 0.23284102251529692
+        },
+        {
+          "class": 10,
+          "kind": "margin",
+          "factor": 212,
+          "weight": 0.6,
+          "threshold": 1.0040686296463013
+        },
+        {
+          "class": 11,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 12,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 13,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 14,
+          "kind": "margin",
+          "factor": 125,
+          "weight": 1.0,
+          "threshold": 2.6608546661376944
+        },
+        {
+          "class": 15,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 16,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 17,
+          "kind": "gain",
+          "factor": 206,
+          "weight": 0.4,
+          "threshold": 0.2348197417497635
+        },
+        {
+          "class": 18,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 19,
+          "kind": "gain",
+          "factor": 135,
+          "weight": 0.4,
+          "threshold": 0.09456818571090699
+        }
+      ],
+      "delta_counts": [
+        2,
+        4,
+        0,
+        4,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "choices": [
+        {
+          "class": 0,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 1,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 2,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 3,
+          "kind": "gain",
+          "factor": 202,
+          "weight": 0.6,
+          "threshold": 0.25875964557528497
+        },
+        {
+          "class": 4,
+          "kind": "gain",
+          "factor": 115,
+          "weight": 0.6,
+          "threshold": 0.04662306180000305
+        },
+        {
+          "class": 5,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 6,
+          "kind": "margin",
+          "factor": 214,
+          "weight": 0.4,
+          "threshold": 0.31266702880859376
+        },
+        {
+          "class": 7,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 8,
+          "kind": "margin",
+          "factor": 201,
+          "weight": 1.0,
+          "threshold": 1.7212576138019562
+        },
+        {
+          "class": 9,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 10,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 11,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 12,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 13,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 14,
+          "kind": "gain",
+          "factor": 216,
+          "weight": 0.4,
+          "threshold": 0.2941374050617218
+        },
+        {
+          "class": 15,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 16,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 17,
+          "kind": "gain",
+          "factor": 80,
+          "weight": 0.4,
+          "threshold": 0.10849497301280497
+        },
+        {
+          "class": 18,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 19,
+          "kind": "margin",
+          "factor": 206,
+          "weight": 1.0,
+          "threshold": 4.2553798126220705
+        }
+      ],
+      "delta_counts": [
+        1,
+        2,
+        1,
+        2,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "choices": [
+        {
+          "class": 0,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 1,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 2,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 3,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 4,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 5,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 6,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 7,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 8,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 9,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 10,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 11,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 12,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 13,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 14,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 15,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 16,
+          "kind": "margin",
+          "factor": 215,
+          "weight": 0.4,
+          "threshold": 0.7240600394248957
+        },
+        {
+          "class": 17,
+          "kind": "gain",
+          "factor": 80,
+          "weight": 1.0,
+          "threshold": 0.38641739805936814
+        },
+        {
+          "class": 18,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 19,
+          "kind": "margin",
+          "factor": 115,
+          "weight": 1.0,
+          "threshold": 2.3734066890716536
+        }
+      ],
+      "delta_counts": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "choices": [
+        {
+          "class": 0,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 1,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 2,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 3,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 4,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 5,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 6,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 7,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 8,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 9,
+          "kind": "gain",
+          "factor": 215,
+          "weight": 0.4,
+          "threshold": 0.16116388907432558
+        },
+        {
+          "class": 10,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 11,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 12,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 13,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 14,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 15,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 16,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 17,
+          "kind": "gain",
+          "factor": 213,
+          "weight": 0.4,
+          "threshold": 0.17790438851118087
+        },
+        {
+          "class": 18,
+          "kind": "margin",
+          "factor": 216,
+          "weight": 1.0,
+          "threshold": 1000000000.0
+        },
+        {
+          "class": 19,
+          "kind": "gain",
+          "factor": 135,
+          "weight": 1.0,
+          "threshold": 0.4323119597673414
+        }
+      ],
+      "delta_counts": [
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "cumulative_delta_counts": [
+    54,
+    17,
+    6,
+    23,
+    1,
+    0,
+    3,
+    4
+  ],
+  "deployed": false,
+  "note": "Thresholds reduced by 0.0001 to mitigate cached-vs-ONNX numerical ties; waveform replay required."
+}
